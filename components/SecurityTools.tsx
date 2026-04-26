@@ -6,6 +6,21 @@ import { QuantumDefense } from './QuantumDefense.tsx';
 import { WarGamesSimulator } from './WarGamesSimulator.tsx';
 import { SecurityTab } from '../types.ts';
 import { YaraIntelligence } from './YaraIntelligence.tsx';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  ShieldAlert, 
+  FileSearch, 
+  Code, 
+  Terminal, 
+  Boxes, 
+  Zap, 
+  Fingerprint, 
+  Search,
+  Target,
+  Activity,
+  Terminal as TerminalIcon,
+  ShieldAlert as SecurityIcon
+} from 'lucide-react';
 
 interface Props {
   userLoc: { lat: number, lng: number };
@@ -131,6 +146,9 @@ export const SecurityTools: React.FC<Props> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<SecurityTab>('overview');
   const [ipAttackLog, setIpAttackLog] = useState<IPLogEntry[]>([]);
+  const [dnsLogs, setDnsLogs] = useState<IPLogEntry[]>([]);
+  const [isResolving, setIsResolving] = useState(false);
+  const [domainToResolve, setDomainToResolve] = useState('satcom-mesh.mil');
   const [isIpAttacking, setIsIpAttacking] = useState(false);
   const [targetIp, setTargetIp] = useState('10.254.1.42');
   const [selectedScript, setSelectedScript] = useState(TACTICAL_SCRIPTS[0]);
@@ -152,24 +170,31 @@ export const SecurityTools: React.FC<Props> = ({
       const animate = () => {
         frame++;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = 'rgba(34, 211, 238, 0.05)';
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.08)';
         ctx.beginPath();
-        for (let i = 0; i < canvas.width; i += 20) { ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); }
-        for (let i = 0; i < canvas.height; i += 20) { ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); }
+        for (let i = 0; i < canvas.width; i += 30) { ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); }
+        for (let i = 0; i < canvas.height; i += 30) { ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); }
         ctx.stroke();
 
-        if (frame % 15 === 0) {
+        if (frame % 20 === 0) {
           packets.push({
             x: 0, y: Math.random() * canvas.height,
-            speed: 2 + Math.random() * 4,
-            type: Math.random() > 0.9 ? 'malicious' : 'nominal',
-            size: 2 + Math.random() * 5
+            speed: 1.5 + Math.random() * 3,
+            type: Math.random() > 0.92 ? 'malicious' : 'nominal',
+            size: 3 + Math.random() * 4
           });
         }
 
         packets.forEach((p, i) => {
           p.x += p.speed;
-          ctx.fillStyle = p.type === 'malicious' ? '#ef4444' : '#22d3ee';
+          if (p.type === 'malicious') {
+             ctx.shadowBlur = 10;
+             ctx.shadowColor = '#ef4444';
+             ctx.fillStyle = '#ef4444';
+          } else {
+             ctx.shadowBlur = 0;
+             ctx.fillStyle = '#22d3ee';
+          }
           ctx.fillRect(p.x, p.y, p.size, p.size);
           if (p.x > canvas.width) packets.splice(i, 1);
         });
@@ -177,7 +202,10 @@ export const SecurityTools: React.FC<Props> = ({
         requestAnimationFrame(animate);
       };
       const h = requestAnimationFrame(animate);
-      return () => cancelAnimationFrame(h);
+      return () => {
+        cancelAnimationFrame(h);
+        ctx.shadowBlur = 0;
+      };
     }
   }, [activeTab]);
 
@@ -194,24 +222,24 @@ export const SecurityTools: React.FC<Props> = ({
         const animate = () => {
             frame++;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#020617';
+            ctx.fillStyle = '#050810';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            if (isIpAttacking && frame % 10 === 0) {
+            if (isIpAttacking && frame % 12 === 0) {
                 bursts.push({
                     x: canvas.width / 2,
                     y: canvas.height / 2,
                     r: 0,
                     alpha: 1,
-                    v: 4 + Math.random() * 4
+                    v: 3 + Math.random() * 3
                 });
             }
 
             bursts.forEach((b, i) => {
                 b.r += b.v;
-                b.alpha -= 0.02;
+                b.alpha -= 0.025;
                 ctx.strokeStyle = `rgba(239, 68, 68, ${b.alpha})`;
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1.5;
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
                 ctx.stroke();
@@ -220,7 +248,7 @@ export const SecurityTools: React.FC<Props> = ({
 
             ctx.fillStyle = isIpAttacking ? '#ef4444' : '#1e293b';
             ctx.beginPath();
-            ctx.arc(canvas.width/2, canvas.height/2, 10, 0, Math.PI*2);
+            ctx.arc(canvas.width/2, canvas.height/2, 8, 0, Math.PI*2);
             ctx.fill();
 
             requestAnimationFrame(animate);
@@ -243,159 +271,348 @@ export const SecurityTools: React.FC<Props> = ({
   const triggerAttack = () => {
     if (isIpAttacking) return;
     setIsIpAttacking(true);
-    addIpLog(`Initiating scan on ${targetIp}...`, 'INFO');
-    setTimeout(() => addIpLog(`Enumerating Sat-Gateways...`, 'INFO'), 1000);
-    setTimeout(() => addIpLog(`FOUND: Open Port 8080 (Admin WebUI)`, 'ALERT'), 2500);
+    addIpLog(`INIT: RF Frame Injection Vector localizing...`, 'INFO');
+    setTimeout(() => addIpLog(`Syncing with ${targetIp} over DVB-S2 link...`, 'INFO'), 1000);
+    setTimeout(() => addIpLog(`ALERT: Gateway hardware ID spoof target found.`, 'ALERT'), 2500);
     setTimeout(() => {
-        addIpLog(`BUFFER_OVERFLOW: Remote service crashed.`, 'SUCCESS');
+        addIpLog(`SUCCESS: Injection confirmed. Remote BUC disabled.`, 'SUCCESS');
         setIsIpAttacking(false);
-        addMissionLog(`CRITICAL: Offensive strike against ${targetIp} completed.`, 'active');
+        addMissionLog(`Offensive strike against ${targetIp} completed.`, 'STRIKE');
     }, 4500);
   };
 
+  const handleResolveDomain = async () => {
+    if (!domainToResolve || isResolving) return;
+    setIsResolving(true);
+    const timeNow = new Date().toLocaleTimeString([], { hour12: false });
+    const addDnsLog = (msg: string, type: IPLogEntry['type'] = 'INFO') => {
+      setDnsLogs(prev => [{ time: timeNow, msg, type }, ...prev].slice(0, 50));
+    };
+
+    addDnsLog(`INIT: Intercepting DNS signal for [${domainToResolve}]`, 'INFO');
+    playSystemVoice("Initiating orbital DNS intercept.");
+
+    try {
+      const response = await fetch(`https://dns.google/resolve?name=${domainToResolve}&type=A`);
+      const data = await response.json();
+      
+      setTimeout(() => {
+        if (data.Answer && data.Answer.length > 0) {
+          data.Answer.forEach((ans: any) => {
+            if (ans.type === 1) { // A Record
+              addDnsLog(`SUCCESS: Resolved IP -> ${ans.data}`, 'SUCCESS');
+              addMissionLog(`DNS Intercept: ${domainToResolve} resolved to ${ans.data}`, 'INFO');
+            }
+          });
+        } else {
+          addDnsLog(`WARN: No A-records found for ${domainToResolve}`, 'WARN');
+        }
+        setIsResolving(false);
+      }, 1500);
+    } catch (err) {
+      addDnsLog(`FAIL: Signal interference blocked resolution.`, 'FAIL');
+      setIsResolving(false);
+    }
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <header className="flex items-center justify-between">
-        <div>
-           <h2 className="text-2xl font-black text-white uppercase tracking-tight flex items-center">
-             <span className="mr-3 p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20">🛡️</span> 
-             Sentinel <span className="text-cyan-500 ml-2">Intelligence</span>
-           </h2>
-           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-1">Active Defense Node // Protocol v5.1.0</p>
+    <div className="space-y-8 animate-in fade-in duration-700 pb-12">
+      <header className="flex items-center justify-between border-b border-slate-800 pb-6 relative">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+           <div className="absolute top-0 left-0 w-48 h-48 bg-cyan-500 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
+        </div>
+        <div className="relative z-10 flex items-center space-x-4">
+           <div className="p-4 bg-cyan-500/10 rounded-[1.5rem] border border-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.1)]">
+              <SecurityIcon className="w-8 h-8 text-cyan-400" />
+           </div>
+           <div>
+              <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">Sentinel <span className="text-cyan-500">Intelligence</span></h2>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-1 pl-1">Quantum-Hardened Active Defense Node // v5.4</p>
+           </div>
         </div>
         {onBack && (
-          <button onClick={onBack} className="bg-slate-800 hover:bg-slate-700 text-[10px] font-black text-slate-300 px-5 py-2.5 rounded-xl border border-slate-700 transition-all uppercase tracking-widest active:scale-95">
-            Mission Dashboard
+          <button onClick={onBack} className="bg-slate-900/60 hover:bg-slate-800 text-[10px] font-black text-slate-400 hover:text-white px-6 py-3 rounded-2xl border-2 border-slate-800 hover:border-slate-700 transition-all uppercase tracking-widest active:scale-95 shadow-xl">
+            Retract to Mission_Comms
           </button>
         )}
       </header>
 
-      <div className="flex flex-wrap gap-2 bg-slate-900/40 p-1.5 rounded-2xl border border-slate-800/50">
+      <div className="flex flex-wrap gap-2.5 bg-[#050810] p-2 rounded-[2rem] border-2 border-slate-900 shadow-inner">
         {[
-          { id: 'overview', label: 'Monitor' },
-          { id: 'intel', label: 'YARA Intel' },
-          { id: 'scripts', label: 'Cipher Library' },
-          { id: 'attack', label: 'Strike' },
-          { id: 'quantum', label: 'Physics' },
-          { id: 'wargames', label: 'Simulate' }
+          { id: 'overview', label: 'Tactical Monitor', icon: '📡' },
+          { id: 'dns', label: 'DNS Signal Intercept', icon: '🌐' },
+          { id: 'intel', label: 'YARA Intelligence', icon: '🔍' },
+          { id: 'scripts', label: 'Cipher Repository', icon: '🔐' },
+          { id: 'attack', label: 'RF Offensive Strike', icon: '⚡' },
+          { id: 'quantum', label: 'Quantum Physics', icon: '⚛️' },
+          { id: 'wargames', label: 'Global Simulation', icon: '🌎' }
         ].map((tab) => (
           <button 
             key={tab.id} 
             onClick={() => setActiveTab(tab.id as SecurityTab)} 
-            className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl ${
+            className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl flex items-center space-x-2 border-2 ${
               activeTab === tab.id 
-                ? 'bg-cyan-500 text-slate-950 shadow-lg' 
-                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_8px_30px_rgba(34,211,238,0.3)] scale-105 z-10' 
+                : 'text-slate-600 border-transparent hover:text-slate-300 hover:bg-white/5'
             }`}
           >
-            {tab.label}
+            <span className="text-sm opacity-60">{tab.icon}</span>
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>
 
       <div className="min-h-[600px]">
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4">
-             <div className="lg:col-span-2 glass p-6 rounded-3xl border-slate-800 h-[500px]">
-                <canvas ref={sentinelCanvasRef} width="800" height="400" className="w-full h-full bg-slate-950 rounded-2xl border border-slate-900" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in slide-in-from-bottom-6 duration-700">
+             <div className="lg:col-span-8 glass p-8 rounded-[2.5rem] border-2 border-slate-800 bg-slate-950/40 h-[600px] shadow-[0_24px_50px_rgba(0,0,0,0.6)] relative overflow-hidden group">
+                <div className="absolute top-4 right-4 z-20 flex space-x-2">
+                   {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-cyan-500/20"></div>)}
+                </div>
+                <canvas ref={sentinelCanvasRef} width="1200" height="800" className="w-full h-full bg-[#020617] rounded-3xl border border-slate-900 shadow-inner" />
+                <div className="absolute bottom-6 left-8 z-20 bg-black/60 px-4 py-2 rounded-xl border border-white/5 backdrop-blur-md">
+                   <p className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em]">Real-time_Threat_Visualizer</p>
+                </div>
              </div>
-             <div className="lg:col-span-1 space-y-6">
-                <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">
-                   <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Threat Detection Engine</h3>
-                       <div className="space-y-3">
+             <div className="lg:col-span-4 space-y-8">
+                <div className="glass p-8 rounded-[2.5rem] border-2 border-slate-800 bg-slate-950/60 shadow-xl relative overflow-hidden">
+                   <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
+                      <Target className="w-32 h-32 text-cyan-500" />
+                   </div>
+                   <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-800 pb-2">Threat Detection Engine_V4</h3>
+                       <div className="space-y-4">
                           {[
-                            { label: 'Port Scan', status: 'NEGATIVE', confidence: 99 },
-                            { label: 'Sync Collision', status: 'NEGATIVE', confidence: 97 },
-                            { label: 'Side-Channel Leak', status: 'NEGATIVE', confidence: 84 },
-                            { label: 'OS Fingerprint', status: 'INDETERMINATE', confidence: 32 }
+                            { label: 'Uplink Port Scan', status: 'NEGATIVE', confidence: 99.8, color: 'emerald' },
+                            { label: 'Sync Collision Det.', status: 'NEGATIVE', confidence: 97.4, color: 'emerald' },
+                            { label: 'Protocol Side-Channel', status: 'NEGATIVE', confidence: 84.1, color: 'cyan' },
+                            { label: 'OS Stack Fingerprint', status: 'INDETERMINATE', confidence: 32.5, color: 'amber' }
                           ].map((item, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 bg-slate-900/60 rounded-xl border border-slate-800 group hover:border-cyan-500/30 transition-all">
+                            <div key={i} className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-slate-900 group hover:border-cyan-500/30 transition-all shadow-inner">
                                <div className="flex flex-col">
-                                  <span className="text-[9px] font-bold text-white uppercase">{item.label}</span>
-                                  <div className="flex items-center space-x-2 mt-1">
-                                     <div className={`w-1 h-1 rounded-full ${item.status === 'NEGATIVE' ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                     <span className={`text-[8px] font-black tracking-widest ${item.status === 'NEGATIVE' ? 'text-green-500' : 'text-red-500'}`}>
+                                  <span className="text-[10px] font-black text-white uppercase tracking-tight">{item.label}</span>
+                                  <div className="flex items-center space-x-2 mt-1.5">
+                                     <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'NEGATIVE' ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`}></div>
+                                     <span className={`text-[9px] font-black tracking-widest ${item.status === 'NEGATIVE' ? 'text-emerald-500' : 'text-red-500'}`}>
                                        {item.status}
                                      </span>
                                   </div>
                                </div>
                                <div className="flex flex-col items-end shrink-0">
-                                  <span className="text-[7px] text-slate-600 font-black uppercase mb-1">Confidence</span>
-                                  <div className="flex items-center space-x-1">
-                                     <div className="w-12 h-1 bg-slate-800 rounded-full overflow-hidden">
-                                        <div className={`h-full ${item.confidence > 90 ? 'bg-emerald-500' : item.confidence > 70 ? 'bg-cyan-500' : 'bg-amber-500'}`} style={{ width: `${item.confidence}%` }}></div>
+                                  <span className="text-[8px] text-slate-600 font-black uppercase mb-1">Conf. Score</span>
+                                  <div className="flex items-center space-x-2">
+                                     <div className="w-16 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800 shadow-inner">
+                                        <div className={`h-full ${item.confidence > 90 ? 'bg-emerald-500' : item.confidence > 70 ? 'bg-cyan-500' : 'bg-amber-500'} shadow-[0_0_8px_rgba(34,211,238,0.4)]`} style={{ width: `${item.confidence}%` }}></div>
                                      </div>
-                                     <span className="text-[8px] font-mono text-slate-400">{item.confidence}%</span>
+                                     <span className="text-[9px] font-mono text-slate-500">{item.confidence}%</span>
                                   </div>
                                </div>
                             </div>
                           ))}
                        </div>
-                   <button onClick={() => playSystemVoice("Deep packet scan in progress.")} className="w-full mt-6 py-3 bg-cyan-600/10 border border-cyan-600/30 text-cyan-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-cyan-600/20 transition-all">
-                      Run Deep Scan
+                   <button 
+                     onClick={() => {
+                        playSystemVoice("Deep packet scan in progress.");
+                        addMissionLog("Deep packet inspection triggered on SAT_" + selectedSatName, "INFO");
+                     }} 
+                     className="w-full mt-8 py-4 bg-cyan-600/10 border-2 border-cyan-500/20 text-cyan-400 text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-cyan-500 hover:text-slate-950 transition-all shadow-lg active:scale-95"
+                   >
+                      Commence_Deep_Scan
                    </button>
+                </div>
+                
+                <div className="p-6 bg-amber-500/5 rounded-[2rem] border-2 border-amber-500/10 flex items-center space-x-5">
+                   <div className="p-3 bg-amber-500/10 rounded-xl">
+                      <ShieldAlert className="w-6 h-6 text-amber-500" />
+                   </div>
+                   <div>
+                      <p className="text-[10px] text-amber-500/80 font-black uppercase leading-tight italic">Warning: Level-4 Protocol Breach Detected in Perimeter Beta-9</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {activeTab === 'dns' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in slide-in-from-bottom-4 duration-700">
+             <div className="lg:col-span-5 glass p-10 rounded-[2.5rem] border-2 border-slate-800 bg-slate-950/60 flex flex-col space-y-8 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-cyan-500 animate-pulse opacity-20"></div>
+                <div className="h-48 rounded-3xl overflow-hidden border-2 border-slate-900 bg-[#050810] mb-2 flex items-center justify-center p-8">
+                    <Search className={`w-24 h-24 text-cyan-500/20 ${isResolving ? 'animate-pulse scale-110' : ''} transition-all`} />
+                </div>
+                <div>
+                   <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">DNS Signal_Intercept</h3>
+                   <p className="text-[11px] text-cyan-500 font-bold uppercase tracking-[0.2em] mt-1">Satellite Transponder Resolution Alpha</p>
+                </div>
+                <div className="space-y-6">
+                   <div className="relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                      <input 
+                         type="text" 
+                         value={domainToResolve} 
+                         onChange={e => setDomainToResolve(e.target.value)} 
+                         className="w-full bg-[#050810] border-2 border-slate-800 rounded-2xl p-4 pl-12 text-sm text-white mono outline-none focus:border-cyan-500 shadow-inner transition-all" 
+                         placeholder="Target_Domain..."
+                      />
+                   </div>
+                   <button 
+                     onClick={handleResolveDomain} 
+                     disabled={isResolving} 
+                     className="w-full bg-cyan-600 hover:bg-white hover:text-cyan-600 text-white text-[12px] font-black py-5 rounded-2xl uppercase tracking-[0.3em] shadow-[0_15px_35px_rgba(34,211,238,0.3)] transition-all active:scale-95 disabled:opacity-50 relative overflow-hidden group/btn"
+                   >
+                     <div className="absolute inset-0 bg-cyan-500 translate-y-full group-hover/btn:translate-y-0 transition-transform"></div>
+                     <span className="relative z-10">{isResolving ? 'INTERCEPTING_SIGNAL...' : 'RESOLVE_SIGNAL_IDENTITY'}</span>
+                   </button>
+                </div>
+             </div>
+             <div className="lg:col-span-7 glass p-10 rounded-[2.5rem] border-2 border-slate-800 bg-[#0c0e14] flex flex-col h-full min-h-[500px] shadow-2xl font-mono relative">
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none noise-bg"></div>
+                <div className="flex items-center justify-between mb-8 border-b border-slate-800 pb-4 relative z-10">
+                   <div className="flex items-center space-x-3">
+                      <Terminal className="w-4 h-4 text-cyan-500" />
+                      <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">DNS_RESOLUTION_TELEMETRY</span>
+                   </div>
+                   <div className="flex space-x-1">
+                      {[1,2,3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-cyan-500/10 border border-slate-800"></div>)}
+                   </div>
+                </div>
+                <div className="flex-grow overflow-y-auto space-y-3 pr-2 scrollbar-hide relative z-10">
+                  {dnsLogs.length === 0 && (
+                     <div className="h-full flex flex-col items-center justify-center opacity-10 space-y-4">
+                        <Activity className="w-16 h-16" />
+                        <p className="text-[12px] font-black uppercase tracking-[0.6em]">Awaiting_Signal</p>
+                     </div>
+                  )}
+                  {dnsLogs.map((log, i) => (
+                    <motion.div 
+                      key={i} 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-[12px] mono flex items-start space-x-4 bg-slate-950/40 p-2 rounded-lg border border-slate-900/50"
+                    >
+                       <span className="text-slate-800 font-bold shrink-0">[{log.time}]</span>
+                       <span className={log.type === 'ALERT' ? 'text-red-500 font-black' : log.type === 'SUCCESS' ? 'text-emerald-500' : log.type === 'FAIL' ? 'text-red-400' : 'text-slate-400'}>{log.msg}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="mt-8 pt-4 border-t border-slate-900 flex items-center justify-between text-[10px] text-slate-700 italic">
+                   <span>ORBITAL_DNS_LINK: GOOGLE_DOH_V2</span>
+                   <span className="animate-pulse">CONNECTED</span>
                 </div>
              </div>
           </div>
         )}
 
         {activeTab === 'scripts' && (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-in slide-in-from-bottom-2">
-            <div className="lg:col-span-1 space-y-2 max-h-[600px] overflow-y-auto scrollbar-hide">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 animate-in slide-in-from-bottom-4 duration-700">
+            <div className="lg:col-span-1 space-y-3 max-h-[700px] overflow-y-auto scrollbar-hide pr-2">
+               <div className="px-4 pb-2 mb-4 border-b border-slate-800">
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Algorithm_Index</span>
+               </div>
               {TACTICAL_SCRIPTS.map(script => (
                 <button 
                   key={script.id}
                   onClick={() => setSelectedScript(script)}
-                  className={`w-full text-left p-4 rounded-xl border transition-all ${selectedScript.id === script.id ? 'bg-cyan-500/10 border-cyan-500/50' : 'bg-slate-900/40 border-slate-800 hover:border-slate-700'}`}
+                  className={`w-full text-left p-5 rounded-[1.5rem] border-2 transition-all relative overflow-hidden group ${selectedScript.id === script.id ? 'bg-cyan-500/10 border-cyan-500/40 shadow-lg' : 'bg-slate-900/40 border-slate-800/60 hover:border-slate-700'}`}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[8px] font-black text-cyan-500 uppercase tracking-widest">{script.category}</span>
-                    <span className="text-[8px] font-mono text-slate-600">{script.lang}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${selectedScript.id === script.id ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-900 text-slate-600'}`}>{script.category}</span>
+                    <span className="text-[9px] font-mono text-slate-700">{script.lang}</span>
                   </div>
-                  <h4 className="text-[11px] font-bold text-white uppercase">{script.name}</h4>
+                  <h4 className="text-[12px] font-black text-white uppercase group-hover:text-cyan-400 transition-colors">{script.name}</h4>
                 </button>
               ))}
             </div>
-            <div className="lg:col-span-3 glass rounded-2xl border-slate-800 flex flex-col overflow-hidden">
-               <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
-                 <h3 className="text-[10px] font-black text-white uppercase tracking-widest">{selectedScript.name}</h3>
-                 <button onClick={handleCopyCode} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[9px] font-black text-cyan-400 uppercase tracking-widest transition-all">
-                   {copyStatus ? 'COPIED' : 'COPY_CIPHER'}
+            <div className="lg:col-span-3 glass rounded-[2.5rem] border-2 border-slate-800 flex flex-col overflow-hidden shadow-2xl">
+               <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/80 backdrop-blur-md">
+                 <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                    <h3 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">{selectedScript.name}</h3>
+                 </div>
+                 <button onClick={handleCopyCode} className="px-6 py-2.5 bg-slate-950 hover:bg-cyan-500 hover:text-slate-950 border-2 border-slate-800 hover:border-cyan-400 rounded-xl text-[10px] font-black text-cyan-400 uppercase tracking-widest transition-all shadow-xl active:scale-95">
+                   {copyStatus ? 'UPLINK_COPIED' : 'TRANSFER_CODE'}
                  </button>
                </div>
-               <div className="flex-grow bg-slate-950 p-6 overflow-auto">
-                 <pre className="text-[13px] text-cyan-100/80 font-mono leading-relaxed">{selectedScript.code}</pre>
+               <div className="flex-grow bg-[#0c0e14] p-8 overflow-auto custom-scrollbar relative">
+                 <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
+                    <TerminalIcon className="w-64 h-64 text-white" />
+                 </div>
+                 <pre className="text-[14px] text-cyan-100/90 font-mono leading-loose relative z-10">{selectedScript.code}</pre>
+               </div>
+               <div className="p-4 bg-slate-900/40 border-t border-slate-800 flex items-center justify-between">
+                  <div className="flex space-x-1">
+                     {[1,2,3,4,5].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-800"></div>)}
+                  </div>
+                  <span className="text-[8px] font-mono text-slate-700">SHA_256_VERIFIED_FIRMWARE</span>
                </div>
             </div>
           </div>
         )}
 
         {activeTab === 'attack' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in slide-in-from-bottom-2">
-             <div className="glass p-8 rounded-3xl border-slate-800 bg-slate-950/40 flex flex-col space-y-6">
-                <div className="h-48 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 mb-4">
-                    <canvas ref={strikeCanvasRef} width="400" height="200" className="w-full h-full" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in slide-in-from-bottom-4 duration-700">
+             <div className="lg:col-span-5 glass p-10 rounded-[2.5rem] border-2 border-slate-800 bg-slate-950/60 flex flex-col space-y-8 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-red-500 animate-pulse opacity-20"></div>
+                <div className="h-56 rounded-3xl overflow-hidden border-2 border-slate-900 bg-[#050810] mb-2 shadow-inner group-hover:border-red-500/20 transition-colors">
+                    <canvas ref={strikeCanvasRef} width="600" height="300" className="w-full h-full" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-widest mb-1">Offensive Strike Terminal</h3>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Execute targeted RF frame injections</p>
+                   <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">RF Offensive_Strike</h3>
+                   <p className="text-[11px] text-red-500 font-bold uppercase tracking-[0.2em] mt-1">Remote Microwave Payload Injection</p>
                 </div>
-                <div className="space-y-4">
-                  <input type="text" value={targetIp} onChange={e => setTargetIp(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white mono outline-none focus:border-red-500" />
-                  <button onClick={triggerAttack} disabled={isIpAttacking} className="w-full bg-red-600 hover:bg-red-500 text-white text-[10px] font-black py-4 rounded-2xl uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95">
-                    {isIpAttacking ? 'STRIKE_IN_PROGRESS...' : 'COMMENCE_RF_STRIKE'}
+                <div className="space-y-6">
+                  <div className="relative">
+                     <TerminalIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                     <input 
+                        type="text" 
+                        value={targetIp} 
+                        onChange={e => setTargetIp(e.target.value)} 
+                        className="w-full bg-[#050810] border-2 border-slate-800 rounded-2xl p-4 pl-12 text-sm text-white mono outline-none focus:border-red-500 shadow-inner transition-all" 
+                        placeholder="Target_IP_Endpoint..."
+                     />
+                  </div>
+                  <button 
+                    onClick={triggerAttack} 
+                    disabled={isIpAttacking} 
+                    className="w-full bg-red-600 hover:bg-white hover:text-red-600 text-white text-[12px] font-black py-5 rounded-2xl uppercase tracking-[0.3em] shadow-[0_15px_35px_rgba(239,68,68,0.3)] transition-all active:scale-95 disabled:opacity-50 relative overflow-hidden group/btn"
+                  >
+                    <div className="absolute inset-0 bg-red-500 translate-y-full group-hover/btn:translate-y-0 transition-transform"></div>
+                    <span className="relative z-10">{isIpAttacking ? 'STRIKE_PHASE_ACTIVE...' : 'EXECUTE_PAYLOAD_TRANSFER'}</span>
                   </button>
                 </div>
              </div>
-             <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/60 flex flex-col h-full min-h-[400px]">
-                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Offensive Output Log</h3>
-                <div className="flex-grow overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+             <div className="lg:col-span-7 glass p-10 rounded-[2.5rem] border-2 border-slate-800 bg-[#0c0e14] flex flex-col h-full min-h-[500px] shadow-2xl font-mono relative">
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none noise-bg"></div>
+                <div className="flex items-center justify-between mb-8 border-b border-slate-800 pb-4 relative z-10">
+                   <div className="flex items-center space-x-3">
+                      <Terminal className="w-4 h-4 text-red-500" />
+                      <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">STIA_STRIKE_TELEMETRY</span>
+                   </div>
+                   <div className="flex space-x-1">
+                      {[1,2,3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-slate-900 border border-slate-800"></div>)}
+                   </div>
+                </div>
+                <div className="flex-grow overflow-y-auto space-y-3 pr-2 scrollbar-hide relative z-10">
+                  {ipAttackLog.length === 0 && (
+                     <div className="h-full flex flex-col items-center justify-center opacity-10 space-y-4">
+                        <Activity className="w-16 h-16" />
+                        <p className="text-[12px] font-black uppercase tracking-[0.6em]">System_Idle</p>
+                     </div>
+                  )}
                   {ipAttackLog.map((log, i) => (
-                    <div key={i} className="text-[11px] mono flex items-start space-x-2">
-                       <span className="text-slate-600">[{log.time}]</span>
-                       <span className={log.type === 'ALERT' ? 'text-red-500 font-bold' : log.type === 'SUCCESS' ? 'text-green-500' : 'text-slate-400'}>{log.msg}</span>
-                    </div>
+                    <motion.div 
+                      key={i} 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-[12px] mono flex items-start space-x-4 bg-slate-950/40 p-2 rounded-lg border border-slate-900/50"
+                    >
+                       <span className="text-slate-800 font-bold shrink-0">[{log.time}]</span>
+                       <span className={log.type === 'ALERT' ? 'text-red-500 font-black' : log.type === 'SUCCESS' ? 'text-emerald-500' : 'text-slate-400'}>{log.msg}</span>
+                    </motion.div>
                   ))}
+                </div>
+                <div className="mt-8 pt-4 border-t border-slate-900 flex items-center justify-between text-[10px] text-slate-700 italic">
+                   <span>DATA_LINK_ENCRYPTED: CHACHA20-POLY1305</span>
+                   <span className="animate-pulse">CONNECTED</span>
                 </div>
              </div>
           </div>

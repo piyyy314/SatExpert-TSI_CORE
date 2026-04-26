@@ -38,8 +38,9 @@ export const calculateLinkBudget = (params: LinkBudgetParams, distance: number):
   const fspl = 20 * Math.log10(distance) + 20 * Math.log10(uplinkFreq) + 92.45;
   
   // Antenna Gain (dBi) = 10log10(eff * (pi * D / lambda)^2)
-  const lambda = SPEED_OF_LIGHT / (uplinkFreq * 1e9) * 1000; // in meters
-  const gain = 10 * Math.log10((efficiency / 100) * Math.pow((Math.PI * antSize) / (lambda / 1000), 2));
+  const lambda = SPEED_OF_LIGHT / (uplinkFreq * 1e6); // frequency in GHz, sol in km/s => result in km
+  const lambdaMeters = lambda * 1000;
+  const gain = 10 * Math.log10((efficiency / 100) * Math.pow((Math.PI * antSize) / lambdaMeters, 2));
   
   // G/T (dB/K) = Gain - 10log10(Noise Temp)
   const gt = gain - 10 * Math.log10(lnbNoiseTemp);

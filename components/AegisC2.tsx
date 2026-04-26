@@ -111,6 +111,12 @@ export const AegisC2: React.FC = () => {
       setTimeout(() => addLog(`Infiltrating VFS layer...`, 'INFO'), 500);
       setTimeout(() => addLog(`Mapping directories: /etc, /root, /var/log`, 'SUCCESS'), 1500);
       setTimeout(() => addLog(`Found sensitive target: /etc/shadow`, 'CRITICAL', 85, "Cryptographic hash detected. Ready for extraction."), 2500);
+    } else if (opName === 'DEBUG: Serial Console 0x82') {
+      setTimeout(() => addLog(`Connecting to UART bridge at 0x82...`, 'INFO'), 400);
+      setTimeout(() => addLog(`Baud: 115200 // Data: 8-bit // Stop: 1`, 'SUCCESS'), 1200);
+      setTimeout(() => addLog(`>>> 0x00 0x1A 0xFF [KERNEL_BOOT_LOG]`, 'INFO'), 2000);
+      setTimeout(() => addLog(`v5.4.1-tsi: Initializing orbital subsystem...`, 'ALERT'), 2800);
+      setTimeout(() => addLog(`DEBUG_CONSOLE_ATTACHED: Raw bitstream access enabled.`, 'ALERT', 100), 3500);
     }
   };
 
@@ -130,6 +136,7 @@ export const AegisC2: React.FC = () => {
     { id: '7', name: 'REMOTE: Persistent Shell Uplink', icon: <TerminalIcon className="w-6 h-6" /> },
     { id: '8', name: 'ACCESS: File System Navigator', icon: <HardDrive className="w-6 h-6" /> },
     { id: '9', name: 'PAYLOAD: Remote Script Generator', icon: <Code className="w-6 h-6" /> },
+    { id: '10', name: 'DEBUG: Serial Console 0x82', icon: <Cpu className="w-6 h-6" /> },
   ];
 
   const currentScript = SCRIPTS.find(s => s.id === selectedScriptId) || SCRIPTS[0];

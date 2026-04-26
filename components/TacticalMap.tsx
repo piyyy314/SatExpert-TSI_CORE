@@ -49,13 +49,17 @@ export const TacticalMap: React.FC<Props> = ({ userLoc, satellite, isTracking, i
     <div 
       ref={mapRef}
       onClick={handleMapClick}
-      className={`glass rounded-2xl p-4 border-slate-800 bg-slate-950/50 overflow-hidden relative h-48 group cursor-crosshair hover:border-cyan-500/30 transition-all duration-1000 ${isStealthMode ? 'border-purple-900/40 shadow-[0_0_20px_rgba(168,85,247,0.1)]' : ''}`}
+      className={`glass rounded-[2.5rem] p-6 border-2 border-slate-800 bg-slate-950/50 overflow-hidden relative h-56 group cursor-crosshair hover:border-red-500/30 transition-all duration-1000 shadow-2xl ${isStealthMode ? 'border-purple-900/40 shadow-[0_0_40px_rgba(168,85,247,0.1)]' : ''}`}
     >
+      <div className="absolute top-0 right-0 p-4 opacity-[0.02] pointer-events-none group-hover:opacity-5 transition-opacity">
+         <div className="w-16 h-16 border-t-2 border-r-2 border-red-500 rounded-tr-3xl" />
+      </div>
+      
       {/* Grid Lines */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none">
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute inset-0" style={{
-          backgroundImage: `linear-gradient(${isStealthMode ? '#6366f1' : '#334155'} 1px, transparent 1px), linear-gradient(90deg, ${isStealthMode ? '#6366f1' : '#334155'} 1px, transparent 1px)`,
-          backgroundSize: '20% 20%'
+          backgroundImage: `linear-gradient(${isStealthMode ? '#6366f1' : '#1e293b'} 1px, transparent 1px), linear-gradient(90deg, ${isStealthMode ? '#6366f1' : '#1e293b'} 1px, transparent 1px)`,
+          backgroundSize: '10% 10%'
         }}></div>
       </div>
 

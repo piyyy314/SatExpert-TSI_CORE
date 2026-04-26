@@ -42,22 +42,13 @@ import { SpoofTracer } from './components/SpoofTracer.tsx';
 import { ThreatDossier } from './components/ThreatDossier.tsx';
 import { YARAScanner } from './components/YARAScanner.tsx';
 import { audioController } from './services/audioService.ts';
-import { Coordinates, Satellite, LookAngles, WeatherCondition, MainView, SatelliteStatus } from './types.ts';
+import { Coordinates, Satellite, LookAngles, WeatherCondition, MainView, SatelliteStatus, TacticalEvent } from './types.ts';
 import { COMMON_SATELLITES } from './constants.ts';
 import { calculateLookAngles } from './utils/geoUtils.ts';
 
 const STORAGE_KEY = 'satexpert_tactical_v5';
 const STEALTH_STORAGE_KEY = 'satexpert_stealth_mode';
 const EVENT_LOG_STORAGE_KEY = 'satexpert_event_logs';
-
-interface TacticalEvent {
-  id: string;
-  timestamp: string;
-  satName: string;
-  satId: string;
-  status: SatelliteStatus | 'CRITICAL' | 'BREACH';
-  detail: string;
-}
 
 export const App: React.FC = () => {
   const [satellites, setSatellites] = useState<Satellite[]>(COMMON_SATELLITES);
@@ -72,6 +63,8 @@ export const App: React.FC = () => {
   const [jammingPower, setJammingPower] = useState<number>(50);
   const [isStealthMode, setIsStealthMode] = useState<boolean>(false);
   const [isNeuralCleaning, setIsNeuralCleaning] = useState(false);
+  const [isDecoyActive, setIsDecoyActive] = useState(false);
+  const [isZPEActive, setIsZPEActive] = useState(false);
   
   // Global Event Log State
   const [eventLogs, setEventLogs] = useState<TacticalEvent[]>([]);
@@ -113,6 +106,10 @@ export const App: React.FC = () => {
     if (isNeuralCleaning) {
       snr += 4.5;
       packetLoss *= 0.2;
+    }
+    
+    if (isZPEActive) {
+      bucTemp -= 42.0;
     }
     
     if (defcon <= 2) bucTemp += 8.0;
@@ -199,40 +196,46 @@ export const App: React.FC = () => {
       <Layout isStealthMode={isStealthMode} setIsStealthMode={setIsStealthMode}>
         <div className="flex flex-col space-y-8 max-w-7xl mx-auto pb-12 transition-all duration-1000">
           
-          <div className={`flex flex-col xl:flex-row items-stretch justify-between gap-6 glass p-6 rounded-[32px] border-slate-800/80 shadow-[0_32px_64px_rgba(0,0,0,0.5)] relative overflow-hidden group ${defcon === 1 || isJamming ? 'defcon-alert' : ''}`}>
-             <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                <span className="text-[40px] font-black text-white italic tracking-tighter uppercase whitespace-nowrap overflow-hidden">TSI_CORE_V5</span>
+          <div className={`flex flex-col xl:flex-row items-stretch justify-between gap-6 glass p-6 rounded-[32px] border-2 border-slate-800 shadow-[0_32px_64px_rgba(0,0,0,0.6)] relative overflow-hidden group ${defcon === 1 || isJamming ? 'defcon-alert' : ''}`}>
+             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                <span className="text-[60px] font-black text-white italic tracking-tighter uppercase whitespace-nowrap overflow-hidden">TSI_TACTICAL_BRIDGE</span>
              </div>
+             <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent"></div>
              
              <div className="flex flex-row items-stretch gap-8 z-20 w-full">
               <div className="flex flex-col w-full">
-                <div className="flex items-center justify-between mb-4 px-2">
-                   <div className="flex items-center space-x-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></div>
-                      <span className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.3em]">Operational_Interface_Portal</span>
+                <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-3 px-2">
+                   <div className="flex items-center space-x-4">
+                      <div className="flex space-x-1">
+                         {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-cyan-500/40"></div>)}
+                      </div>
+                      <span className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.4em]">BRIDGE_CONTROL_INTERFACE_V5.4</span>
                    </div>
-                   <span className="text-[9px] font-mono text-slate-700 uppercase tracking-widest">{new Date().toISOString()}</span>
+                   <div className="flex items-center space-x-4">
+                      <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest bg-slate-900 px-2 py-1 rounded border border-slate-800">UPLINK: ACTIVE</span>
+                      <span className="text-[9px] font-mono text-slate-400 font-bold tracking-widest">{new Date().toISOString()}</span>
+                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
                   {VIEW_CATEGORIES.map(cat => (
-                    <div key={cat.name} className="space-y-3">
-                       <div className="flex items-center space-x-2 border-b border-slate-800/60 pb-1 mx-1">
-                          <div className="w-1 h-3 bg-slate-700 rounded-full"></div>
-                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{cat.name}</span>
+                    <div key={cat.name} className="space-y-4">
+                       <div className="flex items-center justify-between mx-1">
+                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">{cat.name}</span>
+                          <div className="w-8 h-[1px] bg-slate-800"></div>
                        </div>
-                       <div className="flex flex-wrap gap-1.5 p-1">
+                       <div className="flex flex-wrap gap-2 p-1">
                           {cat.views.map((v) => (
                             <button
                               key={v}
                               onClick={() => setView(v as MainView)}
-                              className={`px-2.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-tight transition-all duration-300 border ${
+                              className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 border-2 ${
                                 view === v 
-                                  ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(34,211,238,0.4)] scale-105 z-10' 
-                                  : 'text-slate-500 border-transparent hover:border-slate-800 hover:text-cyan-400 hover:bg-slate-900/60'
+                                  ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_25px_rgba(34,211,238,0.3)] scale-105 z-10' 
+                                  : 'text-slate-500 border-slate-900/50 hover:border-slate-700 hover:text-cyan-400 hover:bg-slate-900/80 active:scale-95'
                               }`}
                             >
-                              {v.replace('_', ' ')}
+                               {v.replace('_', ' ')}
                             </button>
                           ))}
                        </div>
@@ -289,6 +292,10 @@ export const App: React.FC = () => {
                     setIsJamming={setIsJamming} 
                     jammingPower={jammingPower} 
                     setJammingPower={setJammingPower} 
+                    isDecoyActive={isDecoyActive}
+                    setIsDecoyActive={setIsDecoyActive}
+                    isZPEActive={isZPEActive}
+                    setIsZPEActive={setIsZPEActive}
                     weather={weather} 
                     setWeather={setWeather} 
                     isStealthMode={isStealthMode}
@@ -316,6 +323,8 @@ export const App: React.FC = () => {
                     isStealthMode={isStealthMode}
                     isNeuralCleaning={isNeuralCleaning}
                     onToggleNeuralCleaning={() => setIsNeuralCleaning(!isNeuralCleaning)}
+                    isDecoyActive={isDecoyActive}
+                    isZPEActive={isZPEActive}
                   />
                 </div>
               </div>
@@ -480,24 +489,28 @@ export const App: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="mt-auto pt-8 border-t border-slate-800/30 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-black uppercase tracking-widest text-slate-600 px-4">
-             <div className="flex items-center space-x-4">
-                <span className="flex items-center space-x-2">
-                   <div className="w-2 h-2 rounded-full bg-emerald-500/50 animate-pulse"></div>
-                   <span>System_Status: Optimal</span>
-                </span>
-                <span className="text-slate-800">|</span>
-                <span>Authorized_Access_Only</span>
-             </div>
-             
-             <div className="text-center md:text-right max-w-md opacity-40 hover:opacity-100 transition-opacity cursor-help">
-                <p>This software is a technical simulation for authorized cybersecurity research and training. Unauthorized use against external networks is strictly prohibited by federal law.</p>
-             </div>
-             
+          <div className="mt-auto pt-10 border-t border-slate-800/60 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-black uppercase tracking-widest text-slate-600 px-6 bg-slate-950/20 py-8 rounded-b-3xl">
              <div className="flex items-center space-x-6">
-                <span>V5.4.2-STABLE</span>
-                <div className="flex space-x-1">
-                   {[1,2,3,4].map(i => <div key={i} className="w-1 h-3 bg-slate-800 rounded-full"></div>)}
+                <span className="flex items-center space-x-3 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 relative group overflow-hidden">
+                   <div className="absolute inset-0 bg-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)] animate-pulse"></div>
+                   <span className="text-slate-400 group-hover:text-cyan-400 transition-colors">System_Status: Optimal</span>
+                </span>
+                <span className="text-slate-800 hidden md:block">/</span>
+                <span className="text-slate-500 italic opacity-60">Verified_Operator_Access_Only</span>
+             </div>
+             
+             <div className="text-center md:text-right max-w-md opacity-30 hover:opacity-100 transition-all duration-700 cursor-help border-x border-slate-800/30 px-6 py-1">
+                <p className="leading-relaxed">This software is a technical simulation for authorized cybersecurity research and training only. Unauthorized misuse is strictly prohibited by standard federal guidelines.</p>
+             </div>
+             
+             <div className="flex items-center space-x-8">
+                <div className="flex flex-col items-end">
+                   <span className="text-[8px] text-slate-700">KERNEL_CORE_BASE</span>
+                   <span className="text-slate-400">V5.4.2-STABLE</span>
+                </div>
+                <div className="flex space-x-1.5 h-6 items-end">
+                   {[1,2,3,4,5,6].map(i => <div key={i} className={`w-1 bg-slate-800 rounded-full ${i <= 3 ? 'h-3 bg-cyan-500/40' : 'h-1.5'}`}></div>)}
                 </div>
              </div>
           </div>

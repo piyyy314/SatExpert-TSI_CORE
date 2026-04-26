@@ -55,5 +55,22 @@ export interface TroubleshootingLog {
   imageUrl?: string;
 }
 
+export interface TacticalEvent {
+  id: string;
+  timestamp: string;
+  satName: string;
+  satId: string;
+  status: SatelliteStatus | 'CRITICAL' | 'BREACH' | 'INFO' | 'STRIKE';
+  detail: string;
+}
+
+export interface BugReportEvent {
+  id: string;
+  timestamp: string;
+  team: 'RED' | 'SYSTEM' | 'NEUTRAL';
+  action: string;
+  type: string;
+}
+
 export type MainView = 'tactical' | 'constellation' | 'satellite_detail' | 'intelligence' | 'interception' | 'defense' | 'simulation' | 'media' | 'live' | 'calculations' | 'terrain' | 'news' | 'warfare' | 'neural' | 'planner' | 'traps' | 'sniffer' | 'aegis' | 'grover' | 'vsat_config' | 'specter' | 'analyzer' | 'mesh' | 'weather' | 'geolocator' | 'tactical_suite' | 'usb_manager' | 'node_scanner' | 'spoof_tracer' | 'threat_dossier' | 'yara_scanner';
-export type SecurityTab = 'overview' | 'assessment' | 'modem' | 'attack' | 'detection' | 'hardening' | 'codes' | 'scripts' | 'intel' | 'stealth' | 'quantum' | 'wargames';
+export type SecurityTab = 'overview' | 'assessment' | 'modem' | 'attack' | 'detection' | 'hardening' | 'codes' | 'scripts' | 'intel' | 'stealth' | 'quantum' | 'wargames' | 'dns';

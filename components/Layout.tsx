@@ -33,9 +33,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
   };
 
   return (
-    <div className={`min-h-screen flex flex-col selection:bg-cyan-500/30 transition-colors duration-1000 ${isStealthMode ? 'stealth-active' : ''}`}>
-      <header className={`border-b border-slate-800/50 bg-slate-950/50 backdrop-blur-xl sticky top-0 z-[60] transition-all duration-1000 ${isStealthMode ? 'bg-purple-950/20 border-purple-900/40 shadow-[0_4px_30px_rgba(168,85,247,0.1)]' : ''}`}>
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <div className={`min-h-screen flex flex-col selection:bg-cyan-500/30 transition-colors duration-1000 ${isStealthMode ? 'stealth-active' : ''} relative`}>
+      {/* Tactical Background Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+      </div>
+      <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.02] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
+      
+      <header className={`border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-2xl sticky top-0 z-[60] transition-all duration-1000 ${isStealthMode ? 'bg-purple-950/40 border-purple-900/60 shadow-[0_4px_30px_rgba(168,85,247,0.15)]' : 'shadow-[0_8px_32px_rgba(0,0,0,0.4)]'}`}>
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+          </div>
           <div className="flex items-center space-x-5 group cursor-pointer">
             <div className={`w-12 h-12 bg-slate-900 border rounded-2xl flex items-center justify-center shadow-lg transition-all duration-700 ${isStealthMode ? 'border-purple-500 shadow-purple-500/20 bg-purple-950/40' : 'border-cyan-500/30 shadow-cyan-500/10 group-hover:border-cyan-500'}`}>
               <svg className={`w-7 h-7 transition-colors duration-700 ${isStealthMode ? 'text-purple-400' : 'text-cyan-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,12 +94,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
               </div>
             )}
 
-            <div className="hidden lg:flex flex-col items-end border-l border-slate-800 pl-6">
-               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Auth_Level</span>
-               <span className={`text-[10px] mono font-black ${isStealthMode ? 'text-purple-400' : 'text-cyan-500'}`}>S-TIER_OPERATOR</span>
+            <div className="hidden lg:flex flex-col items-end border-l-2 border-slate-900 pl-6">
+               <span className="text-[10px] text-slate-700 font-black uppercase tracking-widest italic">Auth_Level</span>
+               <span className={`text-[11px] mono font-black italic tracking-tighter ${isStealthMode ? 'text-purple-400' : 'text-red-500'}`}>S-TIER_OPERATOR</span>
             </div>
             
-            <span className="text-[10px] bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-slate-400 mono font-bold shadow-inner">v5.1.0</span>
+            <span className="text-[11px] bg-black border-2 border-slate-900 px-5 py-2.5 rounded-2xl text-slate-500 mono font-black shadow-inner italic">v5.4.1_STABLE</span>
           </div>
         </div>
       </header>

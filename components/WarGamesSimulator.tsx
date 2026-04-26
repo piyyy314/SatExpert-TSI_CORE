@@ -157,47 +157,54 @@ STIA_CMD: END_LOG
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-700">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in slide-in-from-bottom-6 duration-1000">
             {/* Control & Status */}
-            <div className="lg:col-span-1 space-y-6">
-                <div className="glass p-6 rounded-2xl border border-slate-800">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4">Simulation Control</h3>
+            <div className="lg:col-span-1 space-y-8">
+                <div className="glass p-8 rounded-[2.5rem] border-2 border-slate-800 bg-slate-950/60 shadow-[0_32px_64px_rgba(0,0,0,0.6)] relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+                       <svg className="w-40 h-40 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </div>
+                    <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-white mb-8 italic border-b-2 border-slate-900 pb-4">Simulation_Control</h3>
                     {simState === 'IDLE' && (
-                        <div className="space-y-4">
-                             <label className="block text-[9px] font-bold text-slate-500 uppercase">Red Team Objective</label>
-                             <select value={objective} onChange={e => setObjective(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white mono outline-none focus:border-cyan-500 cursor-pointer">
-                                {OBJECTIVE_PRESETS.map(op => <option key={op} value={op}>{op}</option>)}
-                             </select>
-                            <button onClick={startSimulation} className="w-full bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold py-3 rounded-xl uppercase tracking-widest text-xs">
-                                Initiate Simulation
+                        <div className="space-y-6 relative z-10">
+                             <div className="space-y-3">
+                               <label className="block text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic">Red_Team_Objective</label>
+                               <select value={objective} onChange={e => setObjective(e.target.value)} className="w-full bg-[#050810] border-2 border-slate-900 rounded-2xl p-4 text-[12px] text-white font-black italic tracking-tighter mono outline-none focus:border-red-500/50 cursor-pointer shadow-inner">
+                                  {OBJECTIVE_PRESETS.map(op => <option key={op} value={op}>{op}</option>)}
+                               </select>
+                             </div>
+                            <button onClick={startSimulation} className="w-full bg-red-600 hover:bg-white text-slate-950 hover:text-red-600 font-black py-5 rounded-[2rem] border-2 border-transparent hover:border-white uppercase tracking-[0.3em] text-[11px] italic transition-all duration-300 shadow-2xl active:scale-95 group/btn overflow-hidden relative">
+                                <div className="absolute inset-0 bg-white/10 translate-y-full hover:translate-y-0 transition-transform" />
+                                <span className="relative z-10">Initiate_Simulation</span>
                             </button>
                         </div>
                     )}
                     {simState !== 'IDLE' && (
-                         <div className="space-y-4">
-                            <div className="text-center">
-                                <p className="text-[9px] font-bold text-slate-500 uppercase">Status</p>
-                                <p className={`text-lg font-bold mono ${simState === 'RUNNING' ? 'text-green-400 animate-pulse' : 'text-slate-400'}`}>{simState}</p>
+                         <div className="space-y-6 relative z-10">
+                            <div className="text-center p-8 bg-black rounded-[2rem] border-2 border-slate-900 shadow-inner group/status">
+                                <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] italic mb-2 group-hover:text-red-500 transition-colors">Current_State</p>
+                                <p className={`text-3xl font-black italic tracking-tighter mono ${simState === 'RUNNING' ? 'text-red-500 animate-pulse' : 'text-slate-400'}`}>{simState}</p>
                             </div>
-                            <button onClick={handleReset} className="w-full bg-red-900/40 hover:bg-red-900/60 border border-red-500/30 text-red-400 font-bold py-3 rounded-xl uppercase tracking-widest text-xs">
-                                Terminate & Reset
+                            <button onClick={handleReset} className="w-full bg-slate-900 hover:bg-red-600 border-2 border-slate-800 hover:border-white text-slate-500 hover:text-white font-black py-5 rounded-[2rem] uppercase tracking-[0.3em] text-[11px] italic transition-all duration-300 shadow-xl active:scale-95">
+                                Terminate_&_Reset
                             </button>
                         </div>
                     )}
                 </div>
-                <div className="glass p-6 rounded-2xl border border-slate-800">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4">Link Status: <span className="text-cyan-400">{satName}</span></h3>
-                    <div className="space-y-4">
-                        <div>
-                            <div className="flex justify-between text-[9px] font-bold mono text-slate-500 mb-1"><span>Link Integrity</span><span>{linkIntegrity.toFixed(1)}%</span></div>
-                            <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden shadow-inner">
-                                <div className={`h-full transition-all duration-500 ${linkIntegrity < 30 ? 'bg-red-600' : linkIntegrity < 60 ? 'bg-amber-500' : 'bg-cyan-600'}`} style={{ width: `${linkIntegrity}%` }}></div>
+
+                <div className="glass p-8 rounded-[2.5rem] border-2 border-slate-800 bg-slate-950/60 shadow-[0_32px_64px_rgba(0,0,0,0.6)] group">
+                    <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-white mb-8 italic border-b-2 border-slate-900 pb-4">Link_Status: <span className="text-red-500">{satName}</span></h3>
+                    <div className="space-y-8">
+                        <div className="group/integrity">
+                            <div className="flex justify-between text-[11px] font-black italic mono text-slate-600 mb-3 uppercase tracking-widest group-hover:text-slate-400 transition-colors"><span>Link_Integrity</span><span>{linkIntegrity.toFixed(1)}%</span></div>
+                            <div className="w-full h-4 bg-black rounded-full overflow-hidden border-2 border-slate-900 shadow-inner p-0.5">
+                                <div className={`h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(239,68,68,0.3)] ${linkIntegrity < 30 ? 'bg-red-600' : linkIntegrity < 60 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${linkIntegrity}%` }}></div>
                             </div>
                         </div>
-                         <div>
-                            <div className="flex justify-between text-[9px] font-bold mono text-slate-500 mb-1"><span>Threat Level</span><span className={getThreatColor(threatLevel)}>{threatLevel}</span></div>
-                            <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden shadow-inner flex">
-                                <div className={`h-full transition-all duration-500 ${(getThreatColor(threatLevel) || '').replace('text-','bg-')}`} style={{ width: `${threatLevel === 'LOW' ? 25 : threatLevel === 'ELEVATED' ? 50 : threatLevel === 'HIGH' ? 75 : 100}%` }}></div>
+                         <div className="group/threat">
+                            <div className="flex justify-between text-[11px] font-black italic mono text-slate-600 mb-3 uppercase tracking-widest group-hover:text-slate-400 transition-colors"><span>Threat_Level</span><span className={getThreatColor(threatLevel)}>{threatLevel}</span></div>
+                            <div className="w-full h-4 bg-black rounded-full overflow-hidden border-2 border-slate-900 shadow-inner p-0.5 flex">
+                                <div className={`h-full rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(239,68,68,0.3)] ${(getThreatColor(threatLevel) || '').replace('text-','bg-')}`} style={{ width: `${threatLevel === 'LOW' ? 25 : threatLevel === 'ELEVATED' ? 50 : threatLevel === 'HIGH' ? 75 : 100}%` }}></div>
                             </div>
                         </div>
                     </div>
@@ -205,52 +212,56 @@ STIA_CMD: END_LOG
             </div>
             
             {/* Main Feed / Report */}
-            <div className="lg:col-span-2 glass p-4 rounded-2xl border border-slate-800 flex flex-col min-h-[500px]">
-                <div className="flex items-center justify-between mb-3 px-2">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                        {simState !== 'COMPLETE' ? 'Live Combat Feed' : 'Post-Action Report'}
+            <div className="lg:col-span-2 glass p-8 rounded-[3rem] border-2 border-slate-800 bg-slate-950/60 shadow-[0_32px_64px_rgba(0,0,0,0.8)] flex flex-col min-h-[600px] relative overflow-hidden group/feed">
+                <div className="absolute top-0 left-0 w-1/2 h-1 bg-gradient-to-r from-red-600/30 to-transparent" />
+                <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-slate-900">
+                    <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-slate-500 italic">
+                        {simState !== 'COMPLETE' ? 'Live_Combat_Feed' : 'Post-Action_Report'}
                     </h3>
                     {eventLog.length > 0 && (
                       <button 
                         onClick={exportCombatLog}
-                        className="flex items-center space-x-2 text-[9px] font-black text-cyan-500 uppercase tracking-widest hover:text-white transition-colors"
+                        className="group flex items-center space-x-3 px-5 py-2.5 bg-slate-900 hover:bg-white text-slate-500 hover:text-red-600 border-2 border-slate-800 hover:border-white rounded-2xl transition-all shadow-xl active:scale-95"
                       >
-                        <Download className="w-3 h-3" />
-                        <span>Download_Log</span>
+                        <Download className="w-4 h-4" />
+                        <span className="text-[10px] font-black uppercase tracking-widest italic">Transfer_Log</span>
                       </button>
                     )}
                 </div>
                 {simState !== 'COMPLETE' ? (
-                  <div ref={logRef} className="flex-grow overflow-y-auto h-96 scrollbar-hide bg-slate-950/50 rounded-lg p-3 space-y-3">
+                  <div ref={logRef} className="flex-grow overflow-y-auto h-[500px] scrollbar-hide bg-black/60 rounded-[2.5rem] p-8 space-y-5 border-2 border-slate-900 shadow-inner relative">
                         {eventLog.map(log => (
-                            <div key={log.id} className="text-[10px] mono">
-                               <div className={`flex items-start space-x-2 p-2 rounded-lg ${log.team === 'SYSTEM' ? '' : 'bg-slate-900/50'}`}>
-                                  <span className="text-slate-600 shrink-0">[{log.timestamp}]</span>
+                            <div key={log.id} className="text-[13px] font-black italic mono uppercase tracking-tighter animate-in fade-in slide-in-from-left-4 duration-500">
+                               <div className={`flex items-start space-x-4 p-4 rounded-2xl border-2 transition-all ${log.team === 'SYSTEM' ? 'border-transparent' : 'bg-slate-950/80 border-slate-900 hover:border-slate-800'}`}>
+                                  <span className="text-slate-700 shrink-0 select-none">[{log.timestamp}]</span>
                                   <div className="flex-grow">
-                                    <span className={`font-bold ${log.team === 'RED' ? 'text-red-500' : log.team === 'BLUE' ? 'text-cyan-400' : 'text-slate-500'}`}>
+                                    <span className={`font-black ${log.team === 'RED' ? 'text-red-500' : log.team === 'BLUE' ? 'text-cyan-400' : 'text-slate-600'}`}>
                                        {log.team}:
                                     </span>
-                                    <span className="text-slate-300 ml-1">{log.action}</span>
-                                    {log.rationale && <p className="text-[9px] text-slate-500 italic mt-1 pl-4 border-l border-slate-800">
+                                    <span className="text-slate-400 ml-2 leading-relaxed">{log.action}</span>
+                                    {log.rationale && <p className="text-[11px] text-slate-600 italic mt-3 pl-5 border-l-4 border-slate-900 uppercase">
                                         Rationale: {log.rationale}
                                     </p>}
                                   </div>
                                </div>
                             </div>
                         ))}
-                         {isLoading && simState === 'RUNNING' && <div className="text-cyan-500 text-[10px] mono animate-pulse">ORCHESTRATOR IS THINKING...</div>}
+                        {isLoading && simState === 'RUNNING' && <div className="text-red-500 text-[11px] font-black italic mono animate-pulse uppercase tracking-[0.4em] p-4 bg-red-600/10 border-2 border-red-500/20 rounded-2xl">Orchestrator_Computing_Next_Vector...</div>}
                     </div>
                 ) : (
                   <div className="flex flex-col flex-grow">
-                    <div className="flex-grow overflow-y-auto scrollbar-hide bg-slate-950/50 rounded-lg p-4">
+                    <div className="flex-grow overflow-y-auto scrollbar-hide bg-black/60 rounded-[2.5rem] p-8 border-2 border-slate-900 shadow-inner">
                         {isLoading ? (
-                            <div className="text-cyan-500 text-[10px] mono animate-pulse">GENERATING REPORT...</div>
+                            <div className="text-red-500 text-[11px] font-black italic mono animate-pulse uppercase tracking-[0.4em]">Compiling_Intelligence_Report...</div>
                         ) : (
-                           <pre className="text-xs text-slate-300 mono whitespace-pre-wrap leading-relaxed">{postActionReport}</pre>
+                           <div className="markdown-body">
+                             <pre className="text-[13px] text-slate-300 font-black italic mono tracking-tighter leading-relaxed whitespace-pre-wrap uppercase">{postActionReport}</pre>
+                           </div>
                         )}
                     </div>
                   </div>
                 )}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-1/4 h-1 bg-gradient-to-r from-transparent via-slate-900 to-transparent" />
             </div>
         </div>
     );
