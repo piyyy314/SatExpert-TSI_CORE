@@ -1,0 +1,12 @@
+{
+  "name": "Remix: SatExpert Tactical SatCom Intelligence (TSI)",
+  "description": "A comprehensive professional toolkit for VSAT engineers, featuring real-time look-angle calculations, link budget estimations, and an AI-powered tactical intelligence agent.",
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone",
+    "camera",
+    "usb"
+  ],
+  "y7": [],
+  "Yp": []
+}
