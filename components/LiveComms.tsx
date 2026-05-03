@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 
-export const LiveComms: React.FC<{ isStealthMode: boolean }> = ({ isStealthMode }) => {
+export const LiveComms: React.FC<{ isStealthMode: boolean; addMissionLog?: (detail: string, status?: any) => void }> = ({ isStealthMode, addMissionLog }) => {
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transcriptions, setTranscriptions] = useState<{role: string, text: string}[]>([]);
@@ -44,7 +44,7 @@ export const LiveComms: React.FC<{ isStealthMode: boolean }> = ({ isStealthMode 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        model: 'gemini-3.1-flash-live-preview',
         callbacks: {
           onopen: () => {
             setIsActive(true);
@@ -57,7 +57,7 @@ export const LiveComms: React.FC<{ isStealthMode: boolean }> = ({ isStealthMode 
               const int16 = new Int16Array(input.length);
               for (let i = 0; i < input.length; i++) int16[i] = input[i] * 32768;
               const base64 = btoa(String.fromCharCode(...new Uint8Array(int16.buffer)));
-              sessionPromise.then(s => s.sendRealtimeInput({ media: { data: base64, mimeType: 'audio/pcm;rate=16000' } }));
+              sessionPromise.then(s => s.sendRealtimeInput({ audio: { data: base64, mimeType: 'audio/pcm;rate=16000' } }));
             };
             source.connect(scriptProcessor);
             scriptProcessor.connect(inputCtx.destination);
@@ -82,8 +82,17 @@ export const LiveComms: React.FC<{ isStealthMode: boolean }> = ({ isStealthMode 
                setTranscriptions(prev => [...prev, {role: 'USER', text: msg.serverContent!.inputTranscription!.text}]);
             }
           },
-          onclose: () => setIsActive(false),
-          onerror: (e) => console.error("LIVE_ERROR", e)
+          onclose: () => {
+             setIsActive(false);
+             if (addMissionLog) addMissionLog("[COMMS_CLOSED] Satellite out of range.", 'info');
+          },
+          onerror: (e: any) => {
+             console.error("LIVE_ERROR", e);
+             setError(`COMMS_INTERFERENCE: ${e.message || 'Unknown protocol error'}`);
+             if (e.message?.includes("PERMISSION_DENIED")) {
+                (window as any).aistudio?.openSelectKey();
+             }
+          }
         },
         config: {
           responseModalities: [Modality.AUDIO],

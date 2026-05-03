@@ -21,7 +21,30 @@ export const IPGeolocator: React.FC = () => {
   const [intel, setIntel] = useState<IPIntel | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState('');
+  const [activeTab, setActiveTab] = useState<'RECON' | 'DNS'>('RECON');
+  const [domain, setDomain] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const resolveDNS = async () => {
+    if (!domain) return;
+    setIsScanning(true);
+    setScanStatus('Intercepting DNS signal flow...');
+    try {
+      const resp = await fetch(`https://dns.google/resolve?name=${domain}&type=A`);
+      const data = await resp.json();
+      if (data.Answer && data.Answer[0]) {
+        const ip = data.Answer[0].data;
+        setTargetIp(ip);
+        setScanStatus(`SIGNAL_RESOLVED: ${domain} -> ${ip}`);
+        setActiveTab('RECON');
+      } else {
+        setScanStatus('ERROR: Domain signal lost or non-existent.');
+      }
+    } catch (err) {
+      setScanStatus('ERROR: DNS_INTERCEPT_FAILURE.');
+    }
+    setIsScanning(false);
+  };
 
   const startRecon = async () => {
     if (isScanning) return;
@@ -149,34 +172,75 @@ STIA_CMD: END_REPORT
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-4 space-y-6">
            <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">
-              <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Target Parameters</h3>
-              <div className="space-y-4">
-                 <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Remote_IP_Address</label>
-                    <div className="relative">
-                       <input 
-                         type="text"
-                         value={targetIp}
-                         onChange={e => setTargetIp(e.target.value)}
-                         className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs text-white mono outline-none focus:border-cyan-500"
-                         placeholder="e.g. 8.8.8.8"
-                       />
-                       <Globe className="absolute right-4 top-4 w-4 h-4 text-slate-600" />
-                    </div>
-                 </div>
-                 <button 
-                   onClick={startRecon}
-                   disabled={isScanning}
-                   className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg flex items-center justify-center space-x-2 ${
-                     isScanning 
-                     ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
-                     : 'bg-cyan-600 hover:bg-cyan-500 text-slate-950 shadow-cyan-600/20'
-                   }`}
-                 >
-                   <Crosshair className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
-                   <span>{isScanning ? 'Scanning...' : 'Execute_Recon'}</span>
-                 </button>
+              <div className="flex bg-slate-900/50 p-1 rounded-xl mb-6 border border-slate-800">
+                 {(['RECON', 'DNS'] as const).map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-cyan-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                       {tab === 'RECON' ? 'IP_Trace' : 'DNS_Intercept'}
+                    </button>
+                 ))}
               </div>
+
+              {activeTab === 'RECON' ? (
+                 <div className="space-y-4 animate-in fade-in slide-in-from-left-4">
+                    <div className="space-y-2">
+                       <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Remote_IP_Address</label>
+                       <div className="relative">
+                          <input 
+                            type="text"
+                            value={targetIp}
+                            onChange={e => setTargetIp(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs text-white mono outline-none focus:border-cyan-500"
+                            placeholder="e.g. 8.8.8.8"
+                          />
+                          <Globe className="absolute right-4 top-4 w-4 h-4 text-slate-600" />
+                       </div>
+                    </div>
+                    <button 
+                      onClick={startRecon}
+                      disabled={isScanning}
+                      className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg flex items-center justify-center space-x-2 ${
+                        isScanning 
+                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
+                        : 'bg-cyan-600 hover:bg-cyan-500 text-slate-950 shadow-cyan-600/20'
+                      }`}
+                    >
+                      <Crosshair className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
+                      <span>{isScanning ? 'Scanning...' : 'Execute_Recon'}</span>
+                    </button>
+                 </div>
+              ) : (
+                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-2">
+                       <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Terminal_Domain_URL</label>
+                       <div className="relative">
+                          <input 
+                            type="text"
+                            value={domain}
+                            onChange={e => setDomain(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs text-white mono outline-none focus:border-cyan-500"
+                            placeholder="e.g. target.com"
+                          />
+                          <Terminal className="absolute right-4 top-4 w-4 h-4 text-slate-600" />
+                       </div>
+                    </div>
+                    <button 
+                      onClick={resolveDNS}
+                      disabled={isScanning}
+                      className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg flex items-center justify-center space-x-2 ${
+                        isScanning 
+                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
+                        : 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/20'
+                      }`}
+                    >
+                      <Radar className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
+                      <span>{isScanning ? 'Resolving...' : 'Resolve_Signal_Identity'}</span>
+                    </button>
+                 </div>
+              )}
            </div>
 
            <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">

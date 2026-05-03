@@ -83,7 +83,7 @@ export const MediaForge: React.FC = () => {
         </div>
       )}
 
-      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 ${!hasKey ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 ${(!hasKey && (mode === 'VIDEO_GEN' || mode === 'IMAGE_EDIT')) ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
         <div className="lg:col-span-4 space-y-6">
            <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">
               <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Forge Parameters</h3>
@@ -106,7 +106,10 @@ export const MediaForge: React.FC = () => {
                     <div className="space-y-2">
                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Aspect_Ratio</label>
                        <select value={aspectRatio} onChange={e => setAspectRatio(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white mono outline-none focus:border-purple-500 cursor-pointer">
-                          {['1:1', '2:3', '3:2', '3:4', '4:3', '9:16', '16:9', '21:9'].map(r => <option key={r} value={r}>{r}</option>)}
+                          {mode === 'VIDEO_GEN' 
+                            ? ['16:9', '9:16'].map(r => <option key={r} value={r}>{r}</option>)
+                            : ['1:1', '3:4', '4:3', '9:16', '16:9'].map(r => <option key={r} value={r}>{r}</option>)
+                          }
                        </select>
                     </div>
                  )}
@@ -114,10 +117,21 @@ export const MediaForge: React.FC = () => {
                  {mode === 'IMAGE_GEN' && (
                     <div className="space-y-2">
                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Quality_Index</label>
-                       <div className="grid grid-cols-3 gap-2">
-                         {['1K', '2K', '4K'].map(s => (
-                           <button key={s} onClick={() => setImageSize(s)} className={`py-2 rounded-lg text-[9px] font-black border transition-all ${imageSize === s ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>{s}</button>
-                         ))}
+                       <div className="grid grid-cols-2 gap-2">
+                          {['512px', '1K'].map(s => (
+                            <button key={s} onClick={() => setImageSize(s)} className={`py-2 rounded-lg text-[9px] font-black border transition-all ${imageSize === s ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>{s}</button>
+                          ))}
+                       </div>
+                    </div>
+                 )}
+
+                 {mode === 'VIDEO_GEN' && (
+                    <div className="space-y-2">
+                       <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-1">Resolution</label>
+                       <div className="grid grid-cols-2 gap-2">
+                          {['720p', '1080p'].map(s => (
+                            <button key={s} onClick={() => setImageSize(s)} className={`py-2 rounded-lg text-[9px] font-black border transition-all ${imageSize === s ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>{s}</button>
+                          ))}
                        </div>
                     </div>
                  )}

@@ -22,7 +22,7 @@ export const getTroubleshootingAdvice = async (
   options: { thinking?: boolean, useSearch?: boolean, useMaps?: boolean, mediaData?: { data: string, mimeType: string }[] } = {}
 ) => {
   const ai = getAiInstance();
-  const modelId = options.thinking ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
+  const modelId = options.thinking ? 'gemini-3.1-pro-preview' : 'gemini-3-flash-preview';
   
   const systemInstruction = `
     You are the 'SatExpert Tactical Intelligence Agent' (STIA).
@@ -80,11 +80,27 @@ export const getTroubleshootingAdvice = async (
       };
     }
 
-    let response = await ai.models.generateContent({
-      model: modelId,
-      contents,
-      config,
-    });
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model: modelId,
+        contents,
+        config,
+      });
+    } catch (toolError: any) {
+      // Fallback: If tools (like googleSearch) cause 403, retry without tools
+      if (toolError.message?.includes("PERMISSION_DENIED") && (options.useSearch || options.useMaps)) {
+        console.warn("RETRYING_WITHOUT_TOOLS: Tool permission denied.");
+        const fallbackConfig = { ...config, tools: undefined, toolConfig: undefined };
+        response = await ai.models.generateContent({
+          model: modelId,
+          contents,
+          config: fallbackConfig,
+        });
+      } else {
+        throw toolError;
+      }
+    }
 
     const functionCalls = response.functionCalls;
     if (functionCalls && functionCalls.length > 0) {
@@ -119,7 +135,11 @@ export const getTroubleshootingAdvice = async (
     if (error.message?.includes("Requested entity was not found")) {
       return { error: "KEY_AUTH_FAILURE", text: "STIA_HALT: Advanced API Key required for this operation." };
     }
-    return { text: "SYSTEM_HALT: INTEL_UPLINK_FAILURE. CHECK_ENCRYPTION_LAYER." };
+    // Return the actual error message for better debugging
+    return { 
+      error: "GENERAL_API_ERROR", 
+      text: `SYSTEM_HALT: INTEL_UPLINK_FAILURE. REASON: ${error.message || 'UNKNOWN_ERROR'}` 
+    };
   }
 };
 
@@ -127,7 +147,7 @@ export const generateTacticalImage = async (prompt: string, aspectRatio: string 
   const ai = getAiInstance();
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-image-preview',
+      model: 'gemini-2.5-flash-image',
       contents: { parts: [{ text: `High-fidelity tactical satellite visualization: ${prompt}. Professional technical military style.` }] },
       config: {
         imageConfig: {
@@ -145,7 +165,9 @@ export const generateTacticalImage = async (prompt: string, aspectRatio: string 
     return null;
   } catch (err: any) {
     console.error("IMAGE_GEN_ERROR", err);
-    if (err.message?.includes("Requested entity was not found")) throw new Error("KEY_AUTH_FAILURE");
+    if (err.message?.includes("PERMISSION_DENIED") || err.message?.includes("Requested entity was not found")) {
+      throw new Error("KEY_AUTH_FAILURE");
+    }
     return null;
   }
 };
@@ -169,8 +191,11 @@ export const editTacticalImage = async (base64Image: string, prompt: string) => 
       }
     }
     return null;
-  } catch (err) {
+  } catch (err: any) {
     console.error("IMAGE_EDIT_ERROR", err);
+    if (err.message?.includes("PERMISSION_DENIED") || err.message?.includes("Requested entity was not found")) {
+      throw new Error("KEY_AUTH_FAILURE");
+    }
     return null;
   }
 };
@@ -179,7 +204,7 @@ export const generateTacticalVideo = async (prompt: string, orientation: '16:9' 
   const ai = getAiInstance();
   try {
     let operation = await ai.models.generateVideos({
-      model: 'veo-3.1-fast-generate-preview',
+      model: 'veo-3.1-lite-generate-preview',
       prompt: `Cinematic tactical satellite mission sequence: ${prompt}`,
       image: startImage ? {
         imageBytes: startImage.split(',')[1],
@@ -187,7 +212,7 @@ export const generateTacticalVideo = async (prompt: string, orientation: '16:9' 
       } : undefined,
       config: {
         numberOfVideos: 1,
-        resolution: '720p',
+        resolution: '1080p',
         aspectRatio: orientation
       }
     });
@@ -203,7 +228,9 @@ export const generateTacticalVideo = async (prompt: string, orientation: '16:9' 
     return URL.createObjectURL(blob);
   } catch (err: any) {
     console.error("VIDEO_GEN_ERROR", err);
-    if (err.message?.includes("Requested entity was not found")) throw new Error("KEY_AUTH_FAILURE");
+    if (err.message?.includes("PERMISSION_DENIED") || err.message?.includes("Requested entity was not found")) {
+      throw new Error("KEY_AUTH_FAILURE");
+    }
     return null;
   }
 };
@@ -262,7 +289,7 @@ export const generateWarGamesReport = async (history: any[], objective: string) 
   const ai = getAiInstance();
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: [{ role: 'user', parts: [{ text: `Final Combat Log: ${JSON.stringify(history)}` }] }],
       config: {
         systemInstruction: "Generate a professional Post-Action Report (AAR) for this SatCom cyber engagement simulation.",

@@ -41,6 +41,13 @@ import { NodeScanner } from './components/NodeScanner.tsx';
 import { SpoofTracer } from './components/SpoofTracer.tsx';
 import { ThreatDossier } from './components/ThreatDossier.tsx';
 import { YARAScanner } from './components/YARAScanner.tsx';
+import { OrbitalStriker } from './components/OrbitalStriker.tsx';
+import { DroneSwarmCommand } from './components/DroneSwarmCommand.tsx';
+import { CyberKillChain } from './components/CyberKillChain.tsx';
+import { CyberAttackSuite } from './components/CyberAttackSuite.tsx';
+import { SignalJammer } from './components/SignalJammer.tsx';
+import { BotnetCommand } from './components/BotnetCommand.tsx';
+import { RadioInterceptSuite } from './components/RadioInterceptSuite.tsx';
 import { audioController } from './services/audioService.ts';
 import { Coordinates, Satellite, LookAngles, WeatherCondition, MainView, SatelliteStatus, TacticalEvent } from './types.ts';
 import { COMMON_SATELLITES } from './constants.ts';
@@ -71,6 +78,7 @@ export const App: React.FC = () => {
   const [hasNewLogs, setHasNewLogs] = useState(false);
 
   const isFirstMount = useRef(true);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
 
   const addMissionLog = useCallback((detail: string, status: TacticalEvent['status'] = 'active') => {
     const newEvent: TacticalEvent = {
@@ -128,6 +136,10 @@ export const App: React.FC = () => {
   }, [weather, isJamming, jammingPower, defcon, isStealthMode, isNeuralCleaning]);
 
   useEffect(() => {
+    if (!process.env.GEMINI_API_KEY) {
+      setApiKeyError("CRITICAL: GEMINI_API_KEY is not defined in environment.");
+    }
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
@@ -185,14 +197,19 @@ export const App: React.FC = () => {
 
   const VIEW_CATEGORIES = [
     { name: 'TACTICAL_BASE', views: ['tactical', 'constellation', 'satellite_detail', 'mesh', 'weather', 'geolocator'] },
-    { name: 'SIGINT_SUITE', views: ['intelligence', 'interception', 'node_scanner', 'spoof_tracer', 'threat_dossier', 'yara_scanner', 'sniffer', 'analyzer', 'specter', 'traps'] },
-    { name: 'ACTIVE_OPS', views: ['tactical_suite', 'warfare', 'planner', 'neural'] },
+    { name: 'SIGINT_SUITE', views: ['intelligence', 'interception', 'node_scanner', 'spoof_tracer', 'threat_dossier', 'yara_scanner', 'sniffer', 'analyzer', 'specter', 'traps', 'radio_intercept'] },
+    { name: 'ACTIVE_OPS', views: ['tactical_suite', 'warfare', 'planner', 'neural', 'orbital_strike', 'drone_swarm', 'kill_chain', 'cyber_attack', 'signal_jamming', 'botnet_command'] },
     { name: 'CYBER_CMD', views: ['defense', 'simulation', 'aegis', 'usb_manager', 'vsat_config', 'grover'] },
     { name: 'AUX_DATA', views: ['media', 'live', 'calculations', 'terrain', 'news'] }
   ];
 
   return (
     <div className={`crt-screen min-h-screen ${(!isStealthMode && (isJamming || defcon === 1)) ? 'crt-distorted' : ''}`}>
+      {apiKeyError && (
+        <div className="bg-red-600 text-white py-2 px-4 text-center font-black text-[10px] tracking-[0.5em] uppercase animate-pulse z-[9999] relative">
+          [VOICE_UPLINK_FAILURE] {apiKeyError}
+        </div>
+      )}
       <Layout isStealthMode={isStealthMode} setIsStealthMode={setIsStealthMode}>
         <div className="flex flex-col space-y-8 max-w-7xl mx-auto pb-12 transition-all duration-1000">
           
@@ -428,7 +445,7 @@ export const App: React.FC = () => {
             )}
 
             {view === 'media' && <MediaForge />}
-            {view === 'live' && <LiveComms isStealthMode={isStealthMode} />}
+            {view === 'live' && <LiveComms isStealthMode={isStealthMode} addMissionLog={addMissionLog} />}
 
             {view === 'geolocator' && (
               <IPGeolocator />
@@ -456,6 +473,34 @@ export const App: React.FC = () => {
 
             {view === 'yara_scanner' && (
               <YARAScanner />
+            )}
+
+            {view === 'orbital_strike' && (
+              <OrbitalStriker addMissionLog={addMissionLog} />
+            )}
+
+            {view === 'drone_swarm' && (
+              <DroneSwarmCommand addMissionLog={addMissionLog} />
+            )}
+
+            {view === 'kill_chain' && (
+              <CyberKillChain addMissionLog={addMissionLog} />
+            )}
+
+            {view === 'cyber_attack' && (
+              <CyberAttackSuite addMissionLog={addMissionLog} />
+            )}
+
+            {view === 'signal_jamming' && (
+              <SignalJammer addMissionLog={addMissionLog} />
+            )}
+
+            {view === 'botnet_command' && (
+              <BotnetCommand addMissionLog={addMissionLog} />
+            )}
+
+            {view === 'radio_intercept' && (
+              <RadioInterceptSuite addMissionLog={addMissionLog} />
             )}
 
             {view === 'defense' && (

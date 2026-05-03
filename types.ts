@@ -72,5 +72,5 @@ export interface BugReportEvent {
   type: string;
 }
 
-export type MainView = 'tactical' | 'constellation' | 'satellite_detail' | 'intelligence' | 'interception' | 'defense' | 'simulation' | 'media' | 'live' | 'calculations' | 'terrain' | 'news' | 'warfare' | 'neural' | 'planner' | 'traps' | 'sniffer' | 'aegis' | 'grover' | 'vsat_config' | 'specter' | 'analyzer' | 'mesh' | 'weather' | 'geolocator' | 'tactical_suite' | 'usb_manager' | 'node_scanner' | 'spoof_tracer' | 'threat_dossier' | 'yara_scanner';
+export type MainView = 'tactical' | 'constellation' | 'satellite_detail' | 'intelligence' | 'interception' | 'defense' | 'simulation' | 'media' | 'live' | 'calculations' | 'terrain' | 'news' | 'warfare' | 'neural' | 'planner' | 'traps' | 'sniffer' | 'aegis' | 'grover' | 'vsat_config' | 'specter' | 'analyzer' | 'mesh' | 'weather' | 'geolocator' | 'tactical_suite' | 'usb_manager' | 'node_scanner' | 'spoof_tracer' | 'threat_dossier' | 'yara_scanner' | 'orbital_strike' | 'drone_swarm' | 'kill_chain' | 'cyber_attack' | 'signal_jamming' | 'botnet_command' | 'radio_intercept';
 export type SecurityTab = 'overview' | 'assessment' | 'modem' | 'attack' | 'detection' | 'hardening' | 'codes' | 'scripts' | 'intel' | 'stealth' | 'quantum' | 'wargames' | 'dns';
