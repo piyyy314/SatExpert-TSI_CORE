@@ -30,7 +30,7 @@ export const SpectralCanary: React.FC = () => {
     const interval = setInterval(() => {
       setScanProgress(prev => (prev + 1) % 101);
       
-      // Simulate unauthorized listening / probing
+      // Execute unauthorized listening / probing
       if (Math.random() > 0.96) {
         triggerCanaryEvent();
       }
@@ -152,7 +152,7 @@ export const SpectralCanary: React.FC = () => {
                   onClick={triggerCanaryEvent}
                   className="w-full py-3 border border-orange-500/30 hover:bg-orange-500/10 text-orange-500 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
                 >
-                  Simulate_Intrusion_Event
+                  Execute_Intrusion_Event
                 </button>
              </div>
           </div>

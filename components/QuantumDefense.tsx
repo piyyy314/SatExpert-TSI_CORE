@@ -107,7 +107,7 @@ export const QuantumDefense: React.FC<Props> = ({ isStealthMode, addMissionLog }
     };
 
     const handleQkdSync = (forceBreach = false) => {
-        if (effectiveQkdStatus === 'SYNCING' || isStealthMode) return;
+        if (qkdStatus === 'SYNCING') return;
         
         breachTriggeredRef.current = false;
         setQkdStatus('SYNCING');
@@ -152,6 +152,24 @@ export const QuantumDefense: React.FC<Props> = ({ isStealthMode, addMissionLog }
         playSystemVoice(`Aether resonance ${newSaturation > 0.8 ? 'overdriven' : 'stabilized'}.`);
     };
 
+    const handleExportLog = () => {
+        const logData = {
+            metadata: {
+                timestamp: new Date().toISOString(),
+                status: qkdStatus,
+                aetherSaturation
+            },
+            telemetry: eventLog
+        };
+        const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `QUANTUM_TELEMETRY_${new Date().getTime()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-700 ${isCritical ? 'breach-active' : ''}`}>
             <div className="lg:col-span-1 space-y-6">
@@ -191,10 +209,10 @@ export const QuantumDefense: React.FC<Props> = ({ isStealthMode, addMissionLog }
                     <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-1">Entanglement Controls</h3>
                     <button 
                         onClick={() => handleQkdSync()} 
-                        disabled={effectiveQkdStatus === 'SYNCING' || isStealthMode}
+                        disabled={qkdStatus === 'SYNCING'}
                         className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:opacity-30 text-slate-950 font-black py-4 rounded-xl uppercase tracking-widest text-xs shadow-lg transition-all active:scale-95"
                     >
-                        {effectiveQkdStatus === 'SYNCING' ? 'Synchronizing Waves...' : 'Initiate Entanglement'}
+                        {qkdStatus === 'SYNCING' ? 'Synchronizing Waves...' : 'Initiate Entanglement'}
                     </button>
                     <button 
                         onClick={toggleAetherModulator}
@@ -252,7 +270,17 @@ export const QuantumDefense: React.FC<Props> = ({ isStealthMode, addMissionLog }
             <div className="lg:col-span-1 glass p-4 rounded-2xl border border-slate-800 flex flex-col">
                 <div className="p-4 border-b border-slate-800 bg-slate-900/40 mb-3 flex items-center justify-between">
                    <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sub-Space Telemetry</h3>
-                   <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                   <div className="flex items-center space-x-3">
+                       {eventLog.length > 0 && (
+                           <button 
+                               onClick={handleExportLog}
+                               className="text-[8px] font-black uppercase text-cyan-400 bg-cyan-900/20 px-2 py-1.5 rounded border border-cyan-500/30 hover:bg-cyan-500 hover:text-slate-950 transition-colors"
+                           >
+                               Export
+                           </button>
+                       )}
+                       <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                   </div>
                 </div>
                 <div className="flex-grow overflow-y-auto h-80 scrollbar-hide bg-slate-950/50 rounded-xl p-3 space-y-2">
                     {eventLog.map(log => (

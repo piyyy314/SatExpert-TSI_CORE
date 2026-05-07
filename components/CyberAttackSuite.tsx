@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Target, Zap, Activity, Globe, ShieldAlert, Cpu, Terminal, AlertTriangle, Play, Square, RefreshCcw } from 'lucide-react';
 
 interface AttackModule {
@@ -15,7 +15,8 @@ const ATTACK_MODULES: AttackModule[] = [
   { id: 'syn_flood', name: 'SYN Flood', icon: <RefreshCcw className="w-4 h-4" />, color: 'text-blue-500', desc: 'Overwhelms the 3-way handshake process by keeping connections half-open.' },
   { id: 'udp_flood', name: 'UDP Flood', icon: <Zap className="w-4 h-4" />, color: 'text-amber-500', desc: 'Sends large numbers of UDP packets to random ports on the target host.' },
   { id: 'http_flood', name: 'HTTP Slowloris', icon: <Activity className="w-4 h-4" />, color: 'text-purple-500', desc: 'Keeps many connections open by sending partial HTTP requests.' },
-  { id: 'dns_amp', name: 'DNS Amplification', icon: <Globe className="w-4 h-4" />, color: 'text-emerald-500', desc: 'Uses open DNS resolvers to overwhelm a target with large response traffic.' }
+  { id: 'dns_amp', name: 'DNS Amplification', icon: <Globe className="w-4 h-4" />, color: 'text-emerald-500', desc: 'Uses open DNS resolvers to overwhelm a target with large response traffic.' },
+  { id: 'db_exfil', name: 'Database Exfiltration', icon: <Terminal className="w-4 h-4" />, color: 'text-red-500', desc: 'Initiates SQL injection and attempts to dump and download backend databases.' }
 ];
 
 export const CyberAttackSuite: React.FC<{ addMissionLog?: (detail: string, status?: any) => void }> = ({ addMissionLog }) => {
@@ -26,6 +27,50 @@ export const CyberAttackSuite: React.FC<{ addMissionLog?: (detail: string, statu
   const [logs, setLogs] = useState<{ id: string, msg: string, type: 'info' | 'warn' | 'crit' }[]>([]);
   const [trafficData, setTrafficData] = useState<number[]>(Array(40).fill(0));
   
+  const handleExportDb = () => {
+    const dbDump = {
+        metadata: {
+            target: target,
+            timestamp: new Date().toISOString(),
+            method: 'UNION_SELECT_INJECTION',
+            rowsExtracted: Math.floor(Math.random() * 50000 + 10000)
+        },
+        schema: {
+            tables: ['users', 'credentials', 'sessions', 'admin_audit', 'sys_config']
+        },
+        sampleData: [
+            { id: 1, user: 'admin', hash: '$2y$10$Qx...', role: 'SUPERUSER' },
+            { id: 2, user: 'system_svc', hash: '$2y$10$Tr...', role: 'SERVICE' }
+        ]
+    };
+    const blob = new Blob([JSON.stringify(dbDump, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DB_DUMP_${target.replace(/[^a-z0-9]/gi, '_')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportAttackLogs = () => {
+    const logData = {
+        metadata: {
+            timestamp: new Date().toISOString(),
+            target: target,
+            attackModule: activeModule.name,
+            intensity: intensity
+        },
+        logs: logs
+    };
+    const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ATTACK_LOG_${target.replace(/[^a-z0-9]/gi, '_')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const addLog = (msg: string, type: 'info' | 'warn' | 'crit' = 'info') => {
     setLogs(prev => [{ id: Math.random().toString(36), msg, type }, ...prev].slice(0, 8));
   };
@@ -54,22 +99,34 @@ export const CyberAttackSuite: React.FC<{ addMissionLog?: (detail: string, statu
       setTrafficData(prev => [...prev.slice(1), intensity + (Math.random() * 30)]);
       
       if (Math.random() > 0.8) {
-        const events = [
+        const ddosEvents = [
             `SYN_ACK timeout on ${target}:80`,
             `Reflection factor x${(Math.random() * 50 + 10).toFixed(1)} achieved`,
             `Target latency spiking: ${Math.floor(Math.random() * 2000 + 500)}ms`,
             `Botnet nodes synchronized: ${Math.floor(Math.random() * 5000 + 1000)} active`
         ];
+        const exfilEvents = [
+            `SQL injection payload delivered to ${target}`,
+            `UNION SELECT extracting table schemas...`,
+            `Bypassing WAF rules for payload execution`,
+            `Downloading chunks: ${(Math.random() * 50).toFixed(2)} MB retrieved`,
+            `Extracting user credential hashes...`
+        ];
+        const events = activeModule.id === 'db_exfil' ? exfilEvents : ddosEvents;
         addLog(events[Math.floor(Math.random() * events.length)], 'warn');
       }
 
       if (Math.random() > 0.95) {
-        addLog(`CRITICAL: Target node unresponsive. Bandwidth saturation 100%.`, 'crit');
+        if (activeModule.id === 'db_exfil') {
+            addLog(`CRITICAL: Database dumped. Preparing SQL/CSV export.`, 'crit');
+        } else {
+            addLog(`CRITICAL: Target node unresponsive. Bandwidth saturation 100%.`, 'crit');
+        }
       }
     }, 200);
 
     return () => clearInterval(interval);
-  }, [isAttacking, intensity, target]);
+  }, [isAttacking, intensity, target, activeModule]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-4">
@@ -80,7 +137,7 @@ export const CyberAttackSuite: React.FC<{ addMissionLog?: (detail: string, statu
            
            <div className="space-y-6">
               <div className="space-y-2">
-                 <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Target_IP_Address</label>
+                 <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Target_IP_or_Domain</label>
                  <div className="relative">
                     <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input 
@@ -89,7 +146,7 @@ export const CyberAttackSuite: React.FC<{ addMissionLog?: (detail: string, statu
                       onChange={(e) => setTarget(e.target.value)}
                       disabled={isAttacking}
                       className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-xs font-mono text-cyan-400 placeholder:text-slate-700 outline-none focus:border-cyan-500/50 transition-all"
-                      placeholder="e.g. 192.168.1.1"
+                      placeholder="e.g. 192.168.1.1 or example.com"
                     />
                  </div>
               </div>
@@ -168,6 +225,24 @@ export const CyberAttackSuite: React.FC<{ addMissionLog?: (detail: string, statu
                </div>
             </div>
 
+            {(activeModule.id === 'db_exfil' && logs.length > 0) && (
+                <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <Terminal className="w-5 h-5 text-red-400" />
+                        <div>
+                            <div className="text-[10px] font-black uppercase text-red-400 tracking-widest">Exfiltration_Data</div>
+                            <div className="text-[8px] text-red-500/70 uppercase">Database payload ready for extraction</div>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={handleExportDb}
+                        className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/50 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-colors"
+                    >
+                        Export_JSON
+                    </button>
+                </div>
+            )}
+
             <div className="flex-grow flex items-end space-x-1.5 h-[240px] px-2 mb-8">
                {trafficData.map((d, i) => (
                  <motion.div 
@@ -195,7 +270,17 @@ export const CyberAttackSuite: React.FC<{ addMissionLog?: (detail: string, statu
          </div>
 
          <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">
-            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-800 pb-2">Execution_Trace</h3>
+            <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-2">
+                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Execution_Trace</h3>
+                 {logs.length > 0 && (
+                    <button 
+                       onClick={handleExportAttackLogs}
+                       className="text-[8px] font-black uppercase text-cyan-400 bg-cyan-900/20 px-2 py-1.5 rounded border border-cyan-500/30 hover:bg-cyan-500 hover:text-slate-950 transition-colors"
+                    >
+                       Export_Log
+                    </button>
+                 )}
+            </div>
             <div className="space-y-2 h-[120px] overflow-y-auto pr-2 custom-scrollbar font-mono">
                {logs.length === 0 ? (
                  <div className="text-[9px] text-slate-700 italic">No operational data recorded.</div>

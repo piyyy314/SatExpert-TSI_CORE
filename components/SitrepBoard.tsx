@@ -62,7 +62,7 @@ STIA_CMD: END_SITREP
             </div>
             <div>
                <h3 className="text-[12px] font-black text-white uppercase tracking-[0.4em] italic leading-tight">Intel_Situation_Report</h3>
-               <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1 opacity-60">STIA_Aegis_Processor_v5.4</p>
+               <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1 opacity-60">STIA_Aegis_Processor_v8.0</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">

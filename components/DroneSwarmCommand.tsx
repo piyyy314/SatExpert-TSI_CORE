@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Shield, Radio, Crosshair, Zap, Navigation, Power, Eye, AlertCircle } from 'lucide-react';
 
 interface DroneUnit {
@@ -76,6 +76,25 @@ export const DroneSwarmCommand: React.FC<{ addMissionLog?: (detail: string, stat
     }, 400);
   };
 
+  const handleExportSwarmLog = () => {
+    const logData = {
+        metadata: {
+            timestamp: new Date().toISOString(),
+            status: isDeploying ? 'IN_TENSION' : 'RTB',
+            missionType,
+            swarmSize
+        },
+        telemetry: drones
+    };
+    const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SWARM_TELEMETRY_${new Date().getTime()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const activeCount = drones.filter(d => d.status === 'ACTIVE').length;
   const avgBattery = drones.reduce((acc, d) => acc + d.battery, 0) / drones.length;
 
@@ -89,6 +108,12 @@ export const DroneSwarmCommand: React.FC<{ addMissionLog?: (detail: string, stat
                 <h2 className="text-[12px] font-black text-white uppercase tracking-[0.3em]">C4I_Dronespeak_Interface</h2>
              </div>
              <div className="flex items-center space-x-6">
+                <button 
+                   onClick={handleExportSwarmLog}
+                   className="text-[8px] font-black uppercase text-cyan-400 bg-cyan-900/20 px-3 py-1.5 rounded border border-cyan-500/30 hover:bg-cyan-500 hover:text-slate-950 transition-colors"
+                >
+                   Export_JSON
+                </button>
                 <div className="flex flex-col items-end">
                    <span className="text-[8px] text-slate-500 uppercase">Comm_Link</span>
                    <span className="text-[10px] font-black text-emerald-400 mono">SECURE_MESH [98%]</span>

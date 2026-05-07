@@ -1,12 +1,10 @@
 {
-  "name": "Remix: SatExpert Tactical SatCom Intelligence (TSI)",
-  "description": "A comprehensive professional toolkit for VSAT engineers, featuring real-time look-angle calculations, link budget estimations, and an AI-powered tactical intelligence agent.",
+  "name": "SatExpert Tactical SatCom Intelligence (TSI) v6",
+  "description": "The ultimate professional toolkit for VSAT/SIGINT operations. v6 features an Integrated AI Sentinel, Quantum Intelligence Hub, and Advanced Purple Team Arsenal.",
   "requestFramePermissions": [
     "geolocation",
     "microphone",
     "camera",
     "usb"
-  ],
-  "y7": [],
-  "Yp": []
+  ]
 }

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldAlert, FileSearch, Code, Terminal, Boxes, Zap, Fingerprint, Search, Target, Binary, Cpu, Lock } from 'lucide-react';
+import { ShieldAlert, FileSearch, Code, Terminal, Boxes, Zap, Fingerprint, Search, Target, Binary, Cpu, Lock, Download } from 'lucide-react';
 
 interface ScanResult {
   offset: string;
@@ -114,29 +114,66 @@ export const YARAScanner: React.FC = () => {
     setIsScanning(false);
   };
 
+  const exportResults = () => {
+    if (logs.length === 0 && matches.length === 0) return;
+    const report = `
+YARA SCAN REPORT
+---------------------------------
+TIMESTAMP: ${new Date().toISOString()}
+
+LOGS:
+${logs.map((l, i) => `[${i + 1}] [${l.type.toUpperCase()}] ${l.msg}`).join('\n')}
+
+MATCHES:
+${matches.length === 0 ? 'No matches found.' : matches.map(m => `OFFSET: ${m.offset} | MATCH: ${m.match} | VALUE: ${m.value}`).join('\n')}
+    `.trim();
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `yara_scan_results_${new Date().getTime()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
       <header className="flex items-center justify-between border-b border-slate-800 pb-8 relative">
         <div className="absolute top-0 right-0 p-8 opacity-5">
            <Binary className="w-48 h-48 text-cyan-500" />
         </div>
-        <div className="flex items-center space-x-6 relative z-10">
+         <div className="flex items-center space-x-6 relative z-10">
           <div className="p-5 bg-cyan-500/10 rounded-[2rem] border-2 border-cyan-500/20 shadow-[0_0_30px_rgba(34,211,238,0.1)]">
              <Binary className="w-10 h-10 text-cyan-400" />
           </div>
           <div>
              <h2 className="text-4xl font-black text-white px-1 tracking-tighter uppercase italic">YARA <span className="text-cyan-500">Heuristic Lab</span></h2>
-             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-1.5 pl-1 italic">Quantum-Accelerated Logic Scanner // STIA_CORE_v5.4</p>
+             <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-1.5 pl-1 italic">Quantum-Accelerated Logic Scanner // STIA_CORE_v8.0</p>
           </div>
         </div>
-        <div className="flex items-center space-x-4 bg-[#050810] p-3 rounded-[1.5rem] border-2 border-slate-900 shadow-xl relative z-10">
-           <div className="flex flex-col items-end pr-4 border-r border-slate-800">
-              <span className="text-[9px] text-slate-600 font-black uppercase tracking-widest">Engine_Status</span>
-              <span className="text-[11px] text-emerald-500 font-black uppercase tracking-[0.2em] animate-pulse">Idle_Standby</span>
-           </div>
-           <div className="p-2 bg-slate-900 rounded-xl">
-              <Lock className="w-5 h-5 text-slate-600" />
-           </div>
+        <div className="flex items-center space-x-4 relative z-10">
+           <AnimatePresence>
+             {(logs.length > 0 || matches.length > 0) && (
+               <motion.button
+                 initial={{ opacity: 0, scale: 0.9 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 onClick={exportResults}
+                 className="p-3 bg-[#050810] border-2 border-slate-900 rounded-[1.5rem] text-cyan-500 hover:text-cyan-400 hover:border-cyan-500/50 shadow-xl transition-all"
+                 title="Export Scan Report"
+               >
+                 <Download className="w-5 h-5" />
+               </motion.button>
+             )}
+           </AnimatePresence>
+          <div className="flex items-center space-x-4 bg-[#050810] p-3 rounded-[1.5rem] border-2 border-slate-900 shadow-xl">
+             <div className="flex flex-col items-end pr-4 border-r border-slate-800">
+                <span className="text-[9px] text-slate-600 font-black uppercase tracking-widest">Engine_Status</span>
+                <span className="text-[11px] text-emerald-500 font-black uppercase tracking-[0.2em] animate-pulse">Idle_Standby</span>
+             </div>
+             <div className="p-2 bg-slate-900 rounded-xl">
+                <Lock className="w-5 h-5 text-slate-600" />
+             </div>
+          </div>
         </div>
       </header>
 

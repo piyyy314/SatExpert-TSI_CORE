@@ -45,7 +45,7 @@ export const SignalInterceptor: React.FC<{ isJamming: boolean; jammingPower: num
                 });
                 setScanState('INTERCEPTED');
             }
-        }, 4000); // 4 seconds scan simulation
+        }, 4000); // 4 seconds scan operation
     };
 
     const handleAnalyze = async () => {

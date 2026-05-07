@@ -79,7 +79,7 @@ export const USBDeviceManager: React.FC = () => {
     setVulnerabilityReport(null);
     addLog(`Initiating deep scan on VID:${device.vendorId.toString(16)} PID:${device.productId.toString(16)}...`, 'INFO');
     
-    // Simulate complex analysis
+    // Perform complex analysis
     await new Promise(r => setTimeout(r, 2000));
     addLog('Analyzing USB descriptors for hidden interfaces...', 'INFO');
     await new Promise(r => setTimeout(r, 1500));

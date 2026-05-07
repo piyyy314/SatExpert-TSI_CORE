@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Radio, Activity, Mic, Volume2, Shield, Settings, Search, Wifi, Zap, Terminal, Headphones, AlertTriangle } from 'lucide-react';
 
 interface InterceptedMessage {
@@ -56,7 +56,7 @@ export const RadioInterceptSuite: React.FC<{ addMissionLog?: (detail: string, st
         const i = lastRowOffset + x * 4;
         let power = Math.random() * 50;
         
-        // Simulate a few signals
+        // Generate signals
         const signals = [width * 0.3, width * 0.65, width * 0.8];
         signals.forEach(s => {
           const d = Math.abs(x - s);
@@ -156,6 +156,24 @@ export const RadioInterceptSuite: React.FC<{ addMissionLog?: (detail: string, st
     if (!isScanning) {
       if (addMissionLog) addMissionLog(`RADIO_SCAN: Initiating wide-band intercept on ${mode} mode.`, 'active');
     }
+  };
+
+  const handleExportRadioLog = () => {
+    const logData = {
+        metadata: {
+            timestamp: new Date().toISOString(),
+            scanMode: mode,
+            targetFreq: freq
+        },
+        intercepts: messages
+    };
+    const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `RF_INTERCEPT_${new Date().getTime()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -266,7 +284,17 @@ export const RadioInterceptSuite: React.FC<{ addMissionLog?: (detail: string, st
                   <Terminal className="w-4 h-4" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Intercept_Log</span>
                </div>
-               <span className="text-[10px] font-bold text-slate-600">{messages.length} Captures</span>
+               <div className="flex items-center space-x-3">
+                  <span className="text-[10px] font-bold text-slate-600">{messages.length} Captures</span>
+                  {messages.length > 0 && (
+                     <button 
+                        onClick={handleExportRadioLog}
+                        className="text-[8px] font-black uppercase text-amber-500 bg-amber-900/20 px-2 py-1.5 rounded border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors"
+                     >
+                        Export
+                     </button>
+                  )}
+               </div>
             </div>
 
             <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">

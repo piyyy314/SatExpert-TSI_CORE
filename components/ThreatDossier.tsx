@@ -19,7 +19,8 @@ import {
   Zap,
   Terminal,
   Activity,
-  Lock
+  Lock,
+  Download
 } from 'lucide-react';
 import { analyzePortScan } from '../services/geminiService.ts';
 
@@ -52,13 +53,12 @@ export const ThreatDossier: React.FC = () => {
       name: 'Adversary Primary Node',
       target: '192.168.1.1',
       risk: 'CRITICAL',
-      description: 'Insecure management via Telnet (cleartext credentials). Outdated Apache 2.4.41 (susceptible to CVE-2021-41773/42013). FTP 3.0.3 risk of misconfiguration or brute-force.',
+      description: 'Secure management via SSH. Apache httpd updated to latest stable release (2.4.58). FTP transitioned to TLS/SFTP.',
       timestamp: new Date().toISOString(),
-      artifacts: ['Telnet Cleartext', 'CVE-2021-41773', 'Apache 2.4.41', 'FTP 3.0.3'],
+      artifacts: ['SSH Active', 'Apache 2.4.58', 'FTP (TLS)'],
       status: 'TRACKING',
       mitigations: [
         'Terminate Telnet service immediately; replace with SSH.',
-        'Update Apache httpd to latest stable release (Patch CVE-2021-41773/42013).',
         'Enforce TLS for FTP or transition to SFTP.'
       ]
     },
@@ -104,9 +104,9 @@ export const ThreatDossier: React.FC = () => {
     if (selectedRecord.vulnerabilities) return;
     setIsAnalyzing(true);
     const result = await analyzePortScan(selectedRecord.target, [
-      { port: 23, service: 'telnet' },
-      { port: 80, service: 'http', version: 'Apache 2.4.41' },
-      { port: 21, service: 'ftp', version: 'vsftpd 3.0.3' }
+      { port: 22, service: 'ssh', version: 'OpenSSH' },
+      { port: 80, service: 'http', version: 'Apache 2.4.58' },
+      { port: 21, service: 'ftp', version: 'vsftpd 3.0.3 (TLS)' }
     ]);
     if (result) {
       setRecords(prev => prev.map(r => r.id === selectedRecord.id ? { ...r, vulnerabilities: result } : r));
@@ -139,6 +139,24 @@ export const ThreatDossier: React.FC = () => {
 
   const [isHardening, setIsHardening] = useState(false);
   const [hardenedSteps, setHardenedSteps] = useState<string[]>([]);
+  const [patchedMitigations, setPatchedMitigations] = useState<{ [key: string]: boolean }>({});
+  
+  const applySingleMitigation = async (id: string, step: string) => {
+    setIsHardening(true);
+    setHardenedSteps([]);
+    let execSteps = [`INIT_PATCH: ${step.substring(0, 20).toUpperCase()}... [OK]`, "VERIFYING_INTEGRITY... [VERIFIED]"];
+    if (step.includes('memory wipe')) execSteps = ["INITIATING_MEMORY_WIPE... [OK]", "REIMAGING_FIRMWARE... [VERIFIED]"];
+    if (step.includes('UART')) execSteps = ["SENDING_BIOS_LOCK_CMD... [OK]", "UART_BRIDGE_DISABLED_AT_0X82... [VERIFIED]"];
+    if (step.includes('cryptographic keys')) execSteps = ["DISCARDING_LOCAL_KEYRING... [OK]", "DISTRIBUTING_NEW_CERTS... [VERIFIED]"];
+    
+    for (const s of execSteps) {
+      await new Promise(r => setTimeout(r, 600));
+      setHardenedSteps(prev => [...prev, s]);
+    }
+    await new Promise(r => setTimeout(r, 500));
+    setPatchedMitigations(prev => ({ ...prev, [`${id}_${step}`]: true }));
+    setIsHardening(false);
+  };
   
   const applyHardening = async () => {
     setIsHardening(true);
@@ -157,6 +175,45 @@ export const ThreatDossier: React.FC = () => {
     
     setRecords(prev => prev.map(r => r.id === selectedRecord.id ? { ...r, status: 'NEUTRALIZED', mitigations: [...r.mitigations, "SSH Migration", "Apache Patching", "TLS Enforcement"] } : r));
     setIsHardening(false);
+  };
+
+  const exportDossier = () => {
+    const report = `
+THREAT DOSSIER: ${selectedRecord.id}
+---------------------------------
+TIMESTAMP: ${new Date().toISOString()}
+
+NAME: ${selectedRecord.name}
+TARGET: ${selectedRecord.target}
+RISK: ${selectedRecord.risk}
+STATUS: ${selectedRecord.status}
+
+DESCRIPTION:
+${selectedRecord.description}
+
+ARTIFACTS:
+${selectedRecord.artifacts.join('\n')}
+
+MITIGATIONS:
+${selectedRecord.mitigations.join('\n')}
+
+${selectedRecord.vulnerabilities ? `
+AI ANALYSIS:
+Summary: ${selectedRecord.vulnerabilities.summary}
+Risk Level: ${selectedRecord.vulnerabilities.riskLevel}
+OS: ${selectedRecord.vulnerabilities.suspectedOS}
+Tactical Advice: ${selectedRecord.vulnerabilities.tacticalAdvice}
+Vulnerabilities:
+${selectedRecord.vulnerabilities.vulnerabilities.join('\n')}
+` : ''}
+    `.trim();
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `threat_dossier_${selectedRecord.id}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -208,7 +265,7 @@ export const ThreatDossier: React.FC = () => {
                <div className="mt-10 flex items-center justify-between px-4 relative z-10">
                   <div className="flex items-center space-x-4">
                      <Activity className="w-5 h-5 text-cyan-500 animate-pulse" />
-                     <span className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic">STIA_AUTO_MITIGATION_v5.4</span>
+                     <span className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic">STIA_AUTO_MITIGATION_v8.0</span>
                   </div>
                   <span className="text-[11px] font-black text-cyan-500 uppercase italic tracking-widest animate-bounce">Awaiting final validation...</span>
                </div>
@@ -290,7 +347,7 @@ export const ThreatDossier: React.FC = () => {
           </div>
           <div>
             <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic">Threat <span className="text-red-500">Dossier</span></h2>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-1.5 pl-1 italic">Target Intelligence & Ops Management // STIA_STRIKE_DB_v5.4</p>
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-1.5 pl-1 italic">Target Intelligence & Ops Management // STIA_STRIKE_DB_v8.0</p>
           </div>
         </div>
         
@@ -425,6 +482,9 @@ export const ThreatDossier: React.FC = () => {
                                  <span>Target Neutralized</span>
                               </div>
                             )}
+                            <button onClick={exportDossier} title="Export Dossier Report" className="p-4 bg-slate-900/60 border-2 border-slate-800 rounded-2xl text-cyan-500 hover:text-cyan-400 hover:border-cyan-500/50 transition-all shadow-xl active:scale-90 flex items-center justify-center">
+                               <Download className="w-5 h-5" />
+                            </button>
                             <button className="p-4 bg-slate-900/60 border-2 border-slate-800 rounded-2xl text-slate-400 hover:text-white hover:border-slate-700 transition-all shadow-xl active:scale-90">
                                <Share2 className="w-5 h-5" />
                             </button>
@@ -538,12 +598,30 @@ export const ThreatDossier: React.FC = () => {
                             <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">Mitigation_Protocol</span>
                          </div>
                          <div className="space-y-3">
-                            {selectedRecord.mitigations.map((step, i) => (
-                               <div key={i} className="flex items-start space-x-4 p-4 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/10 hover:border-emerald-500/30 transition-all group shadow-inner">
-                                  <span className="text-[11px] font-black text-emerald-500 shrink-0 bg-emerald-500/10 w-8 h-8 flex items-center justify-center rounded-xl border border-emerald-500/20 group-hover:scale-110 transition-transform tracking-tighter">0{i+1}</span>
-                                  <p className="text-[11px] font-black text-slate-300 uppercase leading-snug tracking-[0.05em] pt-1">{step}</p>
+                            {selectedRecord.mitigations.map((step, i) => {
+                               const isPatched = patchedMitigations[`${selectedRecord.id}_${step}`];
+                               return (
+                               <div key={i} className="flex items-center justify-between p-4 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/10 hover:border-emerald-500/30 transition-all group shadow-inner">
+                                  <div className="flex items-start space-x-4">
+                                    <span className="text-[11px] font-black text-emerald-500 shrink-0 bg-emerald-500/10 w-8 h-8 flex items-center justify-center rounded-xl border border-emerald-500/20 group-hover:scale-110 transition-transform tracking-tighter">0{i+1}</span>
+                                    <p className={`text-[11px] font-black uppercase leading-snug tracking-[0.05em] pt-1 ${isPatched ? 'text-emerald-500 line-through opacity-70' : 'text-slate-300'}`}>{step}</p>
+                                  </div>
+                                  {!isPatched ? (
+                                    <button 
+                                      onClick={() => applySingleMitigation(selectedRecord.id, step)}
+                                      className="ml-4 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 hover:text-slate-950 text-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center space-x-2 shrink-0"
+                                    >
+                                      <Lock className="w-3 h-3" />
+                                      <span>Patch</span>
+                                    </button>
+                                  ) : (
+                                    <div className="ml-4 px-4 py-2 bg-emerald-500/20 text-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2 shrink-0">
+                                      <ShieldCheck className="w-3 h-3" />
+                                      <span>Patched</span>
+                                    </div>
+                                  )}
                                </div>
-                            ))}
+                            )})}
                          </div>
                       </div>
                     </div>
@@ -678,7 +756,7 @@ export const ThreatDossier: React.FC = () => {
                                 </div>
 
                                 <div className="absolute bottom-8 left-10 text-[9px] font-black text-slate-700 uppercase tracking-[0.4em] italic z-30">
-                                   STIA_OPTICAL_GRID_v5.4 // ACTIVE_RECOGNITION
+                                   STIA_OPTICAL_GRID_v8.0 // ACTIVE_RECOGNITION
                                 </div>
    
                                 <div className="absolute bottom-10 right-12 z-30">
@@ -703,7 +781,7 @@ export const ThreatDossier: React.FC = () => {
                       </div>
                       <div className="glass p-8 rounded-[2.5rem] border-2 border-slate-800 bg-slate-900/40 shadow-xl group hover:border-red-500/20 transition-all">
                          <span className="text-[10px] font-black text-slate-500 uppercase block mb-3 tracking-widest italic pl-1">Quantum_Node_Integrity</span>
-                         <span className="text-lg font-mono text-emerald-500 font-black tracking-widest shadow-emerald-500/20 text-glow">OPTIMAL_v5.4</span>
+                         <span className="text-lg font-mono text-emerald-500 font-black tracking-widest shadow-emerald-500/20 text-glow">OPTIMAL_v8.0</span>
                       </div>
                    </div>
                 </motion.div>

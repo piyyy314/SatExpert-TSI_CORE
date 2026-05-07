@@ -296,7 +296,7 @@ STIA_CMD: QUARANTINE_REQUESTED
         ctx.lineWidth = 2;
         const pulse = (Math.sin(frame * 0.1) + 1) / 2;
         
-        // Simulating 3 stations
+        // Emulating 3 stations
         const stations = [{x: 50, y: 50}, {x: 350, y: 50}, {x: 200, y: 350}];
         stations.forEach((s, idx) => {
           ctx.beginPath();

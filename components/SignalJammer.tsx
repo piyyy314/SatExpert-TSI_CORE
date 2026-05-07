@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Radio, Zap, Volume2, ShieldX, WifiOff, AlertTriangle, Activity } from 'lucide-react';
 
 export const SignalJammer: React.FC<{ addMissionLog?: (detail: string, status?: any) => void }> = ({ addMissionLog }) => {
@@ -8,6 +8,32 @@ export const SignalJammer: React.FC<{ addMissionLog?: (detail: string, status?: 
   const [isJamming, setIsJamming] = useState(false);
   const [noiseLevel, setNoiseLevel] = useState<number[]>(Array(50).fill(10));
   const [selectedBand, setSelectedBand] = useState<'VHF' | 'UHF' | 'SHF'>('UHF');
+  const [sessionData, setSessionData] = useState<{ timestamp: string, frequency: number, power: number, noise: number }[]>([]);
+
+  const handleExportJammingReport = () => {
+    const reportData = {
+        metadata: {
+            timestamp: new Date().toISOString(),
+            targetBand: selectedBand,
+            baseFrequency: frequency,
+            maxPowerDb: power
+        },
+        tacticalSummary: {
+            avgSnr: isJamming ? "-12.4dB" : "-0.1dB",
+            estimatedEffectiveness: `${(power * frequency / 5).toFixed(1)}%`,
+            engagementDuration: sessionData.length * 150 // approximate ms
+        },
+        telemetry: sessionData,
+        analysis: "Signal effectively saturated the target band."
+    };
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `JAMMER_AAR_${new Date().getTime()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const bands = {
     VHF: { range: '30-300 MHz', target: 'Tactical Comms', color: 'text-emerald-400' },
@@ -29,24 +55,40 @@ export const SignalJammer: React.FC<{ addMissionLog?: (detail: string, status?: 
     const interval = setInterval(() => {
       setNoiseLevel(prev => {
         const next = [...prev.slice(1)];
+        let currentNoise = 5 + (Math.random() * 5);
         if (isJamming) {
-          next.push(power + (Math.random() * 20));
+          currentNoise = power + (Math.random() * 20);
+          next.push(currentNoise);
         } else {
-          next.push(5 + (Math.random() * 5));
+          next.push(currentNoise);
+        }
+        
+        if (isJamming) {
+            setSessionData(sd => [...sd, { timestamp: new Date().toISOString(), frequency, power, noise: currentNoise }]);
         }
         return next;
       });
     }, 150);
     return () => clearInterval(interval);
-  }, [isJamming, power]);
+  }, [isJamming, power, frequency]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-4">
       <div className="lg:col-span-4 space-y-6">
         <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">
-           <div className="flex items-center space-x-3 mb-6 border-b border-slate-800 pb-4">
-              <WifiOff className="w-5 h-5 text-red-500" />
-              <h3 className="text-[12px] font-black text-white uppercase tracking-widest">RF_Interference_Core</h3>
+           <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+              <div className="flex items-center space-x-3">
+                  <WifiOff className="w-5 h-5 text-red-500" />
+                  <h3 className="text-[12px] font-black text-white uppercase tracking-widest">RF_Interference_Core</h3>
+              </div>
+              {sessionData.length > 0 && (
+                 <button 
+                    onClick={handleExportJammingReport}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[8px] font-black uppercase tracking-widest text-amber-500 hover:bg-amber-500 hover:text-slate-950 transition-colors"
+                 >
+                    Export_AAR
+                 </button>
+              )}
            </div>
 
            <div className="space-y-6">

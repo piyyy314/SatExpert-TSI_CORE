@@ -41,7 +41,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
       <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.02] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       
       <header className={`border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-2xl sticky top-0 z-[60] transition-all duration-1000 ${isStealthMode ? 'bg-purple-950/40 border-purple-900/60 shadow-[0_4px_30px_rgba(168,85,247,0.15)]' : 'shadow-[0_8px_32px_rgba(0,0,0,0.4)]'}`}>
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative">
+        <div className="max-w-7xl mx-auto px-6 h-auto min-h-[5rem] py-4 flex flex-wrap gap-4 items-center justify-between relative">
           <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
           </div>
@@ -60,7 +60,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
             </div>
           </div>
 
-          <div className="flex items-center space-x-6">
+          <div className="flex flex-wrap items-center gap-4">
             {/* Stealth Mode Toggle */}
             <div className="flex items-center space-x-3 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800">
               <span className={`text-[8px] font-black uppercase tracking-widest px-2 transition-colors ${isStealthMode ? 'text-purple-400' : 'text-slate-600'}`}>Ghost_Proto</span>
@@ -99,7 +99,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
                <span className={`text-[11px] mono font-black italic tracking-tighter ${isStealthMode ? 'text-purple-400' : 'text-red-500'}`}>S-TIER_OPERATOR</span>
             </div>
             
-            <span className="text-[11px] bg-black border-2 border-slate-900 px-5 py-2.5 rounded-2xl text-slate-500 mono font-black shadow-inner italic">v5.4.1_STABLE</span>
+            <span className="text-[11px] bg-black border-2 border-slate-900 px-5 py-2.5 rounded-2xl text-slate-500 mono font-black shadow-inner italic">v6.0.0_SENTINEL</span>
           </div>
         </div>
       </header>
@@ -108,8 +108,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
       </main>
       
       {/* Tactical Comms Ticker */}
-      <div className={`border-t h-10 flex items-center overflow-hidden whitespace-nowrap z-[70] sticky bottom-0 transition-colors duration-1000 ${isStealthMode ? 'bg-black border-purple-900/50' : 'bg-slate-950 border-slate-800/50'}`}>
-        <div className={`flex items-center px-6 h-full border-r text-[9px] font-black uppercase tracking-widest shrink-0 transition-colors duration-1000 ${isStealthMode ? 'bg-purple-950/20 text-purple-400 border-purple-900/50' : 'bg-cyan-500/10 text-cyan-500 border-slate-800/50'}`}>
+      <div className={`border-t h-auto min-h-[2.5rem] py-1 flex items-center overflow-hidden whitespace-nowrap z-[70] fixed bottom-0 left-0 right-0 transition-colors duration-1000 ${isStealthMode ? 'bg-black border-purple-900/50' : 'bg-slate-950 border-slate-800/50'}`}>
+        <div className={`flex items-center px-6 h-10 border-r text-[9px] font-black uppercase tracking-widest shrink-0 transition-colors duration-1000 ${isStealthMode ? 'bg-purple-950/20 text-purple-400 border-purple-900/50' : 'bg-cyan-500/10 text-cyan-500 border-slate-800/50'}`}>
           {isStealthMode ? 'Ghost_Stream' : 'Mission_Stream'}
         </div>
         <div className="flex animate-marquee space-x-12 items-center">
@@ -128,9 +128,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
         </div>
       </div>
 
-      <footer className="border-t border-slate-800/30 py-10 px-6 text-center bg-slate-950/20">
+      <footer className="border-t border-slate-800/30 py-10 px-6 text-center bg-slate-950/20 pb-20">
         <div className="max-w-2xl mx-auto">
-          <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.4em] mb-4">Tactical SatCom Intelligence Engine // © 2025 SatExpert Global</p>
+          <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.4em] mb-4">Sentinel Tactical SatCom Intelligence // © 2026 SatExpert Global</p>
           <div className="flex justify-center space-x-4">
              <div className="w-2 h-0.5 bg-slate-800"></div>
              <div className={`w-2 h-0.5 transition-colors duration-700 ${isStealthMode ? 'bg-purple-500' : 'bg-cyan-500'}`}></div>

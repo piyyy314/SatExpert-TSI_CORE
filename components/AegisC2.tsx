@@ -88,7 +88,7 @@ export const AegisC2: React.FC = () => {
       setTimeout(() => addLog(`Thread-42: Found open port 443 (HTTPS)`, 'SUCCESS', 99), 2800);
     } else if (opName === 'INTEL: Service Banner Grabber') {
       setTimeout(() => addLog(`Connecting to ${targetIp}:80...`, 'INFO'), 600);
-      setTimeout(() => addLog(`Banner: Apache/2.4.41 (Ubuntu)`, 'ALERT', 92), 1500);
+      setTimeout(() => addLog(`Banner: Apache/2.4.58 (Ubuntu)`, 'ALERT', 92), 1500);
       setTimeout(() => addLog(`OS Fingerprint: Generic / Indeterminate`, 'ALERT', 42, "Signature is obfuscated or using a non-standard kernel. Signal noise indicates potential cloaking proto. High side-channel risk."), 2200);
       setTimeout(() => addLog(`INFO: Suggested deep-packet TCP stack analysis...`, 'INFO'), 2800);
     } else if (opName === 'SNIFF: Stealth Packet Analyzer') {
@@ -115,7 +115,7 @@ export const AegisC2: React.FC = () => {
       setTimeout(() => addLog(`Connecting to UART bridge at 0x82...`, 'INFO'), 400);
       setTimeout(() => addLog(`Baud: 115200 // Data: 8-bit // Stop: 1`, 'SUCCESS'), 1200);
       setTimeout(() => addLog(`>>> 0x00 0x1A 0xFF [KERNEL_BOOT_LOG]`, 'INFO'), 2000);
-      setTimeout(() => addLog(`v5.4.1-tsi: Initializing orbital subsystem...`, 'ALERT'), 2800);
+      setTimeout(() => addLog(`v8.0.1-tsi: Initializing orbital subsystem...`, 'ALERT'), 2800);
       setTimeout(() => addLog(`DEBUG_CONSOLE_ATTACHED: Raw bitstream access enabled.`, 'ALERT', 100), 3500);
     }
   };
@@ -538,7 +538,7 @@ export const AegisC2: React.FC = () => {
                  </div>
               </div>
 
-              {/* Advanced Desktop Simulator & Terminal */}
+              {/* Advanced Desktop & Terminal */}
               <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
                  {/* Remote Desktop Viewer */}
                  <div className="lg:col-span-12 xl:col-span-8 glass p-6 rounded-3xl border-slate-800 bg-slate-950/40 overflow-hidden relative group">

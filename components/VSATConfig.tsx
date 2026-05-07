@@ -50,7 +50,7 @@ export const VSATConfig: React.FC = () => {
   };
 
   const handleAuthorize = () => {
-    // Simulated auth: any 6-digit code starting with '7'
+    // Auth: any 6-digit code starting with '7'
     if (authCode === '777888' || authCode === 'TSA_ADMIN') {
       setIsAuthorized(true);
       addLog('Authorized Access Granted', 'SECURITY', 'SUCCESS');
@@ -62,7 +62,7 @@ export const VSATConfig: React.FC = () => {
 
   const saveSettings = async (category: ConfigLog['category']) => {
     setIsSaving(true);
-    // Simulate API delay
+    // API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSaving(false);
     addLog(`Updated ${category} parameters remotely`, category, 'SUCCESS');

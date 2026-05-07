@@ -87,8 +87,8 @@ export const TacticalHUD: React.FC<Props> = ({
 
   const filteredSatellites = useMemo(() => {
     return satellites.filter(s => 
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      s.orbitalSlot.toLowerCase().includes(searchQuery.toLowerCase())
+      (s.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (s.orbitalSlot || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery, satellites]);
 
@@ -260,7 +260,7 @@ export const TacticalHUD: React.FC<Props> = ({
                  <div className="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-pulse"></div>
                  <label className="block text-[12px] font-black uppercase tracking-[0.4em] text-white italic">Target_Acquisition</label>
               </div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-5 italic opacity-60">Orbital_Asset_Lock_v5.4 // ACTIVE_TRACKING</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-5 italic opacity-60">Orbital_Asset_Lock_v8.0 // ACTIVE_TRACKING</p>
             </div>
             
             <button 
@@ -349,7 +349,7 @@ export const TacticalHUD: React.FC<Props> = ({
              <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] italic">Atmospheric_Interference_Sim</span>
              <div className="flex items-center space-x-2">
                 <div className="w-1 h-3 bg-red-500/20 rounded-full" />
-                <span className="text-[9px] text-slate-600 font-black uppercase tracking-widest italic">Ka-Band_v5.4</span>
+                <span className="text-[9px] text-slate-600 font-black uppercase tracking-widest italic">Ka-Band_v8.0</span>
              </div>
           </div>
           <div className="grid grid-cols-4 gap-3">
@@ -380,7 +380,7 @@ export const TacticalHUD: React.FC<Props> = ({
           <div className="flex items-center justify-between relative z-10 px-2">
             <div className="flex flex-col space-y-1">
               <span className={`text-[12px] font-black uppercase tracking-[0.4em] italic ${isStealthMode ? 'text-cyan-400' : (isJamming || isDecoyActive ? 'text-red-500' : 'text-white')}`}>Electronic_Warfare</span>
-              <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest italic leading-none">Protocol: Aether_Strike_v5.4</p>
+              <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest italic leading-none">Protocol: Aether_Strike_v8.0</p>
             </div>
             
             <div className="flex items-center space-x-3">
@@ -486,7 +486,7 @@ export const TacticalHUD: React.FC<Props> = ({
                     <span className="w-4 h-4 bg-red-600 rounded-full mr-5 shadow-[0_0_20px_rgba(239,68,68,0.8)] animate-pulse"></span>
                     Sitrep <span className="text-red-500 ml-3">Registry</span>
                   </h3>
-                  <p className="text-[11px] text-slate-500 font-bold tracking-[0.3em] mt-2 italic pl-9">Secure Node // Terminal_ID: STIA-ACT-v5.4</p>
+                  <p className="text-[11px] text-slate-500 font-bold tracking-[0.3em] mt-2 italic pl-9">Secure Node // Terminal_ID: STIA-ACT-v8.0</p>
                </div>
                
                <button 

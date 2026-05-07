@@ -84,6 +84,24 @@ export const YaraIntelligence: React.FC = () => {
     }, 100);
   };
 
+  const handleExportYaraLog = () => {
+    const logData = {
+        metadata: {
+            timestamp: new Date().toISOString(),
+            status: isScanning ? 'IN_PROGRESS' : 'COMPLETED',
+            rule: selectedRule.name
+        },
+        logs: scanLogs
+    };
+    const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `YARA_SCAN_${selectedRule.name.replace(/[^a-z0-9]/gi, '_')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -102,18 +120,28 @@ export const YaraIntelligence: React.FC = () => {
            </div>
            <div>
               <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic">Deep Malware <span className="text-red-500">Intelligence</span></h2>
-              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-1.5 pl-1 italic">Quantum-Heuristic Signature Analysis // STIA_CORE_v5.4</p>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.4em] mt-1.5 pl-1 italic">Quantum-Heuristic Signature Analysis // STIA_CORE_v8.0</p>
            </div>
         </div>
-        {!isScanning && (
-          <button 
-            onClick={startScan}
-            className="px-8 py-4 bg-red-600 hover:bg-white hover:text-red-600 text-white text-[12px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all shadow-[0_15px_35px_rgba(239,68,68,0.3)] active:scale-95 flex items-center space-x-4 group/scan"
-          >
-            <Zap className="w-5 h-5 fill-current group-hover/scan:scale-125 transition-transform" />
-            <span>Commence_Full_Scan</span>
-          </button>
-        )}
+        <div className="flex items-center space-x-4 relative z-10">
+            {scanLogs.length > 0 && !isScanning && (
+               <button 
+                 onClick={handleExportYaraLog}
+                 className="px-6 py-4 bg-red-900/20 text-red-400 border-2 border-red-500/50 rounded-2xl hover:bg-red-500 hover:text-white transition-all font-black uppercase tracking-widest text-[10px]"
+               >
+                 Export_Logs
+               </button>
+            )}
+            {!isScanning && (
+              <button 
+                onClick={startScan}
+                className="px-8 py-4 bg-red-600 hover:bg-white hover:text-red-600 text-white text-[12px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all shadow-[0_15px_35px_rgba(239,68,68,0.3)] active:scale-95 flex items-center space-x-4 group/scan"
+              >
+                <Zap className="w-5 h-5 fill-current group-hover/scan:scale-125 transition-transform" />
+                <span>Commence_Full_Scan</span>
+              </button>
+            )}
+        </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -187,7 +215,7 @@ export const YaraIntelligence: React.FC = () => {
 {`rule ${selectedRule.name} {
     meta:
         description = "${selectedRule.description}"
-        stia_version = "5.4"
+        stia_version = "8.0"
 
     strings:
 ${selectedRule.strings.map(s => `        ${s.id} = ${s.pattern} ${s.type}`).join('\n')}

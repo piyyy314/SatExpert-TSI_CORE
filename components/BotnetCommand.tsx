@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Target, Shield, Server, Box, Terminal, Play, Pause, Power, Cpu, Database, Activity, Zap } from 'lucide-react';
 
 interface BotNode {
@@ -46,6 +46,25 @@ export const BotnetCommand: React.FC<{ addMissionLog?: (detail: string, status?:
       if (task === 'INFECT') addMissionLog("BOTNET_TASK: Propagating worm vector via Node-001.", 'active');
       if (task === 'SCRAPE') addMissionLog(`BOTNET_TASK: Harvesting data fragments from ${targetUrl}`, 'info');
     }
+  };
+
+  const handleExportBotnetConfig = () => {
+    const configData = {
+        metadata: {
+            timestamp: new Date().toISOString(),
+            status: isC2Active ? 'ACTIVE' : 'DORMANT',
+            activeTask: activeTask,
+            targetUrl: targetUrl
+        },
+        nodes: nodes
+    };
+    const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `BOTNET_REPORT_${new Date().getTime()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -158,7 +177,15 @@ export const BotnetCommand: React.FC<{ addMissionLog?: (detail: string, status?:
 
         <div className="space-y-6">
            <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">
-              <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-800 pb-2">Botnet_Stats</h3>
+              <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-2">
+                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Botnet_Stats</h3>
+                 <button 
+                    onClick={handleExportBotnetConfig}
+                    className="text-[8px] font-black uppercase text-cyan-400 bg-cyan-900/20 px-2 py-1.5 rounded border border-cyan-500/30 hover:bg-cyan-500 hover:text-slate-950 transition-colors"
+                 >
+                    Export_Stats
+                 </button>
+              </div>
               <div className="space-y-6">
                  <div className="flex items-center justify-between">
                     <div className="flex flex-col">

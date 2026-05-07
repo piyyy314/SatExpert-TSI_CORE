@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Download } from 'lucide-react';
 import { generatePQCKeyPair, signCanaryToken, verifyCanaryToken, bytesToHex } from '../services/pqcService.ts';
 
 interface Trap {
@@ -67,6 +68,36 @@ export const TrapManagement: React.FC = () => {
         console.log(`Trap verification succeeded for ${trap.id} at ${trap.timestamp instanceof Date ? trap.timestamp.toLocaleString() : trap.timestamp}`);
     }
     setTimeout(() => setVerificationResult(null), 3000);
+  };
+
+  const extractTrap = (trap: Trap, format: 'bash' | 'python' | 'json') => {
+    let content = '';
+    let ext = '';
+    let mime = 'text/plain';
+
+    if (format === 'bash') {
+      content = `#!/bin/bash\n# PQC-SECURE HONEYTRAP PAYLOAD\n# TRAP_ID: ${trap.id}\n# METADATA: ${trap.metadata}\n# ALGORITHM: ML-DSA-65\n\nSIGNATURE="${trap.signature}"\n\n# Trip mechanism\necho "Critical System Failure."\nlogger -p auth.alert "HONEYTRAP TRIPPED: ${trap.id} | Metadata: ${trap.metadata}"\n\n# Remote callback\ncurl -s -X POST -H "Content-Type: application/json" -d "{\\"trap_id\\": \\"${trap.id}\\", \\"signature\\": \\"$SIGNATURE\\"}" https://command.nexus.local/api/canary/trip || true\n\nexit 1\n`;
+      ext = 'sh';
+      mime = 'text/x-shellscript';
+    } else if (format === 'python') {
+      content = `#!/usr/bin/env python3\n# PQC-SECURE HONEYTRAP PAYLOAD\nimport syslog\nimport urllib.request\nimport json\nimport sys\n\nTRAP_ID = "${trap.id}"\nMETADATA = "${trap.metadata}"\nSIGNATURE = "${trap.signature}"\n\ndef trip_trap():\n    syslog.syslog(syslog.LOG_ALERT, f"HONEYTRAP TRIPPED: {TRAP_ID} | Metadata: {METADATA}")\n    print("Access Denied.")\n    try:\n        req = urllib.request.Request("https://command.nexus.local/api/canary/trip", \n            data=json.dumps({"trap_id": TRAP_ID, "signature": SIGNATURE}).encode('utf-8'),\n            headers={"Content-Type": "application/json"})\n        urllib.request.urlopen(req, timeout=2)\n    except:\n        pass\n    sys.exit(1)\n\nif __name__ == "__main__":\n    trip_trap()\n`;
+      ext = 'py';
+      mime = 'text/x-python';
+    } else {
+      content = JSON.stringify(trap, null, 2);
+      ext = 'json';
+      mime = 'application/json';
+    }
+
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `honeytrap_${trap.id.toLowerCase()}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -191,6 +222,19 @@ export const TrapManagement: React.FC = () => {
                                 <p className="text-[7px] text-slate-700 mono break-all line-clamp-2">
                                   {trap.signature}
                                 </p>
+                             </div>
+                             
+                             <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-800/50 mt-2">
+                                <span className="text-[7px] text-slate-600 font-bold uppercase tracking-widest flex items-center mr-1">Deploy Payload:</span>
+                                <button onClick={() => extractTrap(trap, 'bash')} className="px-2 py-1 bg-slate-800/50 hover:bg-emerald-900/30 border border-slate-700/50 hover:border-emerald-500/50 rounded flex items-center text-[8px] font-black text-slate-400 hover:text-emerald-400 transition-all uppercase tracking-widest gap-1">
+                                  <Download className="w-3 h-3" /> .sh
+                                </button>
+                                <button onClick={() => extractTrap(trap, 'python')} className="px-2 py-1 bg-slate-800/50 hover:bg-emerald-900/30 border border-slate-700/50 hover:border-emerald-500/50 rounded flex items-center text-[8px] font-black text-slate-400 hover:text-emerald-400 transition-all uppercase tracking-widest gap-1">
+                                  <Download className="w-3 h-3" /> .py
+                                </button>
+                                <button onClick={() => extractTrap(trap, 'json')} className="px-2 py-1 bg-slate-800/50 hover:bg-emerald-900/30 border border-slate-700/50 hover:border-emerald-500/50 rounded flex items-center text-[8px] font-black text-slate-400 hover:text-emerald-400 transition-all uppercase tracking-widest gap-1">
+                                  <Download className="w-3 h-3" /> .json
+                                </button>
                              </div>
                           </div>
 

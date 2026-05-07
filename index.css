@@ -1,4 +1,6 @@
 
+@import "tailwindcss";
+
 :root {
   --cyan-primary: #22d3ee;
   --amber-alert: #fbbf24;

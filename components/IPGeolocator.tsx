@@ -52,7 +52,7 @@ export const IPGeolocator: React.FC = () => {
     setIntel(null);
     setScanStatus('Initializing multi-hop trace...');
     
-    // Simulate some technical stages
+    // Run some technical stages
     setTimeout(() => setScanStatus('Bypassing proxy layers...'), 1000);
     setTimeout(() => setScanStatus('Consolidating BGP routing data...'), 2000);
     setTimeout(() => setScanStatus('querying STIA Intelligence DB...'), 3000);

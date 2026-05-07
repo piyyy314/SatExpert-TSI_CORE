@@ -32,7 +32,7 @@ export const signCanaryToken = (trapMetadata: string, secretKey: Uint8Array) => 
 
 export const verifyCanaryToken = (publicKey: Uint8Array, trapMetadata: string, signature: Uint8Array) => {
   const msg = new TextEncoder().encode(trapMetadata);
-  return ml_dsa65.verify(msg, signature, publicKey);
+  return ml_dsa65.verify(signature, msg, publicKey);
 };
 
 export const bytesToHex = (bytes: Uint8Array) => {

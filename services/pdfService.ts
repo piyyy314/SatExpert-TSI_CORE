@@ -26,7 +26,7 @@ export const generateBugReportPDF = (events: BugReportEvent[], systemInfo: any) 
   doc.setFontSize(10);
   doc.text(`REPORT_ID: BUG_ANOMALY_${Date.now()}`, 15, 40);
   doc.text(`TIMESTAMP: ${timestamp}`, 15, 45);
-  doc.text(`SOURCE: TSI_ORCHESTRATOR_V5.4`, 15, 50);
+  doc.text(`SOURCE: TSI_ORCHESTRATOR_V8.0`, 15, 50);
   doc.text(`CLASSIFICATION: TOP SECRET // NOFORN`, 15, 55);
 
   // System Status Summary

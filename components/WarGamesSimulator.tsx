@@ -21,7 +21,7 @@ const OBJECTIVE_PRESETS = [
     "Degrade signal link integrity below 30%.",
     "Achieve persistent unauthorized access to the terminal.",
     "Execute a successful Denial-of-Service (DoS) attack.",
-    "Exfiltrate simulated sensitive data packet."
+    "Exfiltrate sensitive data packet."
 ];
 
 export const WarGamesSimulator: React.FC<{ satName: string }> = ({ satName }) => {
@@ -58,7 +58,7 @@ export const WarGamesSimulator: React.FC<{ satName: string }> = ({ satName }) =>
         }]);
     };
 
-    const runSimulationTurn = async () => {
+    const runOperationTurn = async () => {
         if (isLoading) return;
         setIsLoading(true);
         turnCounter.current += 1;
@@ -74,38 +74,38 @@ export const WarGamesSimulator: React.FC<{ satName: string }> = ({ satName }) =>
             setThreatLevel(turnData.systemStateChange.threat_level as ThreatLevel);
 
             if (turnData.isObjectiveMet || turnCounter.current >= 10 || linkIntegrity <= 0) {
-                endSimulation(turnData.isObjectiveMet ? 'RED' : 'BLUE');
+                endOperation(turnData.isObjectiveMet ? 'RED' : 'BLUE');
             }
         } else {
-            addEvent('SYSTEM', "Simulation error: AI Orchestrator failed to respond.");
-            endSimulation('BLUE'); // End on error
+            addEvent('SYSTEM', "Operation error: AI Orchestrator failed to respond.");
+            endOperation('BLUE'); // End on error
         }
 
         setIsLoading(false);
     };
 
-    const startSimulation = () => {
+    const startOperation = () => {
         setSimState('RUNNING');
         setEventLog([]);
         setLinkIntegrity(100);
         setThreatLevel('LOW');
         setPostActionReport(null);
         turnCounter.current = 0;
-        playSystemVoice('War Games simulation initiated.');
+        playSystemVoice('War Games operation initiated.');
         addEvent('SYSTEM', `SCENARIO START: Red Team objective is to "${objective}"`);
         
         // Initial turn
-        runSimulationTurn();
+        runOperationTurn();
 
-        simInterval.current = window.setInterval(runSimulationTurn, 6000);
+        simInterval.current = window.setInterval(runOperationTurn, 6000);
     };
 
-    const endSimulation = async (winner: 'RED' | 'BLUE') => {
+    const endOperation = async (winner: 'RED' | 'BLUE') => {
         if (simInterval.current) clearInterval(simInterval.current);
         simInterval.current = null;
         setSimState('COMPLETE');
-        playSystemVoice(`Simulation complete. Winner: ${winner} Team.`);
-        addEvent('SYSTEM', `SIMULATION END: ${winner} TEAM WINS. Generating Post-Action Report...`);
+        playSystemVoice(`Operation complete. Winner: ${winner} Team.`);
+        addEvent('SYSTEM', `OPERATION END: ${winner} TEAM WINS. Generating Post-Action Report...`);
         
         setIsLoading(true);
         const report = await generateWarGamesReport(eventLog, objective);
@@ -164,7 +164,7 @@ STIA_CMD: END_LOG
                     <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
                        <svg className="w-40 h-40 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                     </div>
-                    <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-white mb-8 italic border-b-2 border-slate-900 pb-4">Simulation_Control</h3>
+                    <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-white mb-8 italic border-b-2 border-slate-900 pb-4">Operation_Control</h3>
                     {simState === 'IDLE' && (
                         <div className="space-y-6 relative z-10">
                              <div className="space-y-3">
@@ -173,9 +173,9 @@ STIA_CMD: END_LOG
                                   {OBJECTIVE_PRESETS.map(op => <option key={op} value={op}>{op}</option>)}
                                </select>
                              </div>
-                            <button onClick={startSimulation} className="w-full bg-red-600 hover:bg-white text-slate-950 hover:text-red-600 font-black py-5 rounded-[2rem] border-2 border-transparent hover:border-white uppercase tracking-[0.3em] text-[11px] italic transition-all duration-300 shadow-2xl active:scale-95 group/btn overflow-hidden relative">
+                            <button onClick={startOperation} className="w-full bg-red-600 hover:bg-white text-slate-950 hover:text-red-600 font-black py-5 rounded-[2rem] border-2 border-transparent hover:border-white uppercase tracking-[0.3em] text-[11px] italic transition-all duration-300 shadow-2xl active:scale-95 group/btn overflow-hidden relative">
                                 <div className="absolute inset-0 bg-white/10 translate-y-full hover:translate-y-0 transition-transform" />
-                                <span className="relative z-10">Initiate_Simulation</span>
+                                <span className="relative z-10">Initiate_Operation</span>
                             </button>
                         </div>
                     )}

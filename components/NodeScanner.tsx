@@ -39,7 +39,7 @@ const COMMON_PORTS = [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993,
 
 export const NodeScanner: React.FC = () => {
   const [target, setTarget] = useState('192.168.1.1');
-  const [scanType, setScanType] = useState<'quick' | 'intense' | 'stealth'>('quick');
+  const [scanType, setScanType] = useState<string>('quick');
   const [isScanning, setIsScanning] = useState(false);
   const [results, setResults] = useState<ScanResult[]>([]);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
@@ -69,43 +69,65 @@ export const NodeScanner: React.FC = () => {
     addLog(`STIA_ORACLE: Initializing ${scanType.toUpperCase()} scan on node: ${target}`);
     addLog("Resolving target architecture...");
     
-    // Simulation steps
+    // Execution steps
     const totalSteps = 10;
     for (let i = 1; i <= totalSteps; i++) {
         await new Promise(resolve => setTimeout(resolve, 400 + Math.random() * 600));
         setProgress((i / totalSteps) * 100);
         
         if (i === 2) addLog("ICMP Echo request: SUCCESS (TTL=64)");
-        if (i === 4) addLog("SYN Stealth scan initiated on 1000 common ports...");
+        if (i === 4) {
+            if (scanType === 'udp') addLog("UDP scan payload transmission initialized...");
+            else if (scanType === 'all-ports') addLog("Full port spectrum scan initiated on 65535 ports...");
+            else if (scanType === 'vuln') addLog("NSE script engine tracking loaded with 'vuln' category...");
+            else addLog("SYN Stealth scan initiated on 1000 common ports...");
+        }
         if (i === 6) {
-            const potentialServices = [
-              { port: 21, service: 'ftp', version: 'vsftpd 3.0.3' },
+            let potentialServices = [
+              { port: 21, service: 'ftp', version: 'vsftpd 3.0.3 (TLS)' },
               { port: 22, service: 'ssh', version: 'OpenSSH 8.2p1' },
-              { port: 23, service: 'telnet', version: 'Linux telnetd' },
               { port: 53, service: 'domain', version: 'ISC BIND 9.16.1' },
-              { port: 80, service: 'http', version: 'Apache httpd 2.4.41' },
-              { port: 443, service: 'https', version: 'Apache httpd 2.4.41' },
+              { port: 80, service: 'http', version: 'Apache httpd 2.4.58' },
+              { port: 443, service: 'https', version: 'Apache httpd 2.4.58' },
               { port: 3306, service: 'mysql', version: 'MySQL 8.0.21' },
               { port: 8080, service: 'http-proxy', version: 'Squid proxy 4.10' },
               { port: 2000, service: 'vsat-comms', version: 'Proprietary V6' }
             ];
+
+            if (scanType === 'udp') {
+              potentialServices = [
+                { port: 53, service: 'domain', version: 'ISC BIND 9.16.1 (UDP)' },
+                { port: 123, service: 'ntp', version: 'NTP 4.2.8p15' },
+                { port: 161, service: 'snmp', version: 'SNMPv2c' },
+                { port: 500, service: 'isakmp', version: 'StrongSwan IPSec' }
+              ];
+            } else if (scanType === 'all-ports') {
+              potentialServices.push({ port: 31337, service: 'Elite', version: 'Unknown Backdoor' });
+              potentialServices.push({ port: 49152, service: 'msrpc', version: 'Microsoft RPC' });
+            }
             
-            // Randomly pick 3-5 ports
-            const foundCount = 3 + Math.floor(Math.random() * 3);
+            // Randomly pick 3-5 ports (or fewer for UDP)
+            const foundCount = Math.min(potentialServices.length, 3 + Math.floor(Math.random() * 3));
             const shuffled = [...potentialServices].sort(() => 0.5 - Math.random());
             const foundPorts: ScanResult[] = shuffled.slice(0, foundCount).map(s => ({
               ...s,
-              protocol: 'tcp' as const,
+              protocol: scanType === 'udp' ? 'udp' as const : 'tcp' as const,
               state: 'open' as const
             })).sort((a, b) => a.port - b.port);
 
             setResults(foundPorts);
             addLog(`Discovered ${foundPorts.length} open ports.`);
+            if (scanType === 'vuln') {
+              addLog(`Running NSE scripts on discovered ports...`);
+            }
             
             // Capture detected for AI
             detectedPortsRef.current = foundPorts;
         }
-        if (i === 8) addLog("OS Fingerprinting: Distant Match (Linux 5.x)");
+        if (i === 8) {
+            if (scanType === 'vuln') addLog("Vulnerability scan identified potential CVE exposure!");
+            else addLog("OS Fingerprinting: Distant Match (Linux 5.x)");
+        }
         if (i === 9) addLog("Finalizing heuristic analysis...");
     }
 
@@ -206,10 +228,10 @@ STIA_CMD: END_AUDIT_LOG
                  </div>
 
                  <div className="grid grid-cols-3 gap-3">
-                    {['quick', 'intense', 'stealth'].map(type => (
+                    {['quick', 'intense', 'stealth', 'udp', 'vuln', 'all-ports'].map(type => (
                       <button 
                         key={type}
-                        onClick={() => setScanType(type as any)}
+                        onClick={() => setScanType(type)}
                         className={`py-2 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all ${
                             scanType === type ? 'bg-rose-500/10 border-rose-500/40 text-rose-500' : 'bg-slate-900 border-slate-800 text-slate-600 hover:border-slate-700'
                         }`}
@@ -331,7 +353,9 @@ STIA_CMD: END_AUDIT_LOG
                             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Intelligence Summary</span>
                          </div>
                          <div className={`px-2 py-0.5 rounded border text-[8px] font-black uppercase ${
-                            aiAnalysis.riskLevel === 'CRITICAL' ? 'bg-red-500/10 border-red-500/40 text-red-500' : 'bg-amber-500/10 border-amber-500/40 text-amber-500'
+                            aiAnalysis.riskLevel === 'CRITICAL' ? 'bg-red-500/10 border-red-500/40 text-red-500' :
+                            aiAnalysis.riskLevel === 'SECURE' ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-500' :
+                            'bg-amber-500/10 border-amber-500/40 text-amber-500'
                          }`}>
                             RISK: {aiAnalysis.riskLevel}
                          </div>
@@ -343,22 +367,122 @@ STIA_CMD: END_AUDIT_LOG
                       </div>
                    </div>
 
-                   <div className="p-5 bg-rose-500/10 border border-rose-500/20 rounded-2xl space-y-4">
+                   <div className="p-5 bg-rose-500/10 border border-rose-500/20 rounded-2xl space-y-4 flex flex-col">
                       <div className="flex items-center space-x-2">
                          <Lock className="w-4 h-4 text-rose-500" />
                          <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Tactical Remediation</span>
                       </div>
-                      <div className="space-y-2">
-                         {aiAnalysis.vulnerabilities.map((v, i) => (
-                           <div key={i} className="flex items-start space-x-2">
-                              <div className="w-1 h-1 rounded-full bg-rose-500 mt-1.5 animate-pulse shrink-0"></div>
-                              <span className="text-[9px] font-black text-slate-200 uppercase">{v}</span>
-                           </div>
-                         ))}
-                      </div>
-                      <p className="text-[10px] text-slate-400 italic font-medium leading-tight pt-2 border-t border-rose-500/10">
-                        {aiAnalysis.tacticalAdvice}
-                      </p>
+                      
+                      {aiAnalysis.vulnerabilities.length > 0 ? (
+                        <>
+                          <div className="space-y-2 flex-grow">
+                             {aiAnalysis.vulnerabilities.map((v, i) => (
+                               <div key={i} className="flex items-start space-x-2">
+                                  <div className="w-1 h-1 rounded-full bg-rose-500 mt-1.5 animate-pulse shrink-0"></div>
+                                  <span className="text-[9px] font-black text-slate-200 uppercase">{v}</span>
+                               </div>
+                             ))}
+                          </div>
+                          <p className="text-[10px] text-slate-400 italic font-medium leading-tight pt-2 border-t border-rose-500/10">
+                            {aiAnalysis.tacticalAdvice}
+                          </p>
+                          <button
+                            onClick={() => {
+                              addLog("STIA_CMD: Establishing SSH root shell to node [SECURE_LINK]...");
+                              
+                              setTimeout(() => {
+                                addLog("SSH_OK: Root shell established.");
+                                addLog("root@node:~# apt-get update && apt-get install --only-upgrade squid bind9 openssh-server -y");
+                              }, 1000);
+
+                              setTimeout(() => {
+                                addLog("root@node:~# sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config");
+                                addLog("root@node:~# iptables -A INPUT -p tcp --dport 2000 -m state --state NEW -m recent --set");
+                                addLog("root@node:~# iptables -A INPUT -p tcp --dport 2000 -m state --state NEW -m recent --update --seconds 1 --hitcount 10 -j DROP");
+                                addLog("root@node:~# systemctl restart sshd squid bind9");
+                              }, 2500);
+                              
+                              setTimeout(() => {
+                                setResults(prev => prev.map(r => {
+                                  if (r.service === 'http-proxy' && r.port === 8080) return { ...r, version: 'Squid proxy 5.7 (Patched)' };
+                                  if (r.service === 'domain' && r.port === 53) return { ...r, version: 'ISC BIND 9.16.1 (Restricted)' };
+                                  if (r.service === 'ssh' && r.port === 22) return { ...r, version: 'OpenSSH 8.2p1 (Hardened)' };
+                                  if (r.service === 'vsat-comms' && r.port === 2000) return { ...r, version: 'Proprietary V6 (DPI Filtered)' };
+                                  return r;
+                                }));
+                                
+                                setAiAnalysis(prev => prev ? {
+                                  ...prev,
+                                  riskLevel: 'SECURE',
+                                  summary: 'Node hardening complete. Critical vulnerabilities have been patched and active deep packet inspection is applied. Asset is now classified as resilient against previously identified vectors.',
+                                  vulnerabilities: [],
+                                  tacticalAdvice: 'Monitor logs for anomalous traffic blocked by the new DPI rules on port 2000.'
+                                } : null);
+                                addLog("STIA_CMD: Hardening sequence completed successfully. Node is SECURE.");
+                              }, 4000);
+                            }}
+                            className="w-full mt-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded text-[9px] font-black uppercase tracking-widest transition-colors flex items-center justify-center space-x-2"
+                          >
+                            <ShieldAlert className="w-3 h-3" />
+                            <span>DEPLOY SECURE HOTFIXES VIA SSH</span>
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex-grow flex flex-col justify-center items-center text-center">
+                          <ShieldAlert className="w-8 h-8 text-emerald-500 mb-2" />
+                          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">SYSTEM SECURED</span>
+                          <span className="text-[8px] text-slate-400 uppercase mt-1 mb-4">NO CRITICAL VULNERABILITIES DETECTED</span>
+                          <button
+                            onClick={() => {
+                              const script = `#!/bin/bash
+# AUTO-GENERATED STIA HARDENING SCRIPT
+# Target: ${target}
+
+# Ensure script is run as root
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root"
+  exit
+fi
+
+echo "[+] Updating packages and installing persistence tools..."
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y --only-upgrade squid bind9 openssh-server
+apt-get install -y iptables-persistent netfilter-persistent
+
+echo "[+] Securing SSH..."
+sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/g' /etc/ssh/sshd_config
+sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
+
+echo "[+] Applying firewall rules on port 2000..."
+iptables -F
+iptables -A INPUT -p tcp --dport 2000 -m state --state NEW -m recent --set
+iptables -A INPUT -p tcp --dport 2000 -m state --state NEW -m recent --update --seconds 1 --hitcount 10 -j DROP
+
+echo "[+] Persisting firewall rules..."
+netfilter-persistent save
+iptables-save > /etc/iptables/rules.v4
+
+echo "[+] Restarting services..."
+systemctl restart sshd squid bind9
+systemctl enable sshd squid bind9
+
+echo "[+] Deployment complete. Hotfixes are now permanently applied."`;
+                              const blob = new Blob([script], { type: 'text/x-sh' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `STIA_HOTFIX_${target.replace(/\./g, '_')}.sh`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                            className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded text-[9px] font-black uppercase tracking-widest transition-colors flex items-center justify-center space-x-2"
+                          >
+                             <Download className="w-3 h-3" />
+                             <span>EXPORT PATCH SCRIPT (.SH)</span>
+                          </button>
+                        </div>
+                      )}
                    </div>
                 </motion.div>
               )}

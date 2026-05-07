@@ -327,7 +327,7 @@ export const SecurityTools: React.FC<Props> = ({
            </div>
            <div>
               <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">Sentinel <span className="text-cyan-500">Intelligence</span></h2>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-1 pl-1">Quantum-Hardened Active Defense Node // v5.4</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-1 pl-1">Quantum-Hardened Active Defense Node // v8.0</p>
            </div>
         </div>
         {onBack && (
@@ -345,7 +345,7 @@ export const SecurityTools: React.FC<Props> = ({
           { id: 'scripts', label: 'Cipher Repository', icon: '🔐' },
           { id: 'attack', label: 'RF Offensive Strike', icon: '⚡' },
           { id: 'quantum', label: 'Quantum Physics', icon: '⚛️' },
-          { id: 'wargames', label: 'Global Simulation', icon: '🌎' }
+          { id: 'wargames', label: 'Global Operations', icon: '🌎' }
         ].map((tab) => (
           <button 
             key={tab.id} 
