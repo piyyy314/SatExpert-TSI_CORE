@@ -288,9 +288,9 @@ if __name__ == "__main__":
               )}
               {compileLogs.map((log, i) => (
                 <div key={i} className={`${
-                  log.includes('[-]') ? 'text-red-500' :
-                  log.includes('[+]') ? 'text-emerald-500' :
-                  log.includes('[=]') ? 'text-cyan-400 font-bold' :
+                  log?.includes?.('[-]') ? 'text-red-500' :
+                  log?.includes?.('[+]') ? 'text-emerald-500' :
+                  log?.includes?.('[=]') ? 'text-cyan-400 font-bold' :
                   'text-slate-400'
                 }`}>
                   {log}

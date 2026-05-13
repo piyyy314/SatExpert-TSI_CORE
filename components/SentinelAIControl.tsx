@@ -361,7 +361,7 @@ export const SentinelAIControl: React.FC = () => {
                  {logs.map((log, i) => (
                    <div key={i} className="flex space-x-3">
                       <span className="text-slate-800">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
-                      <span className={log.includes('[Z-DAY]') ? 'text-rose-500 font-bold' : log.includes('[SCAN]') ? 'text-cyan-400' : ''}>{log}</span>
+                      <span className={(log || '').includes('[Z-DAY]') ? 'text-rose-500 font-bold' : (log || '').includes('[SCAN]') ? 'text-cyan-400' : ''}>{log}</span>
                    </div>
                  ))}
                  <div className="animate-pulse flex items-center space-x-1">

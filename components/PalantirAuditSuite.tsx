@@ -502,7 +502,7 @@ ${scanProgress >= 100 ? PALANTIR_CVES.map(v => `[${v.severity}] ${v.cve}: ${v.ti
                 {scanLog.map((log, i) => (
                   <div key={i} className="flex space-x-2">
                     <span className="text-cyan-800">[{new Date().toLocaleTimeString()}]</span>
-                    <span className={log.includes('[COMP]') ? 'text-emerald-500' : ''}>{log}</span>
+                    <span className={(log || '').includes('[COMP]') ? 'text-emerald-500' : ''}>{log}</span>
                   </div>
                 ))}
                 {scanLog.length === 0 && <p className="italic opacity-50">Awaiting user input...</p>}

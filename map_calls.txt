@@ -1,0 +1,238 @@
+components/BiometricScanner.tsx:200:                 ].map(s => (
+components/BiometricScanner.tsx:259:                            {activeTarget.tags.map(t => (
+components/IPGeolocator.tsx:176:                 {(['RECON', 'DNS'] as const).map(tab => (
+components/PurpleTeamArsenal.tsx:112:          ].map((tab) => (
+components/PurpleTeamArsenal.tsx:151:                    ].map(target => (
+components/PurpleTeamArsenal.tsx:246:                            {fuzzing.logs.map((log, i) => (
+components/PurpleTeamArsenal.tsx:293:                              {['LINUX_X64', 'WINDOWS_X64', 'ARM_IOS', 'WASM'].map(env => (
+components/PurpleTeamArsenal.tsx:303:                              {['UAF', 'HEAP_OVERFLOW', 'TYPE_CONFUSION', 'OOB_READ'].map(priv => (
+components/PurpleTeamArsenal.tsx:368:                  ].map((stat, i) => (
+components/PurpleTeamArsenal.tsx:404:                              {Array.from({ length: 40 }).map((_, i) => (
+components/PurpleTeamArsenal.tsx:456:                        ].map((incident, i) => (
+components/PurpleTeamArsenal.tsx:481:            {[1, 2, 3].map(i => (
+components/SentinelAIControl.tsx:157:           ].map((stat, i) => (
+components/SentinelAIControl.tsx:204:                          {Array.from({ length: 3 }).map((_, i) => (
+components/SentinelAIControl.tsx:224:                          {Array.from({ length: 4 }).map((_, i) => (
+components/SentinelAIControl.tsx:250:                          ].map((region, i) => (
+components/SentinelAIControl.tsx:280:                 ].map((item, i) => (
+components/SentinelAIControl.tsx:361:                 {logs.map((log, i) => (
+components/SentinelAIControl.tsx:411:                 ].map((net, i) => (
+components/AdvancedTacticalSuite.tsx:124:      .map(b => b.toString(16).padStart(2, '0'))
+components/AdvancedTacticalSuite.tsx:179:${activeDecoys.map((d, i) => `[DECOY_${i}] Freq: ${d.freq.toFixed(4)} GHz | Power: ${d.power} dBm | Phase: ${d.phase}°`).join('\n')}
+components/AdvancedTacticalSuite.tsx:409:                          ].map(node => (
+components/AdvancedTacticalSuite.tsx:551:                       {yaraLogs.map((log, i) => (
+components/AdvancedTacticalSuite.tsx:609:                 {KNOWN_FINGERPRINTS.map(fp => (
+components/AdvancedTacticalSuite.tsx:682:                       {activeDecoys.map((d, i) => (
+components/AdvancedTacticalSuite.tsx:699:                       ].map((item, i) => (
+components/AIAssistantWidget.tsx:50:      const historyContents = messages.slice(1).map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join('\n');
+components/AIAssistantWidget.tsx:107:            {messages.map((msg, idx) => (
+components/CyberKillChain.tsx:101:              {STAGES.map((stage, idx) => (
+components/CyberKillChain.tsx:173:                   logs.map(log => (
+components/RSSReader.tsx:53:            setItems(Array.from(channelItems).slice(0, 8).map(node => ({
+components/RSSReader.tsx:98:          items.map((item, i) => (
+components/NmapScanner.tsx:155:              scanLog.map((log, i) => (
+components/QuantumDefense.tsx:286:                    {eventLog.map(log => (
+components/PhishingCampaignManager.tsx:50:          setTargets(prev => prev.map(t => {
+components/PhishingCampaignManager.tsx:73:    const reportStr = `PHISHING CAMPAIGN RESULTS\n-------------------------------\nTEMPLATE: ${TEMPLATES.find(t => t.id === template)?.name}\nSPOOF DOMAIN: ${TEMPLATES.find(t => t.id === template)?.spoof}\n\nTARGET STATUS:\n${targets.map(t => `${t.email} - ${t.status.toUpperCase()} (${t.time || 'N/A'})`).join('\n')}`;
+components/PhishingCampaignManager.tsx:132:                  {TEMPLATES.map(t => (
+components/PhishingCampaignManager.tsx:181:               {targets.map((target) => (
+components/TrapManagement.tsx:63:    const sigBytes = new Uint8Array(trap.signature.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+components/TrapManagement.tsx:182:                      traps.map((trap) => (
+components/TrafficSniffer.tsx:73:    const data = packets.map(p => `[${p.timestamp}] ${p.protocol} ${p.src} -> ${p.dst} | ${p.payload}`).join('\n');
+components/TrafficSniffer.tsx:130:                {KEYWORDS.map(word => (
+components/TrafficSniffer.tsx:173:                       {packets.map((p) => (
+components/BotnetCommand.tsx:21:    const initialNodes = Array.from({ length: 48 }).map((_, i) => ({
+components/BotnetCommand.tsx:73:            setNodes(prev => prev.map(n => ({ ...n, load: Math.random() * 5 })));
+components/BotnetCommand.tsx:79:      setNodes(prev => prev.map(n => {
+components/BotnetCommand.tsx:116:              {nodes.map(node => (
+components/BotnetCommand.tsx:163:                 ].map(task => (
+components/BotnetCommand.tsx:229:                     {activeTask === 'IDLE' && nodes.map((n, i) => i % 10 === 0 && (
+components/YaraIntelligence.tsx:155:                 {YARA_DATABASE.map(rule => (
+components/YaraIntelligence.tsx:221:${selectedRule.strings.map(s => `        ${s.id} = ${s.pattern} ${s.type}`).join('\n')}
+components/YaraIntelligence.tsx:241:                    {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-800"></div>)}
+components/YaraIntelligence.tsx:246:                    {scanLogs.map((log, i) => (
+components/DroneSwarmCommand.tsx:23:    return Array.from({ length: 24 }).map((_, i) => ({
+components/DroneSwarmCommand.tsx:40:      setDrones(prev => prev.map(d => {
+components/DroneSwarmCommand.tsx:135:             {drones.map(drone => (
+components/DroneSwarmCommand.tsx:155:                   {(['SURVEILLANCE', 'JAMMING', 'STRIKE'] as const).map(type => (
+components/DroneSwarmCommand.tsx:178:                   {drones.map(d => (
+components/DroneSwarmCommand.tsx:239:                 ].map(item => (
+components/LiveComms.tsx:127:             {[1,2,3,4,5].map(i => <div key={i} className={`w-1 bg-cyan-400 rounded-full animate-pulse`} style={{height: `${12 + Math.random()*20}px`, animationDelay: `${i*0.1}s`}}></div>)}
+components/LiveComms.tsx:146:           {transcriptions.slice(-10).map((t, i) => (
+components/DarkLinkProtocol.tsx:130:              logs.map((log, i) => {
+components/SpectrumAnalyzer.tsx:210:                       {[100, 250, 500, 1000].map(s => (
+components/NeuralProcessor.tsx:146:               {logs.map((log, i) => (
+components/TacticalHUD.tsx:219:    const mappedEvents: BugReportEvent[] = eventLogs.map(e => ({
+components/TacticalHUD.tsx:311:                   {[1,2,3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-red-500/40 animate-pulse" />)}
+components/TacticalHUD.tsx:315:                {filteredSatellites.map((s) => (
+components/TacticalHUD.tsx:356:            {(['CLEAR', 'OVERCAST', 'LIGHT_RAIN', 'HEAVY_STORM'] as WeatherCondition[]).map((cond) => (
+components/TacticalHUD.tsx:503:                eventLogs.map((log, i) => (
+components/WeatherDashboard.tsx:140:                     {Object.entries(RAIN_FADE_MATRIX).map(([key, data]) => (
+components/QuantumTimeline.tsx:93:            {years.map(year => (
+components/QuantumTimeline.tsx:108:          {TIMELINE_DATA.map((section, sIdx) => (
+components/QuantumTimeline.tsx:119:                {section.events.map((event, eIdx) => (
+components/RansomwareSim.tsx:77:${encryptedFiles.map(f => `- ${f.name}.locked (${f.size})`).join('\n')}
+components/RansomwareSim.tsx:135:              {logs.map((log, i) => (
+components/RansomwareSim.tsx:154:              {TARGET_FILES.map(file => {
+components/AfterActionReport.tsx:91:    const tableData = INITIAL_ACTIONS.map(action => [
+components/AfterActionReport.tsx:227:                    {INITIAL_ACTIONS.map((action, i) => (
+components/ElectronicWarfare.tsx:166:               {['DENIAL_OF_SERVICE', 'GPS_SPOOFING', 'LINK_HIJACK', 'NOISE_FLOOR_RAISE'].map(p => (
+components/ElectronicWarfare.tsx:197:                      {Array.from({ length: 50 }).map((_, i) => (
+components/ElectronicWarfare.tsx:203:                    {spectrumData.map((v, i) => (
+components/DeepfakeComms.tsx:48:        setWaveformBars(prev => prev.map(() => 10 + Math.random() * 80));
+components/DeepfakeComms.tsx:119:    const reportStr = `SYNTHETIC VOICE OPERATIONS - TRANSCRIPT LOG\n--------------------------------------------\nTIMESTAMP: ${new Date().toISOString()}\nTARGET MODEL: ${activeModel?.name} (${activeModel?.role})\nCONFIDENCE SCORE: ${activeModel?.confidence}%\n\nSYNTHESIZED PAYLOAD (RAW TEXT):\n"${inputText}"\n\nEXECUTION LOGS:\n${logs.map(l => `[${l.time}] ${l.msg}`).join('\n')}`;
+components/DeepfakeComms.tsx:160:                {VOICE_MODELS.map(model => (
+components/DeepfakeComms.tsx:235:               {waveformBars.map((height, i) => (
+components/DeepfakeComms.tsx:252:                {logs.map((log, i) => (
+components/WarGamesSimulator.tsx:134:${eventLog.map(e => `[${e.timestamp}] ${e.team}: ${e.action}${e.rationale ? ` (Rationale: ${e.rationale})` : ''}`).join('\n')}
+components/WarGamesSimulator.tsx:173:                                  {OBJECTIVE_PRESETS.map(op => <option key={op} value={op}>{op}</option>)}
+components/WarGamesSimulator.tsx:233:                        {eventLog.map(log => (
+components/QuantumDecryptor.tsx:11:  const [qubits, setQubits] = useState<number[]>(Array(16).fill(0).map(() => Math.random()));
+components/QuantumDecryptor.tsx:32:      setQubits(prev => prev.map(q => Math.random() > 0.5 ? Math.random() : q));
+components/QuantumDecryptor.tsx:118:            {qubits.map((q, i) => (
+components/QuantumDecryptor.tsx:183:                  foundKeys.map(key => (
+components/CyberAttackSuite.tsx:157:                    {ATTACK_MODULES.map(m => (
+components/CyberAttackSuite.tsx:247:               {trafficData.map((d, i) => (
+components/CyberAttackSuite.tsx:263:               ].map(stat => (
+components/CyberAttackSuite.tsx:288:                 logs.map(log => (
+components/SpectralCanary.tsx:114:               ].map((sys, i) => (
+components/SpectralCanary.tsx:182:                      events.map((event) => (
+components/GroverVisualizer.tsx:41:    setStates(states.map(s => ({ ...s, probability: 0.25, amplitude: 0.5 })));
+components/GroverVisualizer.tsx:47:    setStates(states.map(s => ({
+components/GroverVisualizer.tsx:61:    const newStates = states.map(s => {
+components/GroverVisualizer.tsx:142:                {logs.map((log, i) => (
+components/GroverVisualizer.tsx:167:                 {states.map((s) => (
+components/YARAScanner.tsx:125:${logs.map((l, i) => `[${i + 1}] [${l.type.toUpperCase()}] ${l.msg}`).join('\n')}
+components/YARAScanner.tsx:128:${matches.length === 0 ? 'No matches found.' : matches.map(m => `OFFSET: ${m.offset} | MATCH: ${m.match} | VALUE: ${m.value}`).join('\n')}
+components/YARAScanner.tsx:194:                       {templates.map(t => (
+components/YARAScanner.tsx:277:                    {[1,2,3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-slate-900 border border-slate-800"></div>)}
+components/YARAScanner.tsx:288:                 {logs.map((log, i) => (
+components/YARAScanner.tsx:314:                      {matches.map((m, i) => (
+components/SpoofTracer.tsx:156:                    {logs.map((log, i) => (
+components/SpoofTracer.tsx:209:                            {analysis.redFlags.map((flag, i) => (
+components/SpoofTracer.tsx:225:                            {analysis.mitigationSteps.map((step, i) => (
+components/SCADAExploit.tsx:84:           setTargets(prev => prev.map(t => t.id === activeTarget.id ? { ...t, status: 'compromised' } : t));
+components/SCADAExploit.tsx:86:           setTargets(prev => prev.map(t => t.id === activeTarget.id ? { ...t, status: 'critical' } : t));
+components/SCADAExploit.tsx:100:    const reportList = logs.map(l => `[${l.time}] ${l.type.toUpperCase()}: ${l.msg}`).join('\n');
+components/SCADAExploit.tsx:159:                     {targets.map(t => <option key={t.id} value={t.id}>{t.name} ({t.ip})</option>)}
+components/SCADAExploit.tsx:171:                     {PAYLOADS.filter(p => activeTarget && p.compat?.includes(activeTarget.type)).map(p => (
+components/SCADAExploit.tsx:198:                  {logs.map((log, i) => (
+components/SCADAExploit.tsx:220:                 {targets.map(t => (
+components/BugBountyLab.tsx:191:          {['targets', 'research', 'discovery', 'poc', 'report'].map((tab) => (
+components/BugBountyLab.tsx:215:                {BOUNTY_TARGETS.map(target => (
+components/BugBountyLab.tsx:249:                ].map((step, i) => (
+components/BugBountyLab.tsx:299:                                   {selectedTarget.focusAreas.map((area, i) => (
+components/BugBountyLab.tsx:435:                            ].map((stat, i) => (
+components/BugBountyLab.tsx:534:                            ].map((stat, i) => (
+components/QuantumIntelligenceHub.tsx:203:              ].map((item, idx) => (
+components/QuantumIntelligenceHub.tsx:431:          {['NIST', 'NCSC', 'GAO', 'DoD'].map(source => (
+components/QuantumEntropy.tsx:7:  const [entropy, setEntropy] = React.useState(Array(24).fill(0).map(() => Math.random()));
+components/QuantumEntropy.tsx:12:      setEntropy(prev => prev.map(v => 
+components/QuantumEntropy.tsx:37:        {entropy.map((val, i) => (
+components/TacticalScriptEnv.tsx:47:    setScripts(prev => prev.map(s => s.id === activeScriptId ? { ...s, status: 'RUNNING' } : s));
+components/TacticalScriptEnv.tsx:72:        setScripts(prev => prev.map(s => s.id === activeScriptId ? { ...s, status: 'SUCCESS' } : s));
+components/TacticalScriptEnv.tsx:76:        setScripts(prev => prev.map(s => s.id === activeScriptId ? { ...s, status: 'ERROR' } : s));
+components/TacticalScriptEnv.tsx:111:              {scripts.map(s => (
+components/TacticalScriptEnv.tsx:177:                const newScripts = scripts.map(s => s.id === activeScriptId ? { ...s, code: e.target.value } : s);
+components/TacticalScriptEnv.tsx:212:                 consoleLogs.map(log => (
+components/AITechnician.tsx:109:    const body = messages.map(m => `[${m.timestamp.toLocaleTimeString()}] ${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+components/AITechnician.tsx:223:      mediaData: currentFiles.map(f => ({ data: f.data, mimeType: f.mimeType }))
+components/AITechnician.tsx:357:        {messages.map((m, i) => (
+components/AITechnician.tsx:367:                  {m.grounding.map((chunk, idx) => (
+components/AITechnician.tsx:400:            {attachedFiles.map((f, i) => (
+components/RadioInterceptSuite.tsx:200:                    {(['AM', 'FM', 'LSB', 'USB', 'DMR', 'P25'] as const).map(m => (
+components/RadioInterceptSuite.tsx:234:              {bands.map(b => (
+components/RadioInterceptSuite.tsx:307:                 messages.map(msg => (
+components/MediaForge.tsx:92:                {(['IMAGE_GEN', 'VIDEO_GEN', 'IMAGE_EDIT'] as MediaMode[]).map(m => (
+components/MediaForge.tsx:110:                            ? ['16:9', '9:16'].map(r => <option key={r} value={r}>{r}</option>)
+components/MediaForge.tsx:111:                            : ['1:1', '3:4', '4:3', '9:16', '16:9'].map(r => <option key={r} value={r}>{r}</option>)
+components/MediaForge.tsx:121:                          {['512px', '1K'].map(s => (
+components/MediaForge.tsx:132:                          {['720p', '1080p'].map(s => (
+components/RemoteAccessTerminal.tsx:122:              {NODES.map(n => (
+components/RemoteAccessTerminal.tsx:202:                    {terminalOutput.map(o => (
+components/RemoteAccessTerminal.tsx:210:                   {terminalOutput.map(out => (
+components/AegisC2.tsx:173:                 {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-800"></div>)}
+components/AegisC2.tsx:227:               {menuItems.map(item => (
+components/AegisC2.tsx:251:                        const data = logs.map(l => `[${l.timestamp}] [${l.type}] ${l.message}`).join('\n');
+components/AegisC2.tsx:286:                       {logs.map((log) => (
+components/AegisC2.tsx:357:                       {[1,2,3,4,5,6,7,8].map(i => <div key={i} className={`h-1 flex-grow rounded-full ${i <= 3 ? 'bg-emerald-500' : 'bg-slate-800'}`}></div>)}
+components/AegisC2.tsx:367:                       {Array.from({ length: 12 }).map((_, i) => (
+components/AegisC2.tsx:393:                    {SCRIPTS.map(script => (
+components/AegisC2.tsx:482:                    {sessions.map((session, index) => (
+components/AegisC2.tsx:578:                             ].map((icon, i) => (
+components/AegisC2.tsx:598:                                {[1,2,3,4].map(i => (
+components/OrbitalStriker.tsx:205:           {(Object.keys(vectors) as Array<keyof typeof vectors>).map(v => (
+components/OrbitalStriker.tsx:270:                 history.map(log => (
+components/SecurityTools.tsx:349:        ].map((tab) => (
+components/SecurityTools.tsx:370:                   {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-cyan-500/20"></div>)}
+components/SecurityTools.tsx:389:                          ].map((item, i) => (
+components/SecurityTools.tsx:475:                      {[1,2,3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-cyan-500/10 border border-slate-800"></div>)}
+components/SecurityTools.tsx:485:                  {dnsLogs.map((log, i) => (
+components/SecurityTools.tsx:511:              {TACTICAL_SCRIPTS.map(script => (
+components/SecurityTools.tsx:543:                     {[1,2,3,4,5].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-800"></div>)}
+components/SecurityTools.tsx:591:                      {[1,2,3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-slate-900 border border-slate-800"></div>)}
+components/SecurityTools.tsx:601:                  {ipAttackLog.map((log, i) => (
+components/MissionPlanner.tsx:42:${objectives.map(o => `[${o.status}] Priority: ${o.priority} | ${o.title}`).join('\n')}
+components/MissionPlanner.tsx:56:    setObjectives(prev => prev.map(o => {
+components/MissionPlanner.tsx:138:                    {objectives.map((o) => (
+components/Layout.tsx:116:          {[1,2,3].map(i => (
+components/ThreatDossier.tsx:112:      setRecords(prev => prev.map(r => r.id === selectedRecord.id ? { ...r, vulnerabilities: result } : r));
+components/ThreatDossier.tsx:136:    setRecords(prev => prev.map(r => r.id === selectedRecord.id ? { ...r, status: 'NEUTRALIZED' } : r));
+components/ThreatDossier.tsx:176:    setRecords(prev => prev.map(r => r.id === selectedRecord.id ? { ...r, status: 'NEUTRALIZED', mitigations: [...r.mitigations, "SSH Migration", "Apache Patching", "TLS Enforcement"] } : r));
+components/ThreatDossier.tsx:246:                  {hardenedSteps.map((step, i) => (
+components/ThreatDossier.tsx:315:                  {engagementLog.map((log, i) => (
+components/ThreatDossier.tsx:390:              {records.map((record) => (
+components/ThreatDossier.tsx:554:                                       {selectedRecord.vulnerabilities.vulnerabilities.map((v, i) => (
+components/ThreatDossier.tsx:601:                            {selectedRecord.mitigations.map((step, i) => {
+components/ThreatDossier.tsx:638:                             {selectedRecord.artifacts.map((art, i) => (
+components/ThreatDossier.tsx:659:                             ].map((log, i) => (
+components/ThreatDossier.tsx:713:                                  {[...Array(24)].map((_, i) => (
+components/WifiCountermeasures.tsx:51:        setNetworks(prev => prev.map(net => {
+components/WifiCountermeasures.tsx:104:                         {networks.map((net, idx) => (
+components/WifiCountermeasures.tsx:170:                            {logs.map((log, i) => (
+components/ConstellationView.tsx:52:        {satellites.map((sat) => (
+components/CyberThreatMap.tsx:82:${threats.map(t => `- [${t.type}] Intensity: ${t.intensity.toFixed(1)}% at COORDS(${t.x.toFixed(0)}, ${t.y.toFixed(0)})`).join('\n')}
+components/CyberThreatMap.tsx:119:         {['DDOS', 'INTRUSION', 'SPOOFING', 'MALWARE'].map(type => (
+components/VSATConfig.tsx:261:                        const data = logs.map(l => `[${l.timestamp}] [${l.category}] [${l.status}] ${l.action}`).join('\n');
+components/VSATConfig.tsx:280:                  {logs.map((log) => (
+components/NodeScanner.tsx:112:            const foundPorts: ScanResult[] = shuffled.slice(0, foundCount).map(s => ({
+components/NodeScanner.tsx:158:${results.map(r => `[${r.port}/${r.protocol}] ${r.state.toUpperCase()} - ${r.service} (${r.version})`).join('\n')}
+components/NodeScanner.tsx:161:${aiAnalysis?.vulnerabilities.map(v => `- ${v}`).join('\n') || 'No critical vulnerabilities identified.'}
+components/NodeScanner.tsx:231:                    {['quick', 'intense', 'stealth', 'udp', 'vuln', 'all-ports'].map(type => (
+components/NodeScanner.tsx:281:                    {terminalLogs.map((log, i) => (
+components/NodeScanner.tsx:319:                        results.map((r, i) => (
+components/NodeScanner.tsx:379:                             {aiAnalysis.vulnerabilities.map((v, i) => (
+components/NodeScanner.tsx:406:                                setResults(prev => prev.map(r => {
+components/SignalJammer.tsx:96:                 {(Object.keys(bands) as Array<keyof typeof bands>).map(b => (
+components/SignalJammer.tsx:175:               {noiseLevel.map((v, i) => (
+components/ZeroDayForge.tsx:204:                  {OS_OPTIONS.map(os => (
+components/ZeroDayForge.tsx:225:                  {VULN_CLASSES.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+components/ZeroDayForge.tsx:236:                  {EVASION_TECHS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
+components/ZeroDayForge.tsx:247:                  {PAYLOAD_TYPES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+components/ZeroDayForge.tsx:289:              {compileLogs.map((log, i) => (
+components/USBDeviceManager.tsx:48:      const mapped = pairedDevices.map((d: any) => ({
+components/USBDeviceManager.tsx:108:${devices.map(d => `- ${d.productName || 'Unknown'} (VID:${d.vendorId.toString(16)}, PID:${d.productId.toString(16)}) SN:${d.serialNumber || 'N/A'}`).join('\n')}
+components/USBDeviceManager.tsx:111:${logs.map(l => `[${l.timestamp}] [${l.level}] ${l.message}`).join('\n')}
+components/USBDeviceManager.tsx:173:                devices.map(device => (
+components/USBDeviceManager.tsx:265:                      {logs.map(log => (
+components/PalantirAuditSuite.tsx:141:     setAipLabels(prev => prev.map(l => l.id === id ? { ...l, label: 'RESTRICTED', safe: true } : l));
+components/PalantirAuditSuite.tsx:157:    setActiveSessions(prev => prev.map(s => s.id === id ? { ...s, safe: true, risk: 'REVOKED' } : s));
+components/PalantirAuditSuite.tsx:173:    setApiEndpoints(prev => prev.map(e => e.id === id ? { ...e, validation: 'Strict URI normalization', status: 'SECURED', safe: true } : e));
+components/PalantirAuditSuite.tsx:225:${scanProgress >= 100 ? PALANTIR_CVES.map(v => `[${v.severity}] ${v.cve}: ${v.title}\n  Affected: ${v.affected}\n  Remediation: ${v.remediation}\n  Status: ${remediated.includes(v.id) ? 'REMEDIATED' : 'OPEN'}`).join('\n\n') : 'Scan incomplete.'}
+components/PalantirAuditSuite.tsx:253:          {['vulnerabilities', 'scripts', 'ontology'].map((tab) => (
+components/PalantirAuditSuite.tsx:299:                           {activeSessions.map(session => (
+components/PalantirAuditSuite.tsx:360:                           {apiEndpoints.map(endpoint => (
+components/PalantirAuditSuite.tsx:421:                           {aipLabels.map(label => (
+components/PalantirAuditSuite.tsx:502:                {scanLog.map((log, i) => (
+components/PalantirAuditSuite.tsx:535:                {PALANTIR_CVES.map((vuln) => {
+components/ConnectivityMesh.tsx:49:${satellites.map(s => `- ${s.name} (${s.operator}) | Latency: 142ms`).join('\n')}
+components/ConnectivityMesh.tsx:52:${links.map(l => `- Link: ${satellites[l.fromIdx]?.name} <-> ${satellites[l.toIdx]?.name} (Active: ${l.active})`).join('\n')}
+components/ConnectivityMesh.tsx:70:    return satellites.map((sat, i) => {
+components/ConnectivityMesh.tsx:116:               {links.map((link, i) => {
+components/ConnectivityMesh.tsx:138:               {points.map((p, i) => {
+components/ConnectivityMesh.tsx:174:                  ].map((item, i) => (
+components/AptLateralTracker.tsx:77:    setNetwork(prev => prev.map(node => {
+components/AptLateralTracker.tsx:94:    const reportStr = `APT LATERAL MOVEMENT REPORT\n-------------------------------\n${logs.map(l => `[${l.time}] ${l.msg}`).join('\n')}\n\nFINAL COMPROMISED HOSTS:\n${network.filter(n => n.compromised).map(n => `- ${n.name} (${n.ip})`).join('\n')}`;
+components/AptLateralTracker.tsx:145:              {network.map((node) => (
+components/AptLateralTracker.tsx:183:              {APT_PHASES.map((phase, idx) => (
+components/AptLateralTracker.tsx:211:              {logs.map((log, i) => (

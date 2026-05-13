@@ -145,9 +145,9 @@ export const ThreatDossier: React.FC = () => {
     setIsHardening(true);
     setHardenedSteps([]);
     let execSteps = [`INIT_PATCH: ${step.substring(0, 20).toUpperCase()}... [OK]`, "VERIFYING_INTEGRITY... [VERIFIED]"];
-    if (step.includes('memory wipe')) execSteps = ["INITIATING_MEMORY_WIPE... [OK]", "REIMAGING_FIRMWARE... [VERIFIED]"];
-    if (step.includes('UART')) execSteps = ["SENDING_BIOS_LOCK_CMD... [OK]", "UART_BRIDGE_DISABLED_AT_0X82... [VERIFIED]"];
-    if (step.includes('cryptographic keys')) execSteps = ["DISCARDING_LOCAL_KEYRING... [OK]", "DISTRIBUTING_NEW_CERTS... [VERIFIED]"];
+    if ((step || '').includes('memory wipe')) execSteps = ["INITIATING_MEMORY_WIPE... [OK]", "REIMAGING_FIRMWARE... [VERIFIED]"];
+    if ((step || '').includes('UART')) execSteps = ["SENDING_BIOS_LOCK_CMD... [OK]", "UART_BRIDGE_DISABLED_AT_0X82... [VERIFIED]"];
+    if ((step || '').includes('cryptographic keys')) execSteps = ["DISCARDING_LOCAL_KEYRING... [OK]", "DISTRIBUTING_NEW_CERTS... [VERIFIED]"];
     
     for (const s of execSteps) {
       await new Promise(r => setTimeout(r, 600));

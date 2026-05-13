@@ -279,7 +279,7 @@ STIA_CMD: END_AUDIT_LOG
                         <p className="text-slate-800 italic">SYSTEM_IDLE: Awaiting scan mission parameters...</p>
                     )}
                     {terminalLogs.map((log, i) => (
-                        <p key={i} className={log.includes('ALERT') || log.includes('DEEP_AUDIT') ? 'text-rose-400 font-bold' : 'text-slate-400'}>
+                        <p key={i} className={(log || '').includes('ALERT') || (log || '').includes('DEEP_AUDIT') ? 'text-rose-400 font-bold' : 'text-slate-400'}>
                            {log}
                         </p>
                     ))}

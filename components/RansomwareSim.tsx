@@ -133,7 +133,7 @@ ${encryptedFiles.map(f => `- ${f.name}.locked (${f.size})`).join('\n')}
                 </div>
               )}
               {logs.map((log, i) => (
-                <div key={i} className={log.includes('!!!') ? 'text-red-500 font-bold' : log.includes('[ENCRYPT]') ? 'text-orange-400' : 'text-slate-400'}>
+                <div key={i} className={(log || '').includes('!!!') ? 'text-red-500 font-bold' : (log || '').includes('[ENCRYPT]') ? 'text-orange-400' : 'text-slate-400'}>
                   {log}
                 </div>
               ))}

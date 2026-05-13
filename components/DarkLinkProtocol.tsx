@@ -128,8 +128,8 @@ export const DarkLinkProtocol: React.FC = () => {
               </div>
             ) : (
               logs.map((log, i) => {
-                const isError = log.includes('ERROR');
-                const isSuccess = log.includes('ESTABLISHED');
+                const isError = (log || '').includes('ERROR');
+                const isSuccess = (log || '').includes('ESTABLISHED');
                 return (
                   <div key={i} className={`text-xs break-all leading-relaxed ${isError ? 'text-rose-500 drop-shadow-[0_0_2px_rgba(244,63,94,0.3)]' : isSuccess ? 'text-emerald-400 font-bold' : 'text-cyan-500/80'}`}>
                     {log}

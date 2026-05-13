@@ -549,7 +549,7 @@ STIA_CMD: QUARANTINE_REQUESTED
                           <p className="text-slate-700 italic">SYSTEM_IDLE: Awaiting signature scan mission...</p>
                        )}
                        {yaraLogs.map((log, i) => (
-                          <p key={i} className={`${log.includes('ALERT') || log.includes('OFFSET') ? 'text-rose-400 font-bold' : 'text-slate-400'}`}>
+                          <p key={i} className={`${(log || '').includes('ALERT') || (log || '').includes('OFFSET') ? 'text-rose-400 font-bold' : 'text-slate-400'}`}>
                              {log}
                           </p>
                        ))}

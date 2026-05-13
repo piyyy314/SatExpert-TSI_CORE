@@ -37,12 +37,13 @@ export const DeepfakeComms: React.FC = () => {
   const [isSynthesizing, setIsSynthesizing] = useState(false);
   const [isExecutingCall, setIsExecutingCall] = useState(false);
   const [isAudioReady, setIsAudioReady] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [logs, setLogs] = useState<{ time: string, msg: string }[]>([]);
   const [waveformBars, setWaveformBars] = useState<number[]>(Array(40).fill(10));
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
-    if (isSynthesizing || isExecutingCall) {
+    if (isSynthesizing || isExecutingCall || isPlayingAudio) {
       interval = setInterval(() => {
         setWaveformBars(prev => prev.map(() => 10 + Math.random() * 80));
       }, 100);
@@ -50,7 +51,7 @@ export const DeepfakeComms: React.FC = () => {
       setWaveformBars(Array(40).fill(10));
     }
     return () => clearInterval(interval);
-  }, [isSynthesizing, isExecutingCall]);
+  }, [isSynthesizing, isExecutingCall, isPlayingAudio]);
 
   const activeModel = VOICE_MODELS.find(m => m.id === selectedModel);
 
@@ -81,6 +82,23 @@ export const DeepfakeComms: React.FC = () => {
         setIsAudioReady(true);
       }
     }, 800);
+  };
+
+  const listenLive = () => {
+    setIsPlayingAudio(true);
+    // Simple Web Speech API fallback
+    const msg = new SpeechSynthesisUtterance(inputText);
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+       msg.voice = voices[activeModel?.id === 'v2' ? 1 : 0] || voices[0];
+    }
+    msg.pitch = activeModel?.id === 'v4' ? 0.8 : activeModel?.id === 'v1' ? 0.6 : 1;
+    msg.rate = 0.9;
+    
+    msg.onend = () => setIsPlayingAudio(false);
+    msg.onerror = () => setIsPlayingAudio(false);
+    
+    window.speechSynthesis.speak(msg);
   };
 
   const deployCall = () => {
@@ -183,7 +201,7 @@ export const DeepfakeComms: React.FC = () => {
              <textarea 
                value={inputText}
                onChange={(e) => { setInputText(e.target.value); setIsAudioReady(false); }}
-               disabled={isSynthesizing || isSimulatingCall}
+               disabled={isSynthesizing || isExecutingCall}
                className="w-full h-32 bg-slate-900/50 border border-slate-800 rounded-xl p-4 text-[13px] font-mono text-slate-300 focus:border-indigo-500/50 focus:outline-none resize-none custom-scrollbar disabled:opacity-50"
                placeholder="Enter text to synthesize in target's voice..."
              />
@@ -233,11 +251,11 @@ export const DeepfakeComms: React.FC = () => {
                 )}
                 {logs.map((log, i) => (
                   <div key={i} className={
-                    log.msg.includes('[!]') || log.msg.includes('Delivered') ? 'text-emerald-400 font-bold' : 
-                    log.msg.includes('[=]') ? 'text-indigo-400 font-bold' : 'text-slate-400'
+                    (log?.msg || '').includes('[!]') || (log?.msg || '').includes('Delivered') ? 'text-emerald-400 font-bold' : 
+                    (log?.msg || '').includes('[=]') ? 'text-indigo-400 font-bold' : 'text-slate-400'
                   }>
-                    <span className="text-slate-600 mr-2">[{log.time}]</span>
-                    {log.msg}
+                    <span className="text-slate-600 mr-2">[{log?.time}]</span>
+                    {log?.msg}
                   </div>
                 ))}
              </div>
@@ -247,23 +265,36 @@ export const DeepfakeComms: React.FC = () => {
                  <motion.div 
                    initial={{ opacity: 0, y: 10 }}
                    animate={{ opacity: 1, y: 0 }}
-                   className="mt-6 flex items-center justify-between p-4 bg-red-950/20 border border-red-900/50 rounded-xl"
+                   className="mt-6 flex flex-col sm:flex-row items-center justify-between p-4 bg-red-950/20 border border-red-900/50 rounded-xl space-y-4 sm:space-y-0"
                  >
-                    <div className="flex items-center text-red-500">
-                      <AlertTriangle className="w-5 h-5 mr-3" />
+                    <div className="flex items-center text-red-500 w-full sm:w-auto">
+                      <AlertTriangle className="w-5 h-5 mr-3 shrink-0" />
                       <div>
                          <div className="text-[11px] font-bold uppercase tracking-widest leading-none mb-1">Payload Ready for Deployment</div>
                          <div className="text-[9px] font-mono text-red-400">Injecting via Secure SIP Trunk (Auto-spoof Caller ID)</div>
                       </div>
                     </div>
                     
-                    <button 
-                      onClick={deployCall}
-                      className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded uppercase tracking-widest text-[10px] font-black flex items-center shadow-[0_0_20px_rgba(220,38,38,0.4)]"
-                    >
-                      <PhoneCall className="w-4 h-4 mr-2" />
-                      Initiate Call
-                    </button>
+                    <div className="flex space-x-3 w-full sm:w-auto">
+                      <button 
+                        onClick={listenLive}
+                        disabled={isPlayingAudio}
+                        className={`flex-1 sm:flex-none px-4 py-2 border rounded uppercase tracking-widest text-[10px] font-black flex items-center justify-center transition-all ${
+                           isPlayingAudio ? 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-900 border-slate-700 hover:border-indigo-500 hover:text-indigo-400 text-slate-300'
+                        }`}
+                      >
+                        {isPlayingAudio ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
+                        Listen Live
+                      </button>
+
+                      <button 
+                        onClick={deployCall}
+                        className="flex-1 sm:flex-none px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded uppercase tracking-widest text-[10px] font-black flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                      >
+                        <PhoneCall className="w-4 h-4 mr-2 shrink-0" />
+                        Initiate Call
+                      </button>
+                    </div>
                  </motion.div>
                )}
              </AnimatePresence>

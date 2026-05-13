@@ -154,7 +154,7 @@ export const SpoofTracer: React.FC = () => {
                  <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-hide text-[9px] font-mono">
                     {logs.length === 0 && <p className="text-slate-800 italic">&gt; Awaiting command for trace initialization...</p>}
                     {logs.map((log, i) => (
-                        <p key={i} className={`${log.includes('ALERT') || log.includes('URGENT') ? 'text-red-400 font-black' : 'text-slate-400'}`}>
+                        <p key={i} className={`${(log || '').includes('ALERT') || (log || '').includes('URGENT') ? 'text-red-400 font-black' : 'text-slate-400'}`}>
                            {log}
                         </p>
                     ))}

@@ -246,7 +246,7 @@ export const PurpleTeamArsenal: React.FC = () => {
                             {fuzzing.logs.map((log, i) => (
                               <div key={i} className="flex space-x-4">
                                 <span className="opacity-30">[{new Date().toLocaleTimeString()}]</span>
-                                <span className={log.includes('[CRASH]') ? 'text-rose-500 font-bold bg-rose-500/10 px-1 rounded' : ''}>{log}</span>
+                                <span className={(log || '').includes('[CRASH]') ? 'text-rose-500 font-bold bg-rose-500/10 px-1 rounded' : ''}>{log}</span>
                               </div>
                             ))}
                          </div>
@@ -372,8 +372,8 @@ export const PurpleTeamArsenal: React.FC = () => {
                              {stat.icon}
                           </div>
                           <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${
-                             stat.trend.includes('+') ? 'bg-emerald-500/10 text-emerald-500' : 
-                             stat.trend.includes('ALERT') ? 'bg-rose-500/10 text-rose-500 animate-pulse' : 
+                             (stat?.trend || '').includes('+') ? 'bg-emerald-500/10 text-emerald-500' : 
+                             (stat?.trend || '').includes('ALERT') ? 'bg-rose-500/10 text-rose-500 animate-pulse' : 
                              'bg-slate-800 text-slate-500'
                           }`}>
                              {stat.trend}

@@ -44,7 +44,7 @@ export const TrafficSniffer: React.FC<{ isStealthMode: boolean }> = ({ isStealth
         "CONNECT 10.0.0.1:443 HTTP/1.1"
       ];
       const payload = payloads[Math.floor(Math.random() * payloads.length)];
-      const isInteresting = KEYWORDS.some(word => payload.toLowerCase().includes(word));
+      const isInteresting = KEYWORDS.some(word => payload?.toLowerCase()?.includes(word));
 
       const newPacket: Packet = {
         id: Math.random().toString(36).substring(2, 9),

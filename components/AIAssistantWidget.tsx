@@ -2,7 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, Send, Cpu, ShieldAlert, Zap } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+const getAI = () => {
+    if (!aiClient) {
+        aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    }
+    return aiClient;
+};
 
 interface Message {
   role: 'user' | 'model';
@@ -44,6 +50,7 @@ export const AIAssistantWidget: React.FC = () => {
       const historyContents = messages.slice(1).map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join('\n');
       const fullPrompt = `Previous history:\n${historyContents}\n\n[USER]: ${userMessage}`;
 
+      const ai = getAI();
       const response = await ai.models.generateContent({
         model: "gemini-3.1-pro-preview",
         contents: fullPrompt,

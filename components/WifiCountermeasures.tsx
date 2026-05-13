@@ -13,7 +13,7 @@ interface Network {
 export const WifiCountermeasures: React.FC = () => {
     const [networks, setNetworks] = useState<Network[]>([]);
     const [isScanning, setIsScanning] = useState(false);
-    const [logs, setLogs] = useState<{time: string, msg: string}>[]>([]);
+    const [logs, setLogs] = useState<{time: string, msg: string}[]>([]);
     const [selectedBssid, setSelectedBssid] = useState<string | null>(null);
 
     const addLog = (msg: string) => {
@@ -37,7 +37,7 @@ export const WifiCountermeasures: React.FC = () => {
         const scanInterval = setInterval(() => {
             if (index < possibleNetworks.length) {
                 setNetworks(prev => [...prev, possibleNetworks[index]]);
-                addLog(`Detected BSSID: ${possibleNetworks[index].bssid} (${possibleNetworks[index].ssid}) on Ch ${possibleNetworks[index].channel}`);
+                addLog(`Detected BSSID: ${possibleNetworks[index]?.bssid} (${possibleNetworks[index]?.ssid}) on Ch ${possibleNetworks[index]?.channel}`);
                 index++;
             } else {
                 clearInterval(scanInterval);
@@ -49,7 +49,7 @@ export const WifiCountermeasures: React.FC = () => {
 
     const toggleDeauth = (bssid: string) => {
         setNetworks(prev => prev.map(net => {
-            if (net.bssid === bssid) {
+            if (net?.bssid === bssid) {
                 const newDeauthState = !net.isDeauthing;
                 if (newDeauthState) {
                     addLog(`Executing 802.11 Deauth frames against: ${bssid}`);
@@ -101,25 +101,25 @@ export const WifiCountermeasures: React.FC = () => {
                     </div>
 
                     <div className="flex-1 overflow-y-auto space-y-2 pr-2">
-                         {networks.map(net => (
+                         {networks.map((net, idx) => (
                              <div 
-                                 key={net.bssid}
-                                 onClick={() => setSelectedBssid(net.bssid)}
-                                 className={`p-3 border rounded cursor-pointer transition-all ${selectedBssid === net.bssid ? 'bg-cyan-900/30 border-cyan-400' : 'bg-slate-950 border-slate-800 hover:border-cyan-700'} ${net.isDeauthing ? 'border-red-500 bg-red-950/20' : ''}`}
+                                 key={net?.bssid || idx}
+                                 onClick={() => net && setSelectedBssid(net?.bssid)}
+                                 className={`p-3 border rounded cursor-pointer transition-all ${selectedBssid === net?.bssid ? 'bg-cyan-900/30 border-cyan-400' : 'bg-slate-950 border-slate-800 hover:border-cyan-700'} ${net?.isDeauthing ? 'border-red-500 bg-red-950/20' : ''}`}
                              >
                                  <div className="flex justify-between items-start mb-2">
                                      <div>
-                                         <div className="font-bold text-slate-200">{net.ssid}</div>
-                                         <div className="text-[10px] text-slate-500">{net.bssid}</div>
+                                         <div className="font-bold text-slate-200">{net?.ssid}</div>
+                                         <div className="text-[10px] text-slate-500">{net?.bssid}</div>
                                      </div>
                                      <div className="flex items-center text-[10px]">
-                                         <SignalHigh className={`w-3 h-3 mr-1 ${net.signal > -50 ? 'text-emerald-500' : net.signal > -70 ? 'text-yellow-500' : 'text-red-500'}`} />
-                                         {net.signal} dBm
+                                         <SignalHigh className={`w-3 h-3 mr-1 ${net?.signal > -50 ? 'text-emerald-500' : net?.signal > -70 ? 'text-yellow-500' : 'text-red-500'}`} />
+                                         {net?.signal} dBm
                                      </div>
                                  </div>
                                  <div className="flex justify-between items-center text-[10px] text-slate-400 uppercase">
-                                     <span>CH: {net.channel}</span>
-                                     <span>ENC: {net.encryption}</span>
+                                     <span>CH: {net?.channel}</span>
+                                     <span>ENC: {net?.encryption}</span>
                                  </div>
                              </div>
                          ))}
@@ -139,10 +139,10 @@ export const WifiCountermeasures: React.FC = () => {
                            <button
                                disabled={!selectedBssid}
                                onClick={() => selectedBssid && toggleDeauth(selectedBssid)}
-                               className={`w-full py-3 border rounded text-xs font-black uppercase tracking-widest flex items-center justify-center transition-all ${!selectedBssid ? 'opacity-50 cursor-not-allowed border-slate-800 text-slate-600' : networks.find(n => n.bssid === selectedBssid)?.isDeauthing ? 'bg-red-900/50 border-red-500 text-red-400 animate-pulse' : 'hover:bg-red-950/50 border-red-900 text-red-500 hover:border-red-500'}`}
+                               className={`w-full py-3 border rounded text-xs font-black uppercase tracking-widest flex items-center justify-center transition-all ${!selectedBssid ? 'opacity-50 cursor-not-allowed border-slate-800 text-slate-600' : networks.find(n => n?.bssid === selectedBssid)?.isDeauthing ? 'bg-red-900/50 border-red-500 text-red-400 animate-pulse' : 'hover:bg-red-950/50 border-red-900 text-red-500 hover:border-red-500'}`}
                            >
                                <Zap className="w-4 h-4 mr-2" />
-                               {networks.find(n => n.bssid === selectedBssid)?.isDeauthing ? 'Halt Deauth' : 'Launch Deauth Attack'}
+                               {networks.find(n => n?.bssid === selectedBssid)?.isDeauthing ? 'Halt Deauth' : 'Launch Deauth Attack'}
                            </button>
 
                            <button

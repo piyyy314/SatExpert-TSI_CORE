@@ -87,8 +87,8 @@ export const TacticalHUD: React.FC<Props> = ({
 
   const filteredSatellites = useMemo(() => {
     return satellites.filter(s => 
-      (s.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-      (s.orbitalSlot || '').toLowerCase().includes(searchQuery.toLowerCase())
+      (s.name || '')?.toLowerCase()?.includes(searchQuery.toLowerCase()) || 
+      (s.orbitalSlot || '')?.toLowerCase()?.includes(searchQuery.toLowerCase())
     );
   }, [searchQuery, satellites]);
 
