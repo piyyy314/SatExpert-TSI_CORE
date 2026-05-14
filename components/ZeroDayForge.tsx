@@ -75,12 +75,17 @@ export const ZeroDayForge: React.FC = () => {
     setCompileLogs([]);
     setGeneratedExploit(null);
 
+    const osTarget = OS_OPTIONS.find(o => o.value === config.targetOS)?.label || config.targetOS;
+    const vulnDesc = VULN_CLASSES.find(v => v.value === config.vulnClass)?.label || config.vulnClass;
+    const evasionTech = EVASION_TECHS.find(e => e.value === config.evasion)?.label || config.evasion;
+    const payloadType = PAYLOAD_TYPES.find(p => p.value === config.payload)?.label || config.payload;
+
     const steps = [
       `[+] Initializing Zero-Day Forge Engine...`,
-      `[~] Target OS: ${config.targetOS.toUpperCase()}`,
-      `[~] Vulnerability Class: ${config.vulnClass.toUpperCase()}`,
-      `[~] Evasion Strategy: ${config.evasion.toUpperCase()}`,
-      `[+] Building payload primitive: ${config.payload}`,
+      `[~] Target OS: ${osTarget}`,
+      `[~] Vulnerability Class: ${vulnDesc}`,
+      `[~] Evasion Strategy: ${evasionTech}`,
+      `[+] Building payload primitive: ${payloadType}`,
       `[+] Searching for suitable ROP gadgets...`,
       `[~] Found 347 gadgets across ntdll/libc`,
       `[+] Constructing fake object for ${config.vulnClass}...`,
@@ -105,12 +110,17 @@ export const ZeroDayForge: React.FC = () => {
   };
 
   const createMockExploitCode = () => {
-    const isWin = config.targetOS === 'windows';
+    const osTarget = OS_OPTIONS.find(o => o.value === config.targetOS)?.label || config.targetOS;
+    const vulnDesc = VULN_CLASSES.find(v => v.value === config.vulnClass)?.label || config.vulnClass;
+    const evasionTech = EVASION_TECHS.find(e => e.value === config.evasion)?.label || config.evasion;
+    const payloadType = PAYLOAD_TYPES.find(p => p.value === config.payload)?.label || config.payload;
+
     return `#!/usr/bin/env python3
 # AUTO-GENERATED 0-DAY ARTIFACT
-# Target: ${config.targetOS.toUpperCase()} (${config.vulnClass})
-# Payload: ${config.payload}
-# Evasion: ${config.evasion}
+# Target: ${osTarget}
+# Vulnerability: ${vulnDesc}
+# Payload Primitive: ${payloadType}
+# Evasion Strategy: ${evasionTech}
 
 import struct
 import socket
@@ -125,11 +135,11 @@ def build_rop_chain():
     return rop
 
 def trigger_vuln():
-    print("[*] Allocating fake object structure...")
+    print("[*] Allocating fake object structure for ${config.vulnClass}...")
     fake_obj = b"A" * 64
     fake_obj += build_rop_chain()
     
-    # Evasion routine: ${config.evasion}
+    # Applying Evasion Layer: ${config.evasion}
     time.sleep(2) # Delay bypass
     print("[+] Heap feng shui complete. Triggering...")
     
@@ -142,7 +152,7 @@ def exploit(target_ip, target_port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((target_ip, target_port))
         
-        print("[*] Sending malicious packet...")
+        print(f"[*] Sending malicious packet with {config.payload}...")
         s.send(trigger_vuln())
         
         print("[+] Exploit sent. Awaiting connection/execution...")

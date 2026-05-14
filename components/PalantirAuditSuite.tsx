@@ -57,6 +57,15 @@ const PALANTIR_CVES: Vulnerability[] = [
     description: 'Default granular labels on some foundry datasets allow unintended lateral data movement between organizations.',
     affected: 'Foundry SaaS Deployments',
     remediation: 'Review and audit all multi-tenant labels using the AIP auditor.'
+  },
+  {
+    id: '4',
+    cve: 'CVE-2024-YZ9A',
+    title: 'AIP LLM Prompt Injection',
+    severity: 'CRITICAL',
+    description: 'AIP Copilot is vulnerable to crafted input that allows raw data plane execution without proper ontology masking.',
+    affected: 'AIP Core Services v1.2',
+    remediation: 'Enforce Semantic Firewalls'
   }
 ];
 
@@ -76,11 +85,18 @@ def test_ontology_endpoint(base_url, token):
   session_audit: `# Session analysis for CVE-2022-27891
 curl -X GET "https://palantir.internal/api/session/metadata" \\
      -H "X-Palantir-Auth: <USER_TOKEN>" | jq .session_owners
+`,
+  semantic_firewall: `# Apply semantic firewall rules
+from aip_core import OntologyMasking
+
+def apply_mask(prompt_context):
+    mask = OntologyMasking.load_policy('strict')
+    return mask.sanitize(prompt_context)
 `
 };
 
 export const PalantirAuditSuite: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'vulnerabilities' | 'scripts' | 'ontology'>('vulnerabilities');
+  const [activeTab, setActiveTab] = useState<'vulnerabilities' | 'scripts' | 'ontology' | 'topology' | 'threat_intel'>('vulnerabilities');
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanLog, setScanLog] = useState<string[]>([]);
@@ -108,6 +124,22 @@ export const PalantirAuditSuite: React.FC = () => {
     { id: '3', route: '/api/v2/stream/telemetry', validation: 'Regex whitelist', status: 'SECURE', safe: true },
   ]);
 
+  const [activeNodes, setActiveNodes] = useState<{id: string, x: number, y: number, connectedTo: string[], status: 'SECURE' | 'AT_RISK' | 'BREACHED'}[]>([]);
+
+  useEffect(() => {
+     if (activeTab === 'topology' && activeNodes.length === 0) {
+        // Generate mock topology
+        const nodes = Array.from({length: 12}).map((_, i) => ({
+           id: `NODE_0x${(i+1).toString(16).toUpperCase()}`,
+           x: 20 + Math.random() * 60,
+           y: 20 + Math.random() * 60,
+           connectedTo: [ `NODE_0x${Math.ceil((i > 0 ? i : 1) * Math.random()).toString(16).toUpperCase()}` ],
+           status: Math.random() > 0.8 ? 'BREACHED' : Math.random() > 0.5 ? 'AT_RISK' : 'SECURE' as any
+        }));
+        setActiveNodes(nodes);
+     }
+  }, [activeTab]);
+
   const startScan = () => {
     setIsScanning(true);
     setScanProgress(0);
@@ -115,6 +147,16 @@ export const PalantirAuditSuite: React.FC = () => {
   };
 
   const handleRemediate = (vulnId: string, remediationDetail: string) => {
+    if (vulnId === '4') {
+        setScanLog(prev => [
+            ...prev,
+            `[ACTION] Initiating Semantic Firewall Enforcement for AIP...`,
+            `[SYS] Loading guardrails for LLM prompts to prevent ontology bleeding.`,
+            `[COMP] Semantic Firewalls verified. Payload injection mitigated.`
+        ]);
+        setRemediated(prev => [...prev, vulnId]);
+        return;
+    }
     if (vulnId === '3') {
       setShowAIPAuditor(true);
       return;
@@ -249,18 +291,18 @@ ${scanProgress >= 100 ? PALANTIR_CVES.map(v => `[${v.severity}] ${v.cve}: ${v.ti
             </p>
           </div>
         </div>
-        <div className="flex space-x-2">
-          {['vulnerabilities', 'scripts', 'ontology'].map((tab) => (
+        <div className="flex space-x-2 overflow-x-auto custom-scrollbar pb-2">
+          {['vulnerabilities', 'scripts', 'ontology', 'topology', 'threat_intel'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              className={`whitespace-nowrap px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                 activeTab === tab 
                 ? 'bg-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.3)]' 
                 : 'text-slate-500 hover:text-white hover:bg-slate-900 border border-transparent'
               }`}
             >
-              {tab}
+              {tab.replace('_', ' ')}
             </button>
           ))}
         </div>
@@ -650,6 +692,28 @@ ${scanProgress >= 100 ? PALANTIR_CVES.map(v => `[${v.severity}] ${v.cve}: ${v.ti
                         </pre>
                       </div>
                     </div>
+
+                    {/* Script 3 */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center space-x-2">
+                          <ShieldCheck className="w-4 h-4 text-cyan-500" />
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Semantic_Firewall.py</span>
+                        </div>
+                        <button 
+                          onClick={() => copyToClipboard(CODE_SNIPPETS.semantic_firewall, 'semantic')}
+                          className="flex items-center space-x-2 text-[9px] font-black text-slate-600 hover:text-white transition-colors"
+                        >
+                          {copiedCode === 'semantic' ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Clipboard className="w-3 h-3" />}
+                          <span>{copiedCode === 'semantic' ? 'COPIED' : 'COPY CODE'}</span>
+                        </button>
+                      </div>
+                      <div className="p-6 bg-slate-900/80 rounded-3xl border border-slate-800 font-mono text-xs text-slate-300 relative overflow-hidden">
+                        <pre className="custom-scrollbar overflow-x-auto whitespace-pre">
+                          {CODE_SNIPPETS.semantic_firewall}
+                        </pre>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -717,6 +781,121 @@ ${scanProgress >= 100 ? PALANTIR_CVES.map(v => `[${v.severity}] ${v.cve}: ${v.ti
                      </button>
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'topology' && (
+              <motion.div
+                key="topology"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6 h-full"
+              >
+                 <div className="glass p-6 rounded-[32px] border-slate-800 bg-slate-950/40 relative h-[600px] overflow-hidden flex flex-col">
+                    <div className="flex items-center justify-between mb-4 z-10 relative">
+                       <div className="flex items-center space-x-3">
+                          <Globe className="w-5 h-5 text-cyan-500" />
+                          <h3 className="text-sm font-black text-white uppercase tracking-widest">Macro-level Network Topology</h3>
+                       </div>
+                       <div className="flex items-center space-x-3 text-[9px] font-black uppercase text-slate-500">
+                          <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 shadow-[0_0_5px_#10b981]"></span> SECURE</span>
+                          <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-amber-500 mr-2 shadow-[0_0_5px_#f59e0b]"></span> AT_RISK</span>
+                          <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-rose-500 mr-2 shadow-[0_0_5px_#f43f5e]"></span> BREACHED</span>
+                       </div>
+                    </div>
+                    
+                    <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.05)_0%,rgba(0,0,0,0)_70%)] pointer-events-none" />
+
+                    <div className="flex-grow w-full h-full relative z-10 origin-center scale-90">
+                       {/* Draw lines first */}
+                       <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                           {activeNodes.map(node => node.connectedTo.map(targetId => {
+                              const tgt = activeNodes.find(n => n.id === targetId);
+                              if(!tgt) return null;
+                              return (
+                                 <line 
+                                    key={`${node.id}-${tgt.id}`} 
+                                    x1={`${node.x}%`} y1={`${node.y}%`} 
+                                    x2={`${tgt.x}%`} y2={`${tgt.y}%`}
+                                    stroke={node.status === 'BREACHED' || tgt.status === 'BREACHED' ? 'rgba(244, 63, 94, 0.4)' : 'rgba(34, 211, 238, 0.2)'}
+                                    strokeWidth="1"
+                                 />
+                              )
+                           }))}
+                       </svg>
+
+                       {/* Nodes */}
+                       {activeNodes.map((node, i) => (
+                          <motion.div
+                             key={node.id}
+                             initial={{ scale: 0, opacity: 0 }}
+                             animate={{ scale: 1, opacity: 1 }}
+                             transition={{ delay: i * 0.05 }}
+                             className={`absolute w-3 h-3 -ml-1.5 -mt-1.5 rounded-full z-20 cursor-crosshair group ${node.status === 'SECURE' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : node.status === 'AT_RISK' ? 'bg-amber-500 shadow-[0_0_10px_#f59e0b] animate-pulse' : 'bg-rose-500 shadow-[0_0_15px_#f43f5e]'}`}
+                             style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                          >
+                             <div className="absolute top-4 left-1/2 -translate-x-1/2 p-2 bg-slate-950/90 border border-slate-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none min-w-[120px] shadow-2xl backdrop-blur-sm z-30">
+                                <div className="text-[10px] font-black text-white uppercase mb-1">{node.id}</div>
+                                <div className="text-[8px] font-mono text-slate-400">STATUS: <span className={node.status === 'SECURE' ? 'text-emerald-500' : node.status === 'AT_RISK' ? 'text-amber-500' : 'text-rose-500'}>{node.status}</span></div>
+                                <div className="text-[8px] font-mono text-slate-500 mt-1">CONN: {node.connectedTo.length} peer(s)</div>
+                             </div>
+                          </motion.div>
+                       ))}
+                    </div>
+                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'threat_intel' && (
+              <motion.div
+                key="threat_intel"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                  <div className="glass p-8 rounded-[40px] border-slate-800 bg-slate-950/40 space-y-6">
+                    <div className="flex items-center space-x-3 mb-6">
+                      <AlertCircle className="w-5 h-5 text-rose-500" />
+                      <h3 className="text-sm font-black text-rose-500 uppercase tracking-widest">Active Threat Intelligence</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="p-5 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
+                          <h4 className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-2">Ongoing Exploit Attempts</h4>
+                          <div className="text-3xl font-black text-rose-500 mono">1,482</div>
+                          <p className="text-[9px] text-slate-500 uppercase mt-2">Blocked in last 24h</p>
+                       </div>
+                       <div className="p-5 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                          <h4 className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-2">Zero-Day Anomalies</h4>
+                          <div className="text-3xl font-black text-amber-500 mono">03</div>
+                          <p className="text-[9px] text-slate-500 uppercase mt-2">Requires immediate analysis</p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-2 mt-8">
+                       <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Latest Indicators of Compromise (IoC)</h4>
+                       
+                       <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-xl">
+                          <div className="flex items-center space-x-3">
+                             <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                             <span className="text-[10px] font-mono text-slate-300">IPv4</span>
+                          </div>
+                          <span className="text-xs font-mono text-cyan-400">185.12.XXX.XXX</span>
+                          <span className="text-[9px] font-black uppercase text-slate-500">C2 Server (QakBot)</span>
+                       </div>
+                       
+                       <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-xl">
+                          <div className="flex items-center space-x-3">
+                             <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                             <span className="text-[10px] font-mono text-slate-300">SHA-256</span>
+                          </div>
+                          <span className="text-[10px] font-mono text-rose-400 max-w-[200px] truncate">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+                          <span className="text-[9px] font-black uppercase text-slate-500">Payload Config</span>
+                       </div>
+                    </div>
+                  </div>
               </motion.div>
             )}
           </AnimatePresence>

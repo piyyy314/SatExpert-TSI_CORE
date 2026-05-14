@@ -55,7 +55,7 @@ export const GroverVisualizer: React.FC = () => {
     addLog("Applying Grover Diffuser. Amplifying target amplitude relative to mean.");
     
     // Calculate mean amplitude
-    const meanAmplitude = states.reduce((acc, s) => acc + s.amplitude, 0) / states.length;
+    const meanAmplitude = states.length > 0 ? states.reduce((acc, s) => acc + s.amplitude, 0) / states.length : 0;
     
     // Inversion about the mean: a_i' = 2*mean - a_i
     const newStates = states.map(s => {

@@ -197,12 +197,12 @@ export const BotnetCommand: React.FC<{ addMissionLog?: (detail: string, status?:
                  <div className="space-y-2">
                     <div className="flex justify-between items-end">
                        <span className="text-[9px] font-black text-slate-500 uppercase">Current_Load</span>
-                       <span className="text-[10px] font-black text-red-500 mono">{(nodes.reduce((acc, n) => acc + n.load, 0) / nodes.length).toFixed(1)}%</span>
+                       <span className="text-[10px] font-black text-red-500 mono">{(nodes.length > 0 ? (nodes.reduce((acc, n) => acc + n.load, 0) / nodes.length) : 0).toFixed(1)}%</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
                        <motion.div 
                           className="h-full bg-red-500"
-                          animate={{ width: `${(nodes.reduce((acc, n) => acc + n.load, 0) / nodes.length)}%` }}
+                          animate={{ width: `${nodes.length > 0 ? (nodes.reduce((acc, n) => acc + n.load, 0) / nodes.length) : 0}%` }}
                        />
                     </div>
                  </div>

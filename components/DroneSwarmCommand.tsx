@@ -96,7 +96,7 @@ export const DroneSwarmCommand: React.FC<{ addMissionLog?: (detail: string, stat
   };
 
   const activeCount = drones.filter(d => d.status === 'ACTIVE').length;
-  const avgBattery = drones.reduce((acc, d) => acc + d.battery, 0) / drones.length;
+  const avgBattery = drones.length > 0 ? drones.reduce((acc, d) => acc + d.battery, 0) / drones.length : 0;
 
   return (
     <div className="flex flex-col space-y-6 p-4">

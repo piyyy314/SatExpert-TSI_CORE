@@ -67,6 +67,7 @@ STIA_CMD: END_MESH_LOG
   const radius = 140;
 
   const points = useMemo(() => {
+    if (satellites.length === 0) return [];
     return satellites.map((sat, i) => {
       const angle = (i / satellites.length) * Math.PI * 2;
       return {

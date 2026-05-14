@@ -68,6 +68,10 @@ import { DeepfakeComms } from './components/DeepfakeComms';
 import { DarkLinkProtocol } from './components/DarkLinkProtocol';
 import { WifiCountermeasures } from './components/WifiCountermeasures';
 import { AIAssistantWidget } from './components/AIAssistantWidget';
+import { APIClientSuite } from './components/APIClientSuite';
+import { DaemonManager } from './components/DaemonManager';
+import { ExecutableBuilder } from './components/ExecutableBuilder';
+import { DDOSSimulator } from './components/DDOSSimulator';
 import { audioController } from './services/audioService';
 import { Coordinates, Satellite, LookAngles, WeatherCondition, MainView, SatelliteStatus, TacticalEvent } from './types';
 import { COMMON_SATELLITES } from './constants';
@@ -218,9 +222,9 @@ export const App: React.FC = () => {
   const VIEW_CATEGORIES = [
     { name: 'TACTICAL_BASE', views: ['tactical', 'constellation', 'satellite_detail', 'mesh', 'weather', 'geolocator'] },
     { name: 'SENTINEL_AI', views: ['sentinel_core', 'quantum_intel_hub', 'palantir_audit', 'bug_bounty_lab'] },
-    { name: 'SIGINT_SUITE', views: ['intelligence', 'interception', 'node_scanner', 'spoof_tracer', 'threat_dossier', 'yara_scanner', 'sniffer', 'analyzer', 'specter', 'traps', 'radio_intercept', 'quantum_decryptor', 'biometric_scanner', 'quantum_timeline', 'nmap_scan'] },
-    { name: 'ACTIVE_OPS', views: ['tactical_suite', 'warfare', 'planner', 'neural', 'orbital_strike', 'drone_swarm', 'kill_chain', 'cyber_attack', 'signal_jamming', 'botnet_command', 'script_env', 'remote_access', 'purple_team', 'zero_day_forge', 'apt_simulator', 'social_toolkit', 'ransomware_sim', 'scada_sc', 'deepfake_comms', 'dark_link', 'wifi_countermeasures'] },
-    { name: 'CYBER_CMD', views: ['defense', 'simulation', 'aegis', 'usb_manager', 'vsat_config', 'grover'] },
+    { name: 'SIGINT_SUITE', views: ['intelligence', 'interception', 'node_scanner', 'spoof_tracer', 'threat_dossier', 'yara_scanner', 'sniffer', 'analyzer', 'specter', 'traps', 'radio_intercept', 'quantum_decryptor', 'biometric_scanner', 'quantum_timeline', 'nmap_scan', 'api_client'] },
+    { name: 'ACTIVE_OPS', views: ['tactical_suite', 'warfare', 'planner', 'neural', 'orbital_strike', 'drone_swarm', 'kill_chain', 'cyber_attack', 'signal_jamming', 'botnet_command', 'script_env', 'remote_access', 'purple_team', 'zero_day_forge', 'apt_simulator', 'social_toolkit', 'ransomware_sim', 'scada_sc', 'deepfake_comms', 'dark_link', 'wifi_countermeasures', 'payload_builder', 'ddos_sim'] },
+    { name: 'CYBER_CMD', views: ['defense', 'simulation', 'aegis', 'usb_manager', 'vsat_config', 'grover', 'daemon_mgr'] },
     { name: 'AUX_DATA', views: ['media', 'live', 'calculations', 'terrain', 'news'] }
   ];
 
@@ -592,12 +596,28 @@ export const App: React.FC = () => {
               <DeepfakeComms />
             )}
             
+            {view === 'api_client' && (
+              <APIClientSuite />
+            )}
+
             {view === 'wifi_countermeasures' && (
               <WifiCountermeasures />
             )}
 
             {view === 'dark_link' && (
               <DarkLinkProtocol />
+            )}
+            
+            {view === 'daemon_mgr' && (
+              <DaemonManager />
+            )}
+            
+            {view === 'payload_builder' && (
+              <ExecutableBuilder />
+            )}
+
+            {view === 'ddos_sim' && (
+              <DDOSSimulator />
             )}
 
             {view === 'defense' && (
