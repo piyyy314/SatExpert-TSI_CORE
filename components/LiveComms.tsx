@@ -1,108 +1,106 @@
 
 import * as React from 'react';
-import { useState, useEffect, useRef } from 'react';
-import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
+import { useState, useRef } from 'react';
 
 export const LiveComms: React.FC<{ isStealthMode: boolean; addMissionLog?: (detail: string, status?: any) => void }> = ({ isStealthMode, addMissionLog }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transcriptions, setTranscriptions] = useState<{role: string, text: string}[]>([]);
   
   const audioContextRef = useRef<AudioContext | null>(null);
-  const nextStartTimeRef = useRef(0);
-  const sessionRef = useRef<any>(null);
-  const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
 
-  const decodeAudioData = async (data: Uint8Array, ctx: AudioContext, sampleRate: number, numChannels: number) => {
-    const dataInt16 = new Int16Array(data.buffer);
-    const frameCount = dataInt16.length / numChannels;
-    const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-    for (let channel = 0; channel < numChannels; channel++) {
-      const channelData = buffer.getChannelData(channel);
-      for (let i = 0; i < frameCount; i++) {
-        channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-      }
-    }
-    return buffer;
-  };
-
-  const decodeBase64 = (base64: string) => {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return bytes;
-  };
-
-  const startSession = async () => {
+  const startRecording = async () => {
     setError(null);
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("MICROPHONE_HARDWARE_NOT_FOUND");
       }
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      audioContextRef.current = new AudioContext({ sampleRate: 24000 });
+      
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
 
-      const sessionPromise = ai.live.connect({
-        model: 'gemini-3.1-flash-live-preview',
-        callbacks: {
-          onopen: () => {
-            setIsActive(true);
-            const inputCtx = new AudioContext({ sampleRate: 16000 });
-            const source = inputCtx.createMediaStreamSource(stream);
-            const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
-            
-            scriptProcessor.onaudioprocess = (e) => {
-              const input = e.inputBuffer.getChannelData(0);
-              const int16 = new Int16Array(input.length);
-              for (let i = 0; i < input.length; i++) int16[i] = input[i] * 32768;
-              const base64 = btoa(String.fromCharCode(...new Uint8Array(int16.buffer)));
-              sessionPromise.then(s => s.sendRealtimeInput({ audio: { data: base64, mimeType: 'audio/pcm;rate=16000' } }));
-            };
-            source.connect(scriptProcessor);
-            scriptProcessor.connect(inputCtx.destination);
-          },
-          onmessage: async (msg: LiveServerMessage) => {
-            if (msg.serverContent?.modelTurn?.parts[0]?.inlineData?.data) {
-              const base64 = msg.serverContent.modelTurn.parts[0].inlineData.data;
-              const bytes = decodeBase64(base64);
-              const buffer = await decodeAudioData(bytes, audioContextRef.current!, 24000, 1);
-              const source = audioContextRef.current!.createBufferSource();
-              source.buffer = buffer;
-              source.connect(audioContextRef.current!.destination);
-              nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioContextRef.current!.currentTime);
-              source.start(nextStartTimeRef.current);
-              nextStartTimeRef.current += buffer.duration;
-              sourcesRef.current.add(source);
-            }
-            if (msg.serverContent?.outputTranscription) {
-               setTranscriptions(prev => [...prev, {role: 'STIA', text: msg.serverContent!.outputTranscription!.text}]);
-            }
-            if (msg.serverContent?.inputTranscription) {
-               setTranscriptions(prev => [...prev, {role: 'USER', text: msg.serverContent!.inputTranscription!.text}]);
-            }
-          },
-          onclose: () => {
-             setIsActive(false);
-             if (addMissionLog) addMissionLog("[COMMS_CLOSED] Satellite out of range.", 'info');
-          },
-          onerror: (e: any) => {
-             console.error("LIVE_ERROR", e);
-             setError(`COMMS_INTERFERENCE: ${e.message || 'Unknown protocol error'}`);
-             if (e.message?.includes("PERMISSION_DENIED")) {
-                (window as any).aistudio?.openSelectKey();
-             }
+      mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
           }
-        },
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
-          systemInstruction: "You are the STIA AI agent. Respond via voice with technical precision.",
-          outputAudioTranscription: {},
-          inputAudioTranscription: {}
-        }
-      });
-      sessionRef.current = await sessionPromise;
+      };
+
+      mediaRecorder.onstop = async () => {
+          setIsRecording(false);
+          setIsProcessing(true);
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          
+          try {
+              // Convert webm blob to base64
+              const arrayBuffer = await audioBlob.arrayBuffer();
+              
+              // We need PCM. The backend expects PCM rate=16000. 
+              // Wait, decodeAudioData in browser can decode WebM to RAW PCM!
+              const actx = new AudioContext({ sampleRate: 16000 });
+              const audioBuffer = await actx.decodeAudioData(arrayBuffer);
+              const pcmData = audioBuffer.getChannelData(0);
+              
+              const int16 = new Int16Array(pcmData.length);
+              for (let i = 0; i < pcmData.length; i++) {
+                  int16[i] = pcmData[i] * 32768;
+              }
+              const base64Audio = btoa(String.fromCharCode(...new Uint8Array(int16.buffer)));
+              
+              const response = await fetch('/api/gemini/action', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      action: 'processLiveCommsAudio',
+                      payload: { base64Audio }
+                  })
+              });
+              
+              if (!response.ok) throw new Error("Backend processing failed.");
+              const data = await response.json();
+              if (data.error) throw new Error(data.error);
+              
+              const { transcription, audioBase64, textReply } = data.result;
+              
+              if (transcription) {
+                  setTranscriptions(prev => [...prev, {role: 'USER', text: transcription}]);
+              }
+              if (textReply) {
+                  setTranscriptions(prev => [...prev, {role: 'STIA', text: textReply}]);
+              }
+              if (audioBase64) {
+                 const playbackCtx = new AudioContext({ sampleRate: 24000 });
+                 const bs = atob(audioBase64);
+                 const ba = new Uint8Array(bs.length);
+                 for (let i = 0; i < bs.length; i++) ba[i] = bs.charCodeAt(i);
+                 
+                 // audioBase64 from Gemini is 24000 PCM
+                 const dataInt16 = new Int16Array(ba.buffer);
+                 const pcmBuf = playbackCtx.createBuffer(1, dataInt16.length, 24000);
+                 const channelData = pcmBuf.getChannelData(0);
+                 for (let i = 0; i < dataInt16.length; i++) {
+                     channelData[i] = dataInt16[i] / 32768.0;
+                 }
+                 const source = playbackCtx.createBufferSource();
+                 source.buffer = pcmBuf;
+                 source.connect(playbackCtx.destination);
+                 source.start();
+              }
+              
+          } catch (err: any) {
+              console.error("Failed to process comms", err);
+              setError(`COMMS_ERROR: ${err.message}`);
+          } finally {
+              setIsProcessing(false);
+          }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
     } catch (err: any) {
       console.error("LIVE_INIT_ERROR", err);
       if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
@@ -115,21 +113,20 @@ export const LiveComms: React.FC<{ isStealthMode: boolean; addMissionLog?: (deta
     }
   };
 
-  const stopSession = () => {
-    sessionRef.current?.close();
-    setIsActive(false);
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
   };
 
   return (
     <div className="glass p-8 rounded-[2.5rem] border-slate-800 bg-slate-950/40 flex flex-col items-center justify-center min-h-[500px] text-center">
-       <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-8 border-2 transition-all duration-500 ${isActive ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_40px_rgba(34,211,238,0.4)] scale-110' : 'bg-slate-900 border-slate-800'}`}>
-          <div className={`flex space-x-1 ${isActive ? '' : 'opacity-20'}`}>
-             {[1,2,3,4,5].map(i => <div key={i} className={`w-1 bg-cyan-400 rounded-full animate-pulse`} style={{height: `${12 + Math.random()*20}px`, animationDelay: `${i*0.1}s`}}></div>)}
+       <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-8 border-2 transition-all duration-500 ${isRecording ? 'bg-red-500/20 border-red-400 shadow-[0_0_40px_rgba(220,38,38,0.4)] scale-110' : (isProcessing ? 'bg-cyan-500/20 border-cyan-400 animate-pulse' : 'bg-slate-900 border-slate-800')}`}>
+          <div className={`flex space-x-1 ${isRecording || isProcessing ? '' : 'opacity-20'}`}>
+             {[1,2,3,4,5].map(i => <div key={i} className={`w-1 ${isRecording ? 'bg-red-400' : 'bg-cyan-400'} rounded-full animate-pulse`} style={{height: `${12 + Math.random()*20}px`, animationDelay: `${i*0.1}s`}}></div>)}
           </div>
        </div>
        
-       <h3 className="text-2xl font-black text-white uppercase tracking-[0.2em] mb-4">Tactical_Live_Comms</h3>
-       <p className="text-slate-500 text-xs font-bold mb-10 uppercase tracking-widest max-w-md">Low-latency voice synchronization with STIA Core. Mission protocols are synchronized in real-time.</p>
+       <h3 className="text-2xl font-black text-white uppercase tracking-[0.2em] mb-4">PTT_Live_Comms</h3>
+       <p className="text-slate-500 text-xs font-bold mb-10 uppercase tracking-widest max-w-md">Push-to-Talk voice synchronization with STIA Core. Awaiting transmission.</p>
        
        {error && (
          <div className="mb-8 p-4 bg-red-900/20 border border-red-500/40 rounded-xl">
@@ -137,8 +134,16 @@ export const LiveComms: React.FC<{ isStealthMode: boolean; addMissionLog?: (deta
          </div>
        )}
 
-       <button onClick={isActive ? stopSession : startSession} className={`px-12 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all ${isActive ? 'bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-600/20' : 'bg-cyan-600 text-slate-950 hover:bg-cyan-500 shadow-lg shadow-cyan-600/20'}`}>
-          {isActive ? 'Disconnect_Uplink' : 'Establish_Voice_Uplink'}
+       <button 
+         onMouseDown={startRecording} 
+         onMouseUp={stopRecording}
+         onMouseLeave={isRecording ? stopRecording : undefined}
+         onTouchStart={startRecording}
+         onTouchEnd={stopRecording}
+         disabled={isProcessing}
+         className={`px-12 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all select-none ${isRecording ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : (isProcessing ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-cyan-600 text-slate-950 hover:bg-cyan-500 shadow-lg shadow-cyan-600/20')}`}
+       >
+          {isProcessing ? 'Processing...' : (isRecording ? 'Release to Transmit' : 'Hold to Speak')}
        </button>
 
        {transcriptions.length > 0 && (
@@ -146,7 +151,7 @@ export const LiveComms: React.FC<{ isStealthMode: boolean; addMissionLog?: (deta
            {transcriptions.slice(-10).map((t, i) => (
              <div key={i} className="text-[10px] mono">
                <span className={`font-black ${t.role === 'USER' ? 'text-slate-500' : 'text-cyan-500'}`}>{t.role}:</span>
-               <span className="text-slate-300 ml-2">{t.text}</span>
+               <span className="text-slate-300 ml-2"> {t.text}</span>
              </div>
            ))}
          </div>

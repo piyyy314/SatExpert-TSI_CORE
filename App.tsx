@@ -67,11 +67,11 @@ import { NmapScanner } from './components/NmapScanner';
 import { DeepfakeComms } from './components/DeepfakeComms';
 import { DarkLinkProtocol } from './components/DarkLinkProtocol';
 import { WifiCountermeasures } from './components/WifiCountermeasures';
+import { ElectromagneticPulse } from './components/ElectromagneticPulse';
+import { AIAutomatedExploit } from './components/AIAutomatedExploit';
 import { AIAssistantWidget } from './components/AIAssistantWidget';
-import { APIClientSuite } from './components/APIClientSuite';
-import { DaemonManager } from './components/DaemonManager';
-import { ExecutableBuilder } from './components/ExecutableBuilder';
-import { DDOSSimulator } from './components/DDOSSimulator';
+import { QuantumEntanglementComms } from './components/QuantumEntanglementComms';
+import { SwarmIntelligenceDashboard } from './components/SwarmIntelligenceDashboard';
 import { audioController } from './services/audioService';
 import { Coordinates, Satellite, LookAngles, WeatherCondition, MainView, SatelliteStatus, TacticalEvent } from './types';
 import { COMMON_SATELLITES } from './constants';
@@ -160,10 +160,6 @@ export const App: React.FC = () => {
   }, [weather, isJamming, jammingPower, defcon, isStealthMode, isNeuralCleaning]);
 
   useEffect(() => {
-    if (!process.env.GEMINI_API_KEY) {
-      setApiKeyError("CRITICAL: GEMINI_API_KEY is not defined in environment.");
-    }
-
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
@@ -222,9 +218,9 @@ export const App: React.FC = () => {
   const VIEW_CATEGORIES = [
     { name: 'TACTICAL_BASE', views: ['tactical', 'constellation', 'satellite_detail', 'mesh', 'weather', 'geolocator'] },
     { name: 'SENTINEL_AI', views: ['sentinel_core', 'quantum_intel_hub', 'palantir_audit', 'bug_bounty_lab'] },
-    { name: 'SIGINT_SUITE', views: ['intelligence', 'interception', 'node_scanner', 'spoof_tracer', 'threat_dossier', 'yara_scanner', 'sniffer', 'analyzer', 'specter', 'traps', 'radio_intercept', 'quantum_decryptor', 'biometric_scanner', 'quantum_timeline', 'nmap_scan', 'api_client'] },
-    { name: 'ACTIVE_OPS', views: ['tactical_suite', 'warfare', 'planner', 'neural', 'orbital_strike', 'drone_swarm', 'kill_chain', 'cyber_attack', 'signal_jamming', 'botnet_command', 'script_env', 'remote_access', 'purple_team', 'zero_day_forge', 'apt_simulator', 'social_toolkit', 'ransomware_sim', 'scada_sc', 'deepfake_comms', 'dark_link', 'wifi_countermeasures', 'payload_builder', 'ddos_sim'] },
-    { name: 'CYBER_CMD', views: ['defense', 'simulation', 'aegis', 'usb_manager', 'vsat_config', 'grover', 'daemon_mgr'] },
+    { name: 'SIGINT_SUITE', views: ['intelligence', 'interception', 'node_scanner', 'spoof_tracer', 'threat_dossier', 'yara_scanner', 'sniffer', 'analyzer', 'specter', 'traps', 'radio_intercept', 'quantum_decryptor', 'biometric_scanner', 'quantum_timeline', 'nmap_scan'] },
+    { name: 'ACTIVE_OPS', views: ['tactical_suite', 'warfare', 'planner', 'neural', 'orbital_strike', 'drone_swarm', 'swarm_intelligence', 'kill_chain', 'cyber_attack', 'signal_jamming', 'botnet_command', 'script_env', 'remote_access', 'purple_team', 'zero_day_forge', 'apt_simulator', 'social_toolkit', 'ransomware_sim', 'scada_sc', 'deepfake_comms', 'dark_link', 'wifi_countermeasures', 'electromagnetic_pulse', 'ai_automated_exploit'] },
+    { name: 'CYBER_CMD', views: ['defense', 'simulation', 'aegis', 'usb_manager', 'vsat_config', 'grover', 'quantum_entanglement'] },
     { name: 'AUX_DATA', views: ['media', 'live', 'calculations', 'terrain', 'news'] }
   ];
 
@@ -449,6 +445,12 @@ export const App: React.FC = () => {
               <GroverVisualizer />
             )}
 
+            {view === 'quantum_entanglement' && (
+              <div className="max-w-4xl mx-auto">
+                <QuantumEntanglementComms />
+              </div>
+            )}
+
             {view === 'vsat_config' && (
               <VSATConfig />
             )}
@@ -510,6 +512,12 @@ export const App: React.FC = () => {
 
             {view === 'drone_swarm' && (
               <DroneSwarmCommand addMissionLog={addMissionLog} />
+            )}
+
+            {view === 'swarm_intelligence' && (
+              <div className="max-w-6xl mx-auto">
+                <SwarmIntelligenceDashboard />
+              </div>
             )}
 
             {view === 'kill_chain' && (
@@ -596,28 +604,20 @@ export const App: React.FC = () => {
               <DeepfakeComms />
             )}
             
-            {view === 'api_client' && (
-              <APIClientSuite />
-            )}
-
             {view === 'wifi_countermeasures' && (
               <WifiCountermeasures />
             )}
 
-            {view === 'dark_link' && (
-              <DarkLinkProtocol />
-            )}
-            
-            {view === 'daemon_mgr' && (
-              <DaemonManager />
-            )}
-            
-            {view === 'payload_builder' && (
-              <ExecutableBuilder />
+            {view === 'electromagnetic_pulse' && (
+              <ElectromagneticPulse addMissionLog={addMissionLog} />
             )}
 
-            {view === 'ddos_sim' && (
-              <DDOSSimulator />
+            {view === 'ai_automated_exploit' && (
+              <AIAutomatedExploit addMissionLog={addMissionLog} />
+            )}
+
+            {view === 'dark_link' && (
+              <DarkLinkProtocol />
             )}
 
             {view === 'defense' && (

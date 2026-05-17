@@ -1,14 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, Send, Cpu, ShieldAlert, Zap } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
-
-let aiClient: GoogleGenAI | null = null;
-const getAI = () => {
-    if (!aiClient) {
-        aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    }
-    return aiClient;
-};
 
 interface Message {
   role: 'user' | 'model';
@@ -34,12 +25,6 @@ export const AIAssistantWidget: React.FC = () => {
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
-    
-    if (!process.env.GEMINI_API_KEY) {
-        setMessages(prev => [...prev, { role: 'user', content: inputText }, { role: 'model', content: "ERROR: GEMINI_API_KEY is not configured in the environment." }]);
-        setInputText("");
-        return;
-    }
 
     const userMessage = inputText;
     setInputText("");
@@ -47,20 +32,25 @@ export const AIAssistantWidget: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const historyContents = messages.slice(1).map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join('\n');
-      const fullPrompt = `Previous history:\n${historyContents}\n\n[USER]: ${userMessage}`;
+        const historyContents = messages.slice(1).map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join('\n');
+        const fullPrompt = `${historyContents}\n\n[USER]: ${userMessage}`;
 
-      const ai = getAI();
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: fullPrompt,
-        config: {
-            systemInstruction: "You are Sentinel, an advanced tactical AI assistant integrated into the TSI_TACTICAL_BRIDGE cybersecurity platform. Provide concise, highly technical, and militaristic-sounding responses. Focus on cybersecurity, orbital mechanics, signal warfare, and mission logistics."
+        const response = await fetch('/api/gemini/action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'chatWithAIAssistant',
+                payload: { prompt: fullPrompt }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
         }
-      });
-      
-      const newResponseText = response.text || "NO_RESPONSE.";
-      setMessages(prev => [...prev, { role: 'model', content: newResponseText }]);
+        
+        const data = await response.json();
+        const newResponseText = data.result || "NO_RESPONSE.";
+        setMessages(prev => [...prev, { role: 'model', content: newResponseText }]);
 
     } catch (err: any) {
         setMessages(prev => [...prev, { role: 'model', content: `CRITICAL ERROR: ${err.message}` }]);
