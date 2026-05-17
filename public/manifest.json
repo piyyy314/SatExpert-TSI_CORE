@@ -4,12 +4,12 @@
   "name": "SatExpert Tactical SatCom Intelligence",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "https://placehold.co/192x192/020617/22d3ee.png?text=TSI",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "icon-512.png",
+      "src": "https://placehold.co/512x512/020617/22d3ee.png?text=TSI",
       "type": "image/png",
       "sizes": "512x512"
     }
