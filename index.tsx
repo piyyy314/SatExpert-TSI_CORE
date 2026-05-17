@@ -3,15 +3,21 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import './index.css';
 
-class ErrorBoundary extends React.Component<any, any> {
-  state = { hasError: false, error: null as any, errorInfo: null as any };
+interface ErrorState {
+  hasError: boolean;
+  error: any | null;
+  errorInfo: any | null;
+}
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, ErrorState> {
+  state: ErrorState = { hasError: false, error: null, errorInfo: null };
 
   static getDerivedStateFromError(error: any) {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: any, errorInfo: any) {
-    this.setState({ errorInfo });
+    (this as any).setState({ errorInfo });
     console.error("ErrorBoundary caught an error", error, errorInfo);
   }
 
@@ -25,7 +31,7 @@ class ErrorBoundary extends React.Component<any, any> {
         </div>
       );
     }
-    return this.props.children;
+    return (this as any).props.children;
   }
 }
 

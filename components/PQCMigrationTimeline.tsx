@@ -20,33 +20,34 @@ export const PQCMigrationTimeline: React.FC = () => {
   const chartData = `
 gantt
     title Quantum Risk & PQC Migration Timeline
-    dateFormat  YYYY
+    dateFormat  YYYY-MM-DD
     axisFormat  %Y
     
     section Quantum Hardware
-    Google Sycamore (53 qubit) :done, 2019, 1y
-    IBM Eagle (127 qubit) :done, 2021, 1y
-    IBM Osprey (433 qubit) :done, 2022, 1y
-    IBM Condor (1121 qubit) :done, 2023, 1y
-    Google Willow (105 qubit, QEC) :done, 2024, 1y
+    Google Sycamore (53 qubit) :done, 2019-01-01, 365d
+    IBM Eagle (127 qubit) :done, 2021-01-01, 365d
+    IBM Osprey (433 qubit) :done, 2022-01-01, 365d
+    IBM Condor (1121 qubit) :done, 2023-01-01, 365d
+    Google Willow (105 qubit, QEC) :done, 2024-01-01, 365d
     
     section PQC Standardization
-    NIST finalists (Kyber/Dilithium) :done, 2020, 2021
-    NIST standards (Kyber/Dilithium/SPHINCS+) :done, 2024, 2025
-    NIST selects Falcon/HQC :active, 2025, 1y
+    NIST finalists (Kyber/Dilithium) :done, 2020-01-01, 730d
+    NIST standards (Kyber/Dilithium/SPHINCS+) :done, 2024-01-01, 365d
+    NIST selects Falcon/HQC :active, 2025-01-01, 365d
     
     section Industry Migration
-    Google sets 2029 PQC migration goal :crit, active, 2024, 2029
-    UK NCSC advises PQC plans by 2028-2031 :active, 2024, 2031
-    Full PQC adoption (~AES-256, Kyber in apps) : 2030, 2y
-    Cryptographically Relevant QC (CRQC) estimate :crit, 2030, 5y
+    Google sets 2029 PQC migration goal :crit, active, 2024-01-01, 1825d
+    UK NCSC advises PQC plans by 2028-2031 :active, 2024-01-01, 2555d
+    Full PQC adoption (~AES-256, Kyber in apps) : 2030-01-01, 730d
+    Cryptographically Relevant QC (CRQC) estimate :crit, 2030-01-01, 1825d
 `;
 
   useEffect(() => {
     const renderChart = async () => {
       if (chartRef.current) {
         try {
-          const { svg } = await mermaid.render('pqc-timeline-svg', chartData);
+          const id = `m-pqc-${Math.random().toString(36).substr(2, 9)}`;
+          const { svg } = await mermaid.render(id, chartData);
           if (chartRef.current) {
             chartRef.current.innerHTML = svg;
           }

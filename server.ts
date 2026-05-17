@@ -6,7 +6,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({limit: '100kb' }));
+app.use(express.json({limit: '50mb' }));
 
 const getAiInstance = () => {
     if (!process.env.GEMINI_API_KEY) {
@@ -429,16 +429,35 @@ app.post("/api/gemini/action", async (req, res) => {
 });
 
 async function startServer() {
+  console.log(`Starting server in ${process.env.NODE_ENV || 'development'} mode...`);
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
+    
+    // In dev, Vite should handle index.html if appType is 'spa'.
+    // But if it doesn't, we can add a manual fallback.
+    app.get('*all', async (req, res, next) => {
+      if (req.url.startsWith('/api')) return next();
+      // Only handle HTML requests or requests with no extension
+      const ext = path.extname(req.url);
+      if (ext && ext !== '.html') return next();
+      
+      try {
+        const html = await vite.transformIndexHtml(req.url, path.join(process.cwd(), 'index.html'));
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*all', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
