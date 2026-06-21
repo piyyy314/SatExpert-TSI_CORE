@@ -1,8 +1,8 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { getTroubleshootingAdvice, transcribeAudio } from '../services/geminiService.ts';
-import { TroubleshootingLog } from '../types.ts';
+import { getTroubleshootingAdvice, transcribeAudio } from '../services/geminiService';
+import { TroubleshootingLog } from '../types';
 
 interface TelemetryData {
   snr: string;

@@ -49,7 +49,7 @@ export const DroneSwarmCommand: React.FC<{ addMissionLog?: (detail: string, stat
           lng: d.lng + (Math.random() - 0.5) * 0.001,
         };
       }));
-    }, 2000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [isDeploying, missionType]);

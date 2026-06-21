@@ -1,6 +1,8 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth, signInWithGoogle, logOut, reconnectFirestore } from '../services/firebaseService';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,7 +11,78 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsStealthMode }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  // Connectivity state tracking
+  const [isOnline, setIsOnline] = useState<boolean>(typeof window !== 'undefined' ? window.navigator.onLine : true);
+  const [isReconnecting, setIsReconnecting] = useState<boolean>(false);
+  const [reconnectSuccess, setReconnectSuccess] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleReconnect = async () => {
+    setIsReconnecting(true);
+    setReconnectSuccess(null);
+    try {
+      const success = await reconnectFirestore();
+      setReconnectSuccess(success);
+      setTimeout(() => {
+        setReconnectSuccess(null);
+      }, 3000);
+    } catch (err) {
+      console.error("Manual reconnection error:", err);
+      setReconnectSuccess(false);
+    } finally {
+      setIsReconnecting(false);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+    setAuthError(null);
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      console.warn("Authentication process was not completed:", err);
+      if (err?.code === 'auth/popup-closed-by-user') {
+        const msg = "Sign-in popup closed by user.";
+        setAuthError(msg);
+      } else if (err?.code === 'auth/popup-blocked') {
+        const msg = "Sign-in popup blocked. Enable popups and try again.";
+        setAuthError(msg);
+      } else if (err?.code === 'auth/cancelled-popup-request') {
+        const msg = "Sign-in process cancelled.";
+        setAuthError(msg);
+      } else {
+        const msg = err?.message || "Authentication failed. Try again.";
+        setAuthError(msg);
+      }
+      
+      // Auto-clear auth error after 5 seconds
+      setTimeout(() => {
+        setAuthError(null);
+      }, 5000);
+    }
+  };
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -33,7 +106,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
   };
 
   return (
-    <div className={`min-h-screen flex flex-col selection:bg-cyan-500/30 transition-colors duration-1000 ${isStealthMode ? 'stealth-active' : ''} relative`}>
+    <div className={`min-h-screen flex flex-col bg-[#030712] selection:bg-cyan-500/30 transition-colors duration-1000 ${isStealthMode ? 'stealth-active' : ''} relative`}>
       {/* Tactical Background Elements */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:40px_40px]"></div>
@@ -61,6 +134,52 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
+            {/* Network Connectivity Status Indicator */}
+            <div className="flex items-center space-x-3 bg-slate-900/50 pl-3 pr-2 py-1.5 rounded-2xl border border-slate-800">
+              <div className="flex items-center space-x-2">
+                <span className="relative flex h-2 w-2">
+                  {isOnline && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  )}
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${isOnline ? 'bg-emerald-500' : 'bg-red-500 animate-pulse'}`}></span>
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-[7.5px] font-mono font-black uppercase tracking-wider text-slate-500">Uplink</span>
+                  <span className={`text-[9px] font-mono font-bold uppercase tracking-widest ${isOnline ? 'text-emerald-500' : 'text-red-500'}`}>
+                    {isOnline ? 'Online' : 'Offline'}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleReconnect}
+                disabled={isReconnecting}
+                className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-xl border transition-all duration-300 flex items-center space-x-1 cursor-pointer ${
+                  isReconnecting
+                    ? 'bg-slate-800 text-slate-500 border-slate-800/30 cursor-not-allowed'
+                    : reconnectSuccess === true
+                    ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/50'
+                    : reconnectSuccess === false
+                    ? 'bg-red-950/40 text-red-500 border-red-900/50'
+                    : 'bg-slate-950 text-cyan-400 border-cyan-500/20 hover:border-cyan-500/50 hover:bg-slate-900'
+                }`}
+                title="Force Firestore Reconnection"
+              >
+                <svg className={`w-2.5 h-2.5 ${isReconnecting ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {isReconnecting ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  ) : reconnectSuccess === true ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  ) : reconnectSuccess === false ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
+                  )}
+                </svg>
+                <span>{isReconnecting ? 'Sync' : reconnectSuccess === true ? 'Ready' : reconnectSuccess === false ? 'Fail' : 'Reconnect'}</span>
+              </button>
+            </div>
+
             {/* Stealth Mode Toggle */}
             <div className="flex items-center space-x-3 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800">
               <span className={`text-[8px] font-black uppercase tracking-widest px-2 transition-colors ${isStealthMode ? 'text-purple-400' : 'text-slate-600'}`}>Ghost_Proto</span>
@@ -94,9 +213,44 @@ export const Layout: React.FC<LayoutProps> = ({ children, isStealthMode, setIsSt
               </div>
             )}
 
+            {currentUser ? (
+              <div className="flex items-center space-x-3 bg-slate-900/60 pl-3 pr-2 py-1.5 rounded-2xl border border-slate-800">
+                {currentUser.photoURL && (
+                  <img src={currentUser.photoURL} alt={currentUser.displayName || "Operator"} className="w-6 h-6 rounded-full border border-cyan-500/40" referrerPolicy="no-referrer" />
+                )}
+                <div className="flex flex-col text-left">
+                  <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest max-w-[110px] overflow-hidden text-ellipsis whitespace-nowrap">{currentUser.displayName || 'SECURE_OP'}</span>
+                  <span className="text-[7px] text-emerald-500 font-mono font-black uppercase tracking-wider animate-pulse">● CLOUD_SYNCED</span>
+                </div>
+                <button 
+                  onClick={logOut}
+                  className="ml-2 text-[8px] font-black uppercase tracking-widest text-red-500 hover:text-red-400 bg-red-950/20 px-2.5 py-1.5 rounded-xl border border-red-900/30 transition-colors cursor-pointer"
+                >
+                  DISCONNECT
+                </button>
+              </div>
+            ) : (
+              <div className="relative flex flex-col items-center justify-center">
+                <button 
+                  onClick={handleGoogleSignIn}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-cyan-950/40 to-slate-950/40 hover:from-cyan-900/50 px-4 py-2.5 rounded-2xl border border-cyan-500/20 hover:border-cyan-500/50 transition-all uppercase tracking-widest text-[9px] font-black text-cyan-400 cursor-pointer"
+                >
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+                  <span>SYNC TO CLOUD (LOGIN)</span>
+                </button>
+                {authError && (
+                  <div className="absolute top-12 left-0 right-0 mx-auto w-max max-w-[240px] text-center bg-slate-950 border border-amber-500/40 px-2.5 py-1 rounded-xl shadow-2xl z-[100] animate-pulse">
+                    <p className="text-[8px] font-mono font-bold text-amber-500 uppercase tracking-widest leading-normal">
+                      {authError}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="hidden lg:flex flex-col items-end border-l-2 border-slate-900 pl-6">
                <span className="text-[10px] text-slate-700 font-black uppercase tracking-widest italic">Auth_Level</span>
-               <span className={`text-[11px] mono font-black italic tracking-tighter ${isStealthMode ? 'text-purple-400' : 'text-red-500'}`}>S-TIER_OPERATOR</span>
+               <span className={`text-[11px] mono font-black italic tracking-tighter ${isStealthMode ? 'text-purple-400' : 'text-red-500'}`}>{currentUser ? 'SECURE_ADMIN' : 'GUEST_OPERATOR'}</span>
             </div>
             
             <span className="text-[11px] bg-black border-2 border-slate-900 px-5 py-2.5 rounded-2xl text-slate-500 mono font-black shadow-inner italic">v6.0.0_SENTINEL</span>

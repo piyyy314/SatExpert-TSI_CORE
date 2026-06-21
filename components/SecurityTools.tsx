@@ -1,10 +1,10 @@
 
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { playSystemVoice } from '../services/audioService.ts';
+import { playSystemVoice } from '../services/audioService';
 import { QuantumDefense } from './QuantumDefense.tsx';
 import { WarGamesSimulator } from './WarGamesSimulator.tsx';
-import { SecurityTab } from '../types.ts';
+import { SecurityTab } from '../types';
 import { YaraIntelligence } from './YaraIntelligence.tsx';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -18,6 +18,7 @@ import {
   Search,
   Target,
   Activity,
+  Download,
   Terminal as TerminalIcon,
   ShieldAlert as SecurityIcon
 } from 'lucide-react';
@@ -141,6 +142,68 @@ def craft_dvb_s2_frame(data_payload):
   }
 ];
 
+const TARGET_DECK = [
+  {
+    category: 'SCADA (Industrial Control)',
+    icon: '🏭',
+    items: [
+      { domain: 'scada-grid-nexus.net', name: 'Smart-Grid Backbone', type: 'DNP3 Power Grid', desc: 'Centralized distribution nexus.' },
+      { domain: 'industrial-iot-bridge.int', name: 'Industrial IoT Bridge PLC', type: 'OPC-UA Manufacturing', desc: 'Secure industrial automated machinery.' },
+      { domain: 'power-dispatch-central.org', name: 'Power Dispatch Router', type: 'DNP3 Grid Dispatcher', desc: 'High voltage substations telemetry routing.' },
+      { domain: 'hydro-valve-control.io', name: 'Hydro Valve Actuator Array', type: 'Modbus Water Control', desc: 'Pumping valve telemetry override.' }
+    ]
+  },
+  {
+    category: 'Tactical & Orbital Assets',
+    icon: '🛰️',
+    items: [
+      { domain: 'orbital-sync-nodes.mil', name: 'Orbital C2 Sync Nodes', type: 'Satellite Comms Uplink', desc: 'Defense communication gateway.' },
+      { domain: 'telemetry-uplink-alpha.gov', name: 'Telemetry Uplink Alpha', type: 'DVB-S2X Aerospace Control', desc: 'National telemetry constellation controller.' },
+      { domain: 'deep-space-comms.arpa', name: 'Deep Space Communications', type: 'ARPA Uplink Gateway', desc: 'Long-range scientific deep space probes.' },
+      { domain: 'geo-relay-stealth.net', name: 'GEO Relay Stealth Network', type: 'Classified Sub-carrier Link', desc: 'Active secure surveillance transponders.' }
+    ]
+  },
+  {
+    category: 'Cybersecurity & YARA Targets',
+    icon: '🛡️',
+    items: [
+      { domain: 'apt-c2-hardened.secure', name: 'Hardened Threat Actor C2', type: 'APT Command Controller', desc: 'Encrypted server commanding active bots.' },
+      { domain: 'yara-payload-repo.int', name: 'YARA Signature Repo', type: 'Secure Binary Payload Cache', desc: 'Encrypted intelligence-threat signatures.' },
+      { domain: 'sigint-data-sink.mil', name: 'SIGINT Tactical Data Sink', type: 'Classified Traffic Monitor', desc: 'Global intelligence packet capturer.' },
+      { domain: 'threat-intel-nexus.org', name: 'Threat Intelligence Nexus', type: 'Operational Malware Database', desc: 'Malicious telemetry profiling bank.' }
+    ]
+  },
+  {
+    category: 'Quantum/Advanced Research',
+    icon: '⚛️',
+    items: [
+      { domain: 'q-entanglement-bridge.edu', name: 'Quantum Entanglement Bridge', type: 'Entangled State Transceiver', desc: 'Subatomic entanglement communication link.' },
+      { domain: 'quantum-compute-central.gov', name: 'Quantum Compute Central', type: 'TRNG & Key Generator array', desc: 'Ultra-fast cryptanalysis supercomputing cluster.' },
+      { domain: 'crypo-key-exchange.net', name: 'Quantum Key Exchange Vault', type: 'Post-Quantum Crypto Hub', desc: 'Lattice-cryptography key rotations.' },
+      { domain: 'lattice-crypto-vault.int', name: 'Lattice Cryptography Vault', type: 'Active PQC Shield Hub', desc: 'Symmetric key packaging repository.' }
+    ]
+  }
+];
+
+const TACTICAL_IPS: Record<string, { ip: string; geo: string; integrity: string; extra: string }> = {
+  'scada-grid-nexus.net': { ip: '10.50.2.14', geo: 'NATO Europe East // Grid Nexus Grid controller', integrity: '98.4% SECURE', extra: 'DNP3 Power Outstations detected. Active PLC firmware version: SCADAv5.8.' },
+  'industrial-iot-bridge.int': { ip: '10.50.10.15', geo: 'Rhein-Ruhr Manufacturing Node Delta', integrity: '72.1% VULNERABLE', extra: 'OPC-UA Port 4840 active. Siemens S7 PLC tags exposed in cleartext.' },
+  'power-dispatch-central.org': { ip: '10.50.1.200', geo: 'Midwest ISO High Voltage Command Center', integrity: '91.2% SECURE', extra: 'Substation relays with Modbus command override vulnerable flags.' },
+  'hydro-valve-control.io': { ip: '10.50.4.55', geo: 'Geneva Municipal Catchment Basin PLC Array', integrity: '84.8% SECURE', extra: 'Valve throttle settings Modbus TCP port 502 active.' },
+  'orbital-sync-nodes.mil': { ip: '22.140.92.5', geo: 'US Space Command - Falcon Complex GPS Master Sync', integrity: '99.9% SHIELDED', extra: 'Quantum key exchange enabled. Active links synchronized' },
+  'telemetry-uplink-alpha.gov': { ip: '164.50.11.42', geo: 'NASA Goddard Center Telemetry Uplink Block Alpha', integrity: '94.5% SECURE', extra: 'DVB-S2 CCM modulation. ACM active (Rain attenuation mitigation active).' },
+  'deep-space-comms.arpa': { ip: '12.18.254.91', geo: 'Goldstone Deep Space Station DSN-14 Antenna', integrity: '99.1% SECURE', extra: 'Active telemetry tracking Jupiter Orbit Probes (Frequencies: X & Ka band).' },
+  'geo-relay-stealth.net': { ip: '198.51.100.82', geo: 'Classified Tactical GEO Space-based Decoy Array', integrity: '198.51.100.82-STEALTH', extra: 'Sub-carrier frequency hopping mode enabled. Zero-emission decoy active.' },
+  'apt-c2-hardened.secure': { ip: '185.220.101.4', geo: 'Threat Actor APT C2 Router // Tor Exit Node Proxy', integrity: '12.5% CRITICAL_EXPOSED', extra: 'Malicious commands originating for VSAT gateway firmware implants.' },
+  'yara-payload-repo.int': { ip: '192.0.2.105', geo: 'STIA Cyber Defense Malware Sandbox', integrity: '50.0% CONTAINED', extra: 'Implements zero-day payload analysis with Grover quantum search.' },
+  'sigint-data-sink.mil': { ip: '22.110.43.19', geo: 'NSA Meade SIGINT Ingestion Gateway', integrity: '100.0% SECURE', extra: 'Receives global unencrypted satellite transponder cleartext streams.' },
+  'threat-intel-nexus.org': { ip: '45.33.2.142', geo: 'Defense Cyber Operations Center (DCOC) Threat Feed', integrity: '96.2% SECURE', extra: 'STIA intelligence updates feed active.' },
+  'q-entanglement-bridge.edu': { ip: '131.215.12.8', geo: 'Caltech Quantum Labs Entangled Transversal Link', integrity: '100.0% QUANTUM_LOCKED', extra: 'Spin polarization correlation: 99.98%. Spin-state decoy active.' },
+  'quantum-compute-central.gov': { ip: '129.6.13.204', geo: 'NIST Quantum Computing Metrology Wing', integrity: '95.1% PQC_SECURED', extra: 'Superconducting qubit cryo systems temperature: 0.015 Kelvin.' },
+  'crypo-key-exchange.net': { ip: '172.16.254.101', geo: 'Global Post-Quantum Key Distribution Network Hub', integrity: '98.9% ENCRYPTED', extra: 'Delivers Kyber-1024 symmetric keys over secure optical links.' },
+  'lattice-crypto-vault.int': { ip: '192.168.99.14', geo: 'STIA National Defense Crypto-Key Vault', integrity: '99.9% ENCRYPTED', extra: 'Kyber and Dilithium algorithm implementations verified FIPS-compliance.' }
+};
+
 export const SecurityTools: React.FC<Props> = ({ 
   userLoc, selectedSatName, isJamming, setIsJamming, jammingPower, setJammingPower, signalQuality, onBack, isStealthMode, setIsStealthMode, addMissionLog
 }) => {
@@ -153,6 +216,59 @@ export const SecurityTools: React.FC<Props> = ({
   const [targetIp, setTargetIp] = useState('10.254.1.42');
   const [selectedScript, setSelectedScript] = useState(TACTICAL_SCRIPTS[0]);
   const [copyStatus, setCopyStatus] = useState(false);
+
+  const handleExportDnsLogs = () => {
+    const content = `--- DNS INTERCEPT TELEMETRY REPORT ---\nTIMESTAMP: ${new Date().toISOString()}\nTARGET: ${domainToResolve}\n\n` +
+      dnsLogs.map(l => `[${l.time}] [${l.type}] ${l.msg}`).join('\n');
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dns_intercept_report_${domainToResolve.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportAttackLogs = () => {
+    const content = `--- OFFENSIVE RF SIGNAL ATTACK REPORT ---\nTIMESTAMP: ${new Date().toISOString()}\nTARGET EP: ${targetIp}\n\n` +
+      ipAttackLog.map(l => `[${l.time}] [${l.type}] ${l.msg}`).join('\n');
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rf_offensive_strike_${targetIp.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportThreatReport = () => {
+    const items = [
+      { label: 'Uplink Port Scan', status: 'NEGATIVE', confidence: 99.8 },
+      { label: 'Sync Collision Det.', status: 'NEGATIVE', confidence: 97.4 },
+      { label: 'Protocol Side-Channel', status: 'NEGATIVE', confidence: 84.1 },
+      { label: 'OS Stack Fingerprint', status: 'INDETERMINATE', confidence: 32.5 }
+    ];
+    const content = `--- INTEGRATED THREAT DEFENSE ASSESSMENT REPORT ---\nTIMESTAMP: ${new Date().toISOString()}\nSATELLITE INTEL: ${selectedSatName}\n\n` +
+      items.map(it => `VECT: ${it.label}\nSTATUS: ${it.status}\nCONFIDENCE: ${it.confidence}%\n`).join('\n---\n\n');
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sentinel_threat_defense_report_${selectedSatName.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadCipherCode = () => {
+    const blob = new Blob([selectedScript.code], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const ext = selectedScript.lang.toLowerCase() === 'python' ? 'py' : 'cpp';
+    a.download = `${selectedScript.name.toLowerCase().replace(/[^a-z0-9]/gi, '_')}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const sentinelCanvasRef = useRef<HTMLCanvasElement>(null);
   const strikeCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -292,6 +408,21 @@ export const SecurityTools: React.FC<Props> = ({
     addDnsLog(`INIT: Intercepting DNS signal for [${domainToResolve}]`, 'INFO');
     playSystemVoice("Initiating orbital DNS intercept.");
 
+    const normalizedDomain = domainToResolve.trim().toLowerCase();
+
+    if (normalizedDomain in TACTICAL_IPS) {
+      const targetData = TACTICAL_IPS[normalizedDomain];
+      setTimeout(() => {
+        addDnsLog(`SUCCESS: Resolved IP -> ${targetData.ip} (Internal Link Secured)`, 'SUCCESS');
+        addDnsLog(`LOC_INTEL: Location: ${targetData.geo}`, 'INFO');
+        addDnsLog(`SHIELD_STATUS: Integrity Level: ${targetData.integrity}`, targetData.integrity.includes('VULNERABLE') ? 'WARN' : 'SUCCESS');
+        addDnsLog(`OT_METRICS: ${targetData.extra}`, 'INFO');
+        addMissionLog(`TSI DNS Intercept: [${domainToResolve}] resolved to [${targetData.ip}] - ${targetData.geo}`, 'INFO');
+        setIsResolving(false);
+      }, 1500);
+      return;
+    }
+
     try {
       const response = await fetch(`https://dns.google/resolve?name=${domainToResolve}&type=A`);
       const data = await response.json();
@@ -379,7 +510,17 @@ export const SecurityTools: React.FC<Props> = ({
                    <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
                       <Target className="w-32 h-32 text-cyan-500" />
                    </div>
-                   <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-6 border-b border-slate-800 pb-2">Threat Detection Engine_V4</h3>
+                   <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-6">
+                      <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none">Threat Detection Engine_V4</h3>
+                      <button 
+                        onClick={handleExportThreatReport}
+                        className="flex items-center space-x-1 px-2.5 py-1 bg-cyan-900/10 hover:bg-cyan-500 hover:text-slate-950 border border-cyan-500/30 rounded-lg text-[9px] font-black text-cyan-400 uppercase tracking-widest transition-all focus:ring-1 focus:ring-cyan-500/50"
+                        title="Export Threat Assessment Report"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>EXPORT</span>
+                      </button>
+                   </div>
                        <div className="space-y-4">
                           {[
                             { label: 'Uplink Port Scan', status: 'NEGATIVE', confidence: 99.8, color: 'emerald' },
@@ -433,70 +574,131 @@ export const SecurityTools: React.FC<Props> = ({
         )}
 
         {activeTab === 'dns' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in slide-in-from-bottom-4 duration-700">
-             <div className="lg:col-span-5 glass p-10 rounded-[2.5rem] border-2 border-slate-800 bg-slate-950/60 flex flex-col space-y-8 shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-cyan-500 animate-pulse opacity-20"></div>
-                <div className="h-48 rounded-3xl overflow-hidden border-2 border-slate-900 bg-[#050810] mb-2 flex items-center justify-center p-8">
-                    <Search className={`w-24 h-24 text-cyan-500/20 ${isResolving ? 'animate-pulse scale-110' : ''} transition-all`} />
-                </div>
-                <div>
-                   <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">DNS Signal_Intercept</h3>
-                   <p className="text-[11px] text-cyan-500 font-bold uppercase tracking-[0.2em] mt-1">Satellite Transponder Resolution Alpha</p>
-                </div>
-                <div className="space-y-6">
-                   <div className="relative">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                      <input 
-                         type="text" 
-                         value={domainToResolve} 
-                         onChange={e => setDomainToResolve(e.target.value)} 
-                         className="w-full bg-[#050810] border-2 border-slate-800 rounded-2xl p-4 pl-12 text-sm text-white mono outline-none focus:border-cyan-500 shadow-inner transition-all" 
-                         placeholder="Target_Domain..."
-                      />
-                   </div>
-                   <button 
-                     onClick={handleResolveDomain} 
-                     disabled={isResolving} 
-                     className="w-full bg-cyan-600 hover:bg-white hover:text-cyan-600 text-white text-[12px] font-black py-5 rounded-2xl uppercase tracking-[0.3em] shadow-[0_15px_35px_rgba(34,211,238,0.3)] transition-all active:scale-95 disabled:opacity-50 relative overflow-hidden group/btn"
-                   >
-                     <div className="absolute inset-0 bg-cyan-500 translate-y-full group-hover/btn:translate-y-0 transition-transform"></div>
-                     <span className="relative z-10">{isResolving ? 'INTERCEPTING_SIGNAL...' : 'RESOLVE_SIGNAL_IDENTITY'}</span>
-                   </button>
-                </div>
-             </div>
-             <div className="lg:col-span-7 glass p-10 rounded-[2.5rem] border-2 border-slate-800 bg-[#0c0e14] flex flex-col h-full min-h-[500px] shadow-2xl font-mono relative">
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none noise-bg"></div>
-                <div className="flex items-center justify-between mb-8 border-b border-slate-800 pb-4 relative z-10">
-                   <div className="flex items-center space-x-3">
-                      <Terminal className="w-4 h-4 text-cyan-500" />
-                      <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">DNS_RESOLUTION_TELEMETRY</span>
-                   </div>
-                   <div className="flex space-x-1">
-                      {[1,2,3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-cyan-500/10 border border-slate-800"></div>)}
-                   </div>
-                </div>
-                <div className="flex-grow overflow-y-auto space-y-3 pr-2 scrollbar-hide relative z-10">
-                  {dnsLogs.length === 0 && (
-                     <div className="h-full flex flex-col items-center justify-center opacity-10 space-y-4">
-                        <Activity className="w-16 h-16" />
-                        <p className="text-[12px] font-black uppercase tracking-[0.6em]">Awaiting_Signal</p>
+          <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-700">
+             {/* Target Deck Selection Grid */}
+             <div className="glass p-8 rounded-[2.5rem] border-2 border-slate-800 bg-[#050810]/50 relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-transparent pointer-events-none"></div>
+               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 border-b border-slate-800 pb-4">
+                 <div>
+                    <h4 className="text-sm font-black text-cyan-400 uppercase tracking-[0.2em] flex items-center">
+                      <span className="mr-2">📡</span> TSI MILITARY-GRADE TARGET DECK
+                    </h4>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-1">Pre-configured tactical domain networks for recon & active signals intercept</p>
+                 </div>
+                 <span className="text-[9px] mono text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full uppercase tracking-wider self-start md:self-auto mt-2 md:mt-0">16 Active Nodes loaded</span>
+               </div>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 {TARGET_DECK.map((group, gIdx) => (
+                   <div key={gIdx} className="bg-slate-950/40 rounded-3xl border border-slate-900/80 p-5 space-y-4">
+                     <div className="flex items-center space-x-2 border-b border-slate-900 pb-2">
+                       <span className="text-sm">{group.icon}</span>
+                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-0.5">{group.category}</h5>
                      </div>
-                  )}
-                  {dnsLogs.map((log, i) => (
-                    <motion.div 
-                      key={i} 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="text-[12px] mono flex items-start space-x-4 bg-slate-950/40 p-2 rounded-lg border border-slate-900/50"
-                    >
-                       <span className="text-slate-800 font-bold shrink-0">[{log.time}]</span>
-                       <span className={log.type === 'ALERT' ? 'text-red-500 font-black' : log.type === 'SUCCESS' ? 'text-emerald-500' : log.type === 'FAIL' ? 'text-red-400' : 'text-slate-400'}>{log.msg}</span>
-                    </motion.div>
-                  ))}
+                     <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                       {group.items.map((item, iIdx) => (
+                         <div 
+                           key={iIdx}
+                           onClick={() => {
+                             setDomainToResolve(item.domain);
+                             setTargetIp(TACTICAL_IPS[item.domain]?.ip || '10.50.1.1');
+                             playSystemVoice(`Target locked: ${item.name}`);
+                           }}
+                           className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                             domainToResolve === item.domain 
+                               ? 'bg-cyan-500/10 border-cyan-500/60 shadow-[0_4px_16px_rgba(34,211,238,0.1)]' 
+                               : 'bg-slate-900/20 border-slate-900 hover:border-slate-800 hover:bg-slate-900/50'
+                           }`}
+                         >
+                           <div className="flex items-center justify-between">
+                             <span className="text-[10px] font-black text-white truncate max-w-[130px]">{item.name}</span>
+                             <span className="text-[8px] font-mono text-cyan-400 tracking-tighter">SELECT</span>
+                           </div>
+                           <div className="text-[8px] font-mono text-slate-500 truncate mt-1">{item.domain}</div>
+                           <div className="text-[8px] text-slate-600 truncate mt-0.5">{item.desc}</div>
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+
+             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-5 glass p-10 rounded-[2.5rem] border-2 border-slate-800 bg-slate-950/60 flex flex-col space-y-8 shadow-2xl relative overflow-hidden group">
+                   <div className="absolute top-0 left-0 w-full h-[2px] bg-cyan-500 animate-pulse opacity-20"></div>
+                   <div className="h-48 rounded-3xl overflow-hidden border-2 border-slate-900 bg-[#050810] mb-2 flex items-center justify-center p-8">
+                       <Search className={`w-24 h-24 text-cyan-500/20 ${isResolving ? 'animate-pulse scale-110' : ''} transition-all`} />
+                   </div>
+                   <div>
+                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">DNS Signal_Intercept</h3>
+                      <p className="text-[11px] text-cyan-500 font-bold uppercase tracking-[0.2em] mt-1">Satellite Transponder Resolution Alpha</p>
+                   </div>
+                   <div className="space-y-6">
+                      <div className="relative">
+                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                         <input 
+                            type="text" 
+                            value={domainToResolve} 
+                            onChange={e => setDomainToResolve(e.target.value)} 
+                            className="w-full bg-[#050810] border-2 border-slate-800 rounded-2xl p-4 pl-12 text-sm text-white mono outline-none focus:border-cyan-500 shadow-inner transition-all" 
+                            placeholder="Target_Domain..."
+                         />
+                      </div>
+                      <button 
+                        onClick={handleResolveDomain} 
+                        disabled={isResolving} 
+                        className="w-full bg-cyan-600 hover:bg-white hover:text-cyan-600 text-white text-[12px] font-black py-5 rounded-2xl uppercase tracking-[0.3em] shadow-[0_15px_35px_rgba(34,211,238,0.3)] transition-all active:scale-95 disabled:opacity-50 relative overflow-hidden group/btn"
+                      >
+                        <div className="absolute inset-0 bg-cyan-500 translate-y-full group-hover/btn:translate-y-0 transition-transform"></div>
+                        <span className="relative z-10">{isResolving ? 'INTERCEPTING_SIGNAL...' : 'RESOLVE_SIGNAL_IDENTITY'}</span>
+                      </button>
+                   </div>
                 </div>
-                <div className="mt-8 pt-4 border-t border-slate-900 flex items-center justify-between text-[10px] text-slate-700 italic">
-                   <span>ORBITAL_DNS_LINK: GOOGLE_DOH_V2</span>
-                   <span className="animate-pulse">CONNECTED</span>
+                <div className="lg:col-span-7 glass p-10 rounded-[2.5rem] border-2 border-slate-800 bg-[#0c0e14] flex flex-col h-full min-h-[500px] shadow-2xl font-mono relative">
+                   <div className="absolute inset-0 opacity-[0.03] pointer-events-none noise-bg"></div>
+                   <div className="flex items-center justify-between mb-8 border-b border-slate-800 pb-4 relative z-10">
+                      <div className="flex items-center space-x-3">
+                         <Terminal className="w-4 h-4 text-cyan-500" />
+                         <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">DNS_RESOLUTION_TELEMETRY</span>
+                          {dnsLogs.length > 0 && (
+                            <button 
+                              onClick={handleExportDnsLogs}
+                              className="ml-2 inline-flex items-center space-x-1 px-2.5 py-1 bg-cyan-900/15 hover:bg-cyan-500 hover:text-slate-950 border border-cyan-500/30 rounded-lg text-[9px] font-black text-cyan-400 uppercase tracking-widest transition-all focus:ring-1 focus:ring-cyan-500/50 cursor-pointer"
+                              title="Export Telemetry data for documentation"
+                            >
+                              <Download className="w-3 h-3" />
+                              <span>EXPORT</span>
+                            </button>
+                          )}
+                      </div>
+                      <div className="flex space-x-1">
+                         {[1,2,3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-cyan-500/10 border border-slate-800"></div>)}
+                      </div>
+                   </div>
+                   <div className="flex-grow overflow-y-auto space-y-3 pr-2 scrollbar-hide relative z-10">
+                     {dnsLogs.length === 0 && (
+                        <div className="h-full flex flex-col items-center justify-center opacity-10 space-y-4">
+                           <Activity className="w-16 h-16" />
+                           <p className="text-[12px] font-black uppercase tracking-[0.6em]">Awaiting_Signal</p>
+                        </div>
+                     )}
+                     {dnsLogs.map((log, i) => (
+                       <motion.div 
+                         key={i} 
+                         initial={{ opacity: 0, x: -10 }}
+                         animate={{ opacity: 1, x: 0 }}
+                         className="text-[12px] mono flex items-start space-x-4 bg-slate-950/40 p-2 rounded-lg border border-slate-900/50"
+                       >
+                          <span className="text-slate-800 font-bold shrink-0">[{log.time}]</span>
+                          <span className={log.type === 'ALERT' ? 'text-red-500 font-black' : log.type === 'SUCCESS' ? 'text-emerald-500' : log.type === 'FAIL' ? 'text-red-400' : 'text-slate-400'}>{log.msg}</span>
+                       </motion.div>
+                     ))}
+                   </div>
+                   <div className="mt-8 pt-4 border-t border-slate-900 flex items-center justify-between text-[10px] text-slate-700 italic">
+                      <span>ORBITAL_DNS_LINK: GOOGLE_DOH_V2</span>
+                      <span className="animate-pulse">CONNECTED</span>
+                   </div>
                 </div>
              </div>
           </div>
@@ -528,7 +730,7 @@ export const SecurityTools: React.FC<Props> = ({
                     <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
                     <h3 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">{selectedScript.name}</h3>
                  </div>
-                 <button onClick={handleCopyCode} className="px-6 py-2.5 bg-slate-950 hover:bg-cyan-500 hover:text-slate-950 border-2 border-slate-800 hover:border-cyan-400 rounded-xl text-[10px] font-black text-cyan-400 uppercase tracking-widest transition-all shadow-xl active:scale-95">
+                 <button onClick={handleDownloadCipherCode} className="mr-2 px-3 py-2.5 bg-slate-950 hover:bg-cyan-500 hover:text-slate-950 border-2 border-slate-800 hover:border-cyan-400 rounded-xl text-[10px] font-black text-cyan-400 uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-1.5 inline-flex" title="Download Script file"><Download className="w-3.5 h-3.5" />DOWNLOAD</button><button onClick={handleCopyCode} className="px-3 py-2.5 bg-slate-950 hover:bg-cyan-500 hover:text-slate-950 border-2 border-slate-800 hover:border-cyan-400 rounded-xl text-[10px] font-black text-cyan-400 uppercase tracking-widest transition-all shadow-xl active:scale-95">
                    {copyStatus ? 'UPLINK_COPIED' : 'TRANSFER_CODE'}
                  </button>
                </div>
@@ -587,9 +789,9 @@ export const SecurityTools: React.FC<Props> = ({
                       <Terminal className="w-4 h-4 text-red-500" />
                       <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">STIA_STRIKE_TELEMETRY</span>
                    </div>
-                   <div className="flex space-x-1">
-                      {[1,2,3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-slate-900 border border-slate-800"></div>)}
-                   </div>
+                   <button onClick={handleExportAttackLogs} className="px-3 py-1.5 bg-slate-950 hover:bg-red-500 hover:text-slate-950 border-2 border-slate-800 hover:border-red-400 rounded-lg text-[9px] font-bold text-red-500 uppercase tracking-widest transition-all shadow-xl flex items-center gap-1.5 animate-pulse" title="Export Strike Logs">
+                      <Download className="w-3.5 h-3.5" />EXPORT
+                   </button>
                 </div>
                 <div className="flex-grow overflow-y-auto space-y-3 pr-2 scrollbar-hide relative z-10">
                   {ipAttackLog.length === 0 && (

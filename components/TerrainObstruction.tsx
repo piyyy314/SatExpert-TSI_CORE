@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { LookAngles } from '../types.ts';
+import { LookAngles } from '../types';
 
 interface Props {
   angles: LookAngles | null;

@@ -20,31 +20,95 @@ import {
 } from 'lucide-react';
 
 export const SentinelAIControl: React.FC = () => {
-  const [systemLoad, setSystemLoad] = useState(32);
-  const [activeThreads, setActiveThreads] = useState(128);
+  const [systemLoad, setSystemLoad] = useState(39);
+  const [activeThreads, setActiveThreads] = useState(125);
   const [scannedNodes, setScannedNodes] = useState(0);
-  const [integrityScale, setIntegrityScale] = useState(99.98);
+  const [integrityScale, setIntegrityScale] = useState(99.97);
+  
+  // Real-time ticking states for key metrics
+  const [interceptions, setInterceptions] = useState(1242);
+  const [deflectedAttacks, setDeflectedAttacks] = useState(89);
+  const [threatsDetected, setThreatsDetected] = useState(4);
+  const [nodesSyncing, setNodesSyncing] = useState(18);
+  const [uptimeSeconds, setUptimeSeconds] = useState(42 * 24 * 3600 + 12 * 3600); // starts at 42d 12h
+
   const [logs, setLogs] = useState<string[]>([
     '[BOOT] Sentinel Core v6.0.4 initialized...',
     '[AUTH] Biometric handshake confirmed.',
     '[LINK] Establishing mesh connection to Orbital Stack...'
   ]);
 
+  const formatUptime = (totalSeconds: number) => {
+    const days = Math.floor(totalSeconds / (24 * 3600));
+    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setSystemLoad(30 + Math.random() * 15);
-      setActiveThreads(120 + Math.floor(Math.random() * 20));
-      setIntegrityScale(99.9 + Math.random() * 0.09);
+      // System load fluctuating around 39%
+      setSystemLoad(prev => {
+        const diff = (Math.random() - 0.5) * 4;
+        return Math.max(30, Math.min(48, Math.round((prev + diff) * 10) / 10));
+      });
+
+      // Active neural threads fluctuating around 125
+      setActiveThreads(prev => {
+        const diff = Math.random() < 0.5 ? -1 : 1;
+        return Math.max(120, Math.min(132, prev + (Math.random() < 0.3 ? diff : 0)));
+      });
+
+      // Integrity scale micro-fluctuating around 99.97%
+      setIntegrityScale(prev => {
+        const target = 99.97;
+        const diff = (Math.random() - 0.5) * 0.004;
+        const next = Math.max(99.91, Math.min(100.00, prev + diff));
+        return Math.round(next * 1000) / 1000;
+      });
+
+      // Increment uptime by 1 second every second
+      setUptimeSeconds(prev => prev + 1);
+
+      // Increment intercepts periodically
+      if (Math.random() < 0.25) {
+        setInterceptions(prev => prev + 1);
+        // Deflected attacks follow intercepts with some random divergence
+        if (Math.random() < 0.85) {
+          setDeflectedAttacks(prev => prev + 1);
+        }
+      }
+
+      // Threats detected fluctuating with live occurrences
+      if (Math.random() < 0.08) {
+        setThreatsDetected(prev => {
+          const change = Math.random() < 0.5 ? -1 : 1;
+          const next = prev + change;
+          return Math.max(2, Math.min(9, next));
+        });
+      }
+
+      // Syncing nodes count fluctuating realistically
+      if (Math.random() < 0.12) {
+        setNodesSyncing(prev => {
+          const change = Math.random() < 0.5 ? -1 : 1;
+          const next = prev + change;
+          return Math.max(12, Math.min(22, next));
+        });
+      }
       
       if (Math.random() > 0.8) {
         const newLogs = [
           `[SCAN] Auditing node 0x${Math.floor(Math.random()*0x1000).toString(16)}...`,
           `[INFO] Neural cache synchronized.`,
-          `[Z-DAY] Pattern matching complete for XNU_KERNEL_OBJ.`
+          `[Z-DAY] Pattern matching complete for XNU_KERNEL_OBJ.`,
+          `[MITIGATE] Auto-deflected anomalous scan probe.`,
+          `[SHIELD] Egress filter active on threat matrix.`
         ];
         setLogs(prev => [...prev.slice(-8), newLogs[Math.floor(Math.random() * newLogs.length)]]);
       }
-    }, 2000);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -150,10 +214,10 @@ export const SentinelAIControl: React.FC = () => {
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
            {[
-             { label: 'System Load', value: `${Math.floor(systemLoad)}%`, color: 'text-cyan-400' },
+             { label: 'System Load', value: `${systemLoad.toFixed(1)}%`, color: 'text-cyan-400' },
              { label: 'Neural Threads', value: activeThreads, color: 'text-white' },
              { label: 'Integrity', value: `${integrityScale.toFixed(2)}%`, color: 'text-emerald-400' },
-             { label: 'Uptime', value: '42d 12h', color: 'text-amber-400' },
+             { label: 'Uptime', value: formatUptime(uptimeSeconds), color: 'text-amber-400' },
            ].map((stat, i) => (
              <div key={i} className="glass px-4 py-2 rounded-xl bg-slate-900/40 border-slate-800 flex flex-col justify-center">
                 <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">{stat.label}</span>
@@ -273,10 +337,10 @@ export const SentinelAIControl: React.FC = () => {
 
               <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 border-t border-white/5">
                  {[
-                   { label: 'Interceptions', value: '1,242', icon: <Radio className="w-4 h-4 text-cyan-500" /> },
-                   { label: 'Deflected Attacks', value: '89', icon: <Shield className="w-4 h-4 text-emerald-500" /> },
-                   { label: 'Threats Detected', value: '04', icon: <AlertTriangle className="w-4 h-4 text-rose-500" /> },
-                   { label: 'Nodes Syncing', value: '18', icon: <RefreshCw className="w-4 h-4 text-amber-500" /> },
+                   { label: 'Interceptions', value: interceptions.toLocaleString(), icon: <Radio className="w-4 h-4 text-cyan-500" /> },
+                   { label: 'Deflected Attacks', value: deflectedAttacks.toLocaleString(), icon: <Shield className="w-4 h-4 text-emerald-500" /> },
+                   { label: 'Threats Detected', value: threatsDetected.toString().padStart(2, '0'), icon: <AlertTriangle className="w-4 h-4 text-rose-500" /> },
+                   { label: 'Nodes Syncing', value: nodesSyncing.toString(), icon: <RefreshCw className="w-4 h-4 text-amber-500" /> },
                  ].map((item, i) => (
                    <div key={i} className="space-y-1">
                       <div className="flex items-center space-x-2">

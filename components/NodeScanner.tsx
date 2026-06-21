@@ -17,7 +17,7 @@ import {
   Square,
   Network
 } from 'lucide-react';
-import { analyzePortScan } from '../services/geminiService.ts';
+import { analyzePortScan } from '../services/geminiService';
 
 interface ScanResult {
   port: number;

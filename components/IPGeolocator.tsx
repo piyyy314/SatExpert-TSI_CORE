@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Globe, ShieldAlert, Crosshair, Radar, Activity, Terminal, ExternalLink, Download } from 'lucide-react';
-import { analyzeIPRecon } from '../services/geminiService.ts';
+import { analyzeIPRecon } from '../services/geminiService';
 
 interface IPIntel {
   city: string;

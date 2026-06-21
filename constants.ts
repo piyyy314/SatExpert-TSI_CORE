@@ -1,5 +1,5 @@
 
-import { Satellite } from './types.ts';
+import { Satellite } from './types';
 
 export const COMMON_SATELLITES: Satellite[] = [
   { id: 't-11w', name: 'Telstar 11N', longitude: -37.5, orbitalSlot: '37.5°W', operator: 'Telesat', apogee: 35794, perigee: 35778, inclination: 0.02, velocity: 3.07, status: 'active', launchDate: '2009-02-26', period: 1436 },

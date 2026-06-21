@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Download } from 'lucide-react';
 import { CyberThreatMap } from './CyberThreatMap.tsx';
+import { User } from 'firebase/auth';
+import { Satellite, JammingSession } from '../types';
+import { saveJammingSessionToCloud, fetchJammingSessionsFromCloud } from '../services/firebaseService';
 
 interface Props {
   isStealthMode: boolean;
@@ -11,6 +14,8 @@ interface Props {
   jammingPower: number;
   onToggleJamming: (val: boolean) => void;
   onSetJammingPower: (val: number) => void;
+  currentUser?: User | null;
+  selectedSat?: Satellite;
 }
 
 export const ElectronicWarfare: React.FC<Props> = ({ 
@@ -18,7 +23,9 @@ export const ElectronicWarfare: React.FC<Props> = ({
   isJamming, 
   jammingPower,
   onToggleJamming,
-  onSetJammingPower
+  onSetJammingPower,
+  currentUser = null,
+  selectedSat
 }) => {
   const [frequency, setFrequency] = useState(12.45);
   const [hoppingActive, setHoppingActive] = useState(false);
@@ -26,6 +33,109 @@ export const ElectronicWarfare: React.FC<Props> = ({
   const [spectrumData, setSpectrumData] = useState<number[]>([]);
   const waterfallRef = useRef<HTMLCanvasElement>(null);
   const waterfallData = useRef<number[][]>([]);
+
+  // Local state for persistence tracking
+  const [historySessions, setHistorySessions] = useState<JammingSession[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const prevIsJamming = useRef(isJamming);
+
+  // Load history on mount or currentUser change
+  useEffect(() => {
+    const loadSessionHistory = async () => {
+      if (currentUser?.uid) {
+        setIsLoadingHistory(true);
+        try {
+          const sessions = await fetchJammingSessionsFromCloud(currentUser.uid);
+          if (sessions) {
+            setHistorySessions(sessions);
+          }
+        } catch (error) {
+          console.error("Failed to load cloud jamming history:", error);
+        } finally {
+          setIsLoadingHistory(false);
+        }
+      } else {
+        // Fallback to offline localStorage
+        const localData = localStorage.getItem('local_jamming_sessions');
+        if (localData) {
+          try {
+            setHistorySessions(JSON.parse(localData));
+          } catch (err) {
+            console.error("Local deserialization error:", err);
+          }
+        }
+      }
+    };
+    loadSessionHistory();
+  }, [currentUser]);
+
+  // Automatic session logger on jammer deactivation
+  useEffect(() => {
+    if (prevIsJamming.current && !isJamming) {
+      const id = 'jam_' + Math.random().toString(36).substring(2, 11);
+      const timestamp = new Date().toISOString();
+      // Calculate dynamic simulated effectiveness percentage
+      const pct = Math.min(100, Math.max(10, Math.round((jammingPower * frequency * 1.5) / 10 + Math.random() * 5)));
+      
+      const newSession: JammingSession = {
+        id,
+        timestamp,
+        targetSatellite: selectedSat?.name || 'COMSAT-H4',
+        frequency: Number(frequency.toFixed(2)),
+        power: jammingPower,
+        effectiveness: pct
+      };
+
+      if (currentUser?.uid) {
+        saveJammingSessionToCloud(currentUser.uid, newSession)
+          .then(() => {
+            setHistorySessions(prev => [newSession, ...prev]);
+          })
+          .catch(err => {
+            console.error("Cessation save failure:", err);
+          });
+      } else {
+        const localData = localStorage.getItem('local_jamming_sessions');
+        const list = localData ? JSON.parse(localData) : [];
+        const updated = [newSession, ...list].slice(0, 50);
+        localStorage.setItem('local_jamming_sessions', JSON.stringify(updated));
+        setHistorySessions(updated);
+      }
+    }
+    prevIsJamming.current = isJamming;
+  }, [isJamming, jammingPower, frequency, currentUser, selectedSat]);
+
+  // Manual session logging trigger
+  const handleRecordSessionManually = () => {
+    const id = 'jam_' + Math.random().toString(36).substring(2, 11);
+    const timestamp = new Date().toISOString();
+    const pct = Math.min(100, Math.max(10, Math.round((jammingPower * frequency * 1.5) / 10 + Math.random() * 5)));
+    
+    const newSession: JammingSession = {
+      id,
+      timestamp,
+      targetSatellite: selectedSat?.name || 'COMSAT-H4',
+      frequency: Number(frequency.toFixed(2)),
+      power: jammingPower,
+      effectiveness: pct
+    };
+
+    if (currentUser?.uid) {
+      saveJammingSessionToCloud(currentUser.uid, newSession)
+        .then(() => {
+          setHistorySessions(prev => [newSession, ...prev]);
+        })
+        .catch(err => {
+          console.error("Manual save failure:", err);
+        });
+    } else {
+      const localData = localStorage.getItem('local_jamming_sessions');
+      const list = localData ? JSON.parse(localData) : [];
+      const updated = [newSession, ...list].slice(0, 50);
+      localStorage.setItem('local_jamming_sessions', JSON.stringify(updated));
+      setHistorySessions(updated);
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -143,6 +253,22 @@ STIA_CMD: END_EW_LOG
                   />
                </div>
 
+               <div className="space-y-3">
+                  <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase">
+                     <span>Carrier Frequency</span>
+                     <span className="text-red-500">{frequency.toFixed(2)} GHz</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="1.0" 
+                    max="18.0" 
+                    step="0.01"
+                    value={frequency} 
+                    onChange={(e) => setFrequency(parseFloat(e.target.value))}
+                    className="w-full accent-red-600 bg-slate-900 h-1.5 rounded-full appearance-none cursor-pointer"
+                  />
+               </div>
+
                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800/50">
                   <button 
                     onClick={() => setHoppingActive(!hoppingActive)}
@@ -157,6 +283,16 @@ STIA_CMD: END_EW_LOG
                     Signal_Mask
                   </button>
                </div>
+
+               <div className="pt-2">
+                 <button
+                   onClick={handleRecordSessionManually}
+                   className="w-full py-2.5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/20 rounded-xl text-[9px] font-black uppercase tracking-wider text-red-500 hover:text-white transition-all flex items-center justify-center space-x-2"
+                 >
+                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                   <span>Force Log Active Pulse</span>
+                 </button>
+               </div>
             </div>
           </div>
 
@@ -168,6 +304,38 @@ STIA_CMD: END_EW_LOG
                    {p}
                  </button>
                ))}
+            </div>
+          </div>
+
+          <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">
+            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center justify-between border-b border-slate-800/60 pb-3">
+              <span>Past Jamming History</span>
+              {currentUser && <span className="text-[8px] text-emerald-400 font-mono capitalize bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Cloud Synced</span>}
+            </h3>
+            
+            <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+              {isLoadingHistory ? (
+                <p className="text-[9px] text-slate-500 font-mono italic">Syncing with cloud repository...</p>
+              ) : historySessions.length === 0 ? (
+                <p className="text-[9px] text-slate-500 font-mono italic">No interference sessions logged.</p>
+              ) : (
+                historySessions.map((session) => (
+                  <div key={session.id} className="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80 hover:border-slate-700/80 transition-all flex flex-col space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-black text-red-500 mono">
+                        🛰️ {session.targetSatellite}
+                      </span>
+                      <span className="text-[8px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+                        {session.effectiveness}% EFF
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-[8px] font-mono text-slate-500">
+                      <span>{session.frequency.toFixed(2)} GHz @ {session.power}% Pwr</span>
+                      <span>{new Date(session.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

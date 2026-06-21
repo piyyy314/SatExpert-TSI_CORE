@@ -76,15 +76,16 @@ export const OrbitalStriker: React.FC<{ addMissionLog?: (detail: string, status?
       addMissionLog(`ORBITAL_INIT: Vector ${selectedVector} authorized. Charging capacitors...`, 'active');
     }
 
+    let progress = 0;
     const interval = setInterval(() => {
-      setChargeProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          handleImpact();
-          return 100;
-        }
-        return prev + 2;
-      });
+      progress += 2;
+      if (progress >= 100) {
+        clearInterval(interval);
+        setChargeProgress(100);
+        handleImpact();
+      } else {
+        setChargeProgress(progress);
+      }
     }, 50);
   };
 

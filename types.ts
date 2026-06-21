@@ -64,6 +64,15 @@ export interface TacticalEvent {
   detail: string;
 }
 
+export interface JammingSession {
+  id: string;
+  timestamp: string;
+  targetSatellite: string;
+  frequency: number;
+  power: number;
+  effectiveness: number;
+}
+
 export interface BugReportEvent {
   id: string;
   timestamp: string;
@@ -72,5 +81,5 @@ export interface BugReportEvent {
   type: string;
 }
 
-export type MainView = 'tactical' | 'constellation' | 'satellite_detail' | 'intelligence' | 'interception' | 'defense' | 'simulation' | 'media' | 'live' | 'calculations' | 'terrain' | 'news' | 'warfare' | 'neural' | 'planner' | 'traps' | 'sniffer' | 'aegis' | 'grover' | 'vsat_config' | 'specter' | 'analyzer' | 'mesh' | 'weather' | 'geolocator' | 'tactical_suite' | 'usb_manager' | 'node_scanner' | 'spoof_tracer' | 'threat_dossier' | 'yara_scanner' | 'nmap_scan' | 'orbital_strike' | 'drone_swarm' | 'swarm_intelligence' | 'kill_chain' | 'cyber_attack' | 'signal_jamming' | 'botnet_command' | 'radio_intercept' | 'quantum_decryptor' | 'biometric_scanner' | 'script_env' | 'remote_access' | 'quantum_timeline' | 'quantum_intel_hub' | 'palantir_audit' | 'purple_team' | 'bug_bounty_lab' | 'sentinel_core' | 'zero_day_forge' | 'apt_simulator' | 'social_toolkit' | 'ransomware_sim' | 'scada_sc' | 'deepfake_comms' | 'dark_link' | 'wifi_countermeasures' | 'electromagnetic_pulse' | 'ai_automated_exploit' | 'quantum_entanglement';
+export type MainView = 'tactical' | 'constellation' | 'satellite_detail' | 'intelligence' | 'interception' | 'defense' | 'simulation' | 'media' | 'live' | 'calculations' | 'terrain' | 'news' | 'warfare' | 'neural' | 'planner' | 'traps' | 'sniffer' | 'aegis' | 'grover' | 'vsat_config' | 'specter' | 'analyzer' | 'mesh' | 'weather' | 'geolocator' | 'tactical_suite' | 'usb_manager' | 'node_scanner' | 'spoof_tracer' | 'threat_dossier' | 'yara_scanner' | 'nmap_scan' | 'orbital_strike' | 'drone_swarm' | 'swarm_intelligence' | 'kill_chain' | 'cyber_attack' | 'signal_jamming' | 'botnet_command' | 'radio_intercept' | 'quantum_decryptor' | 'biometric_scanner' | 'script_env' | 'remote_access' | 'quantum_timeline' | 'quantum_intel_hub' | 'palantir_audit' | 'purple_team' | 'bug_bounty_lab' | 'sentinel_core' | 'zero_day_forge' | 'apt_simulator' | 'social_toolkit' | 'ransomware_sim' | 'scada_sc' | 'deepfake_comms' | 'dark_link' | 'wifi_countermeasures' | 'electromagnetic_pulse' | 'ai_automated_exploit' | 'quantum_entanglement' | 'cloud_portal';
 export type SecurityTab = 'overview' | 'assessment' | 'modem' | 'attack' | 'detection' | 'hardening' | 'codes' | 'scripts' | 'intel' | 'stealth' | 'quantum' | 'wargames' | 'dns';

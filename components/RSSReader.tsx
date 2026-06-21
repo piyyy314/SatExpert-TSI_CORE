@@ -24,27 +24,13 @@ export const RSSReader: React.FC = () => {
   const [useFallback, setUseFallback] = useState(false);
 
   useEffect(() => {
-    const fetchFeed = async () => {
+      const fetchFeed = async () => {
       setLoading(true);
-      const targetUrl = 'https://spacenews.com/feed/';
-      const proxies = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
-        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
-      ];
-
-      for (const proxy of proxies) {
-        try {
-          const response = await fetch(proxy);
-          if (!response.ok) continue;
+      try {
+          const response = await fetch('/api/rss');
+          if (!response.ok) throw new Error('RSS feed fetch failed');
           
-          let xmlText = '';
-          if (proxy.includes('allorigins')) {
-            const data = await response.json();
-            xmlText = data.contents;
-          } else {
-            xmlText = await response.text();
-          }
-
+          const xmlText = await response.text();
           const parser = new DOMParser();
           const xmlDoc = parser.parseFromString(xmlText, "text/xml");
           const channelItems = xmlDoc.querySelectorAll("item");
@@ -56,19 +42,16 @@ export const RSSReader: React.FC = () => {
               source: 'SPACENEWS_LIVE'
             })));
             setUseFallback(false);
-            setLoading(false);
-            return; // Success!
+          } else {
+            throw new Error('No items found');
           }
-        } catch (err) {
-          console.warn(`RSS_PROXY_FAILURE: ${proxy}`, err);
-        }
+      } catch (err) {
+          console.warn("RSS_UPLINK_FAILURE: Defaulting to local intelligence cache.", err);
+          setItems(FALLBACK_INTEL);
+          setUseFallback(true);
+      } finally {
+          setLoading(false);
       }
-
-      // If all proxies fail
-      console.warn("RSS_UPLINK_FAILURE: Defaulting to local intelligence cache.");
-      setItems(FALLBACK_INTEL);
-      setUseFallback(true);
-      setLoading(false);
     };
 
     fetchFeed();

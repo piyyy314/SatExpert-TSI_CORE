@@ -2,8 +2,8 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { Download } from 'lucide-react';
-import { getWarGamesTurn, generateWarGamesReport } from '../services/geminiService.ts';
-import { playSystemVoice } from '../services/audioService.ts';
+import { getWarGamesTurn, generateWarGamesReport } from '../services/geminiService';
+import { playSystemVoice } from '../services/audioService';
 
 type SimulationState = 'IDLE' | 'RUNNING' | 'PAUSED' | 'COMPLETE';
 type ThreatLevel = 'LOW' | 'ELEVATED' | 'HIGH' | 'CRITICAL';

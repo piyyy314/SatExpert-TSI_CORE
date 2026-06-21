@@ -1,8 +1,8 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { LinkBudgetParams, LinkBudgetResults } from '../types.ts';
-import { calculateLinkBudget } from '../utils/geoUtils.ts';
+import { LinkBudgetParams, LinkBudgetResults } from '../types';
+import { calculateLinkBudget } from '../utils/geoUtils';
 
 interface Props {
   distance: number;

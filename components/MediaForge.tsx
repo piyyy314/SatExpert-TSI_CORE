@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { generateTacticalImage, generateTacticalVideo, editTacticalImage } from '../services/geminiService.ts';
+import { generateTacticalImage, generateTacticalVideo, editTacticalImage } from '../services/geminiService';
 
 type MediaMode = 'IMAGE_GEN' | 'VIDEO_GEN' | 'IMAGE_EDIT';
 

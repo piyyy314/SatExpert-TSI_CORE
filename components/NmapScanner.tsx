@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Terminal, Shield, Search, Activity, Cpu } from 'lucide-react';
+import { Terminal, Shield, Search, Activity, Cpu, Download } from 'lucide-react';
 
 export const NmapScanner: React.FC = () => {
   const [targetIp, setTargetIp] = useState('192.168.1.100');
@@ -44,12 +44,39 @@ export const NmapScanner: React.FC = () => {
     }, 400);
   };
 
+  const handleDownloadScan = () => {
+    const reportText = `--- NMAP SYSTEM RECONNAISSANCE REPORT ---\n` +
+      `TIMESTAMP: ${new Date().toISOString()}\n` +
+      `TARGET ENDPOINT: ${targetIp}\n` +
+      `SCAN PROFILE: ${scanType}\n` +
+      `-----------------------------------------\n\n` +
+      scanLog.join('\n');
+    
+    const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `nmap_scan_${targetIp.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-cyan-500 font-mono flex flex-col h-full h-[600px] animate-in fade-in slide-in-from-bottom-4">
       <div className="flex items-center space-x-3 mb-6 border-b border-slate-800 pb-4">
         <Terminal className="w-6 h-6 text-cyan-400" />
         <h2 className="text-xl font-black uppercase tracking-widest text-white">Nmap Advanced Scanner</h2>
-        <span className="ml-auto text-xs text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">NSE_AUTO_LOAD</span>
+        {scanLog.length > 0 && (
+          <button 
+            onClick={handleDownloadScan}
+            className="ml-auto px-3 py-1 bg-cyan-950 hover:bg-cyan-500 hover:text-slate-950 border border-cyan-500/30 hover:border-cyan-400 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all active:scale-95"
+            title="Download Scan Report"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>EXPORT_SCAN</span>
+          </button>
+        )}
+        <span className={`${scanLog.length > 0 ? '' : 'ml-auto'} text-xs text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800`}>NSE_AUTO_LOAD</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow overflow-hidden">

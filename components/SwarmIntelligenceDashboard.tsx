@@ -16,10 +16,10 @@ export const SwarmIntelligenceDashboard: React.FC = () => {
         const int = setInterval(() => {
             setDrones(prev => prev.map(d => ({
                 ...d,
-                alt: d.alt + (Math.random() * 50 - 25),
+                alt: d.alt + (Math.random() * 20 - 10),
                 status: Math.random() > 0.95 ? 'RE-ROUTING' : 'AIRBORNE'
             })));
-        }, 3000);
+        }, 1000);
 
         return () => clearInterval(int);
     }, []);

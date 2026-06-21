@@ -1,6 +1,6 @@
 
-import { Coordinates, LookAngles, LinkBudgetParams, LinkBudgetResults } from '../types.ts';
-import { EARTH_RADIUS, GEO_ALTITUDE, SPEED_OF_LIGHT } from '../constants.ts';
+import { Coordinates, LookAngles, LinkBudgetParams, LinkBudgetResults } from '../types';
+import { EARTH_RADIUS, GEO_ALTITUDE, SPEED_OF_LIGHT } from '../constants';
 
 const toRad = (deg: number) => (deg * Math.PI) / 180;
 const toDeg = (rad: number) => (rad * 180) / Math.PI;

@@ -15,7 +15,28 @@
   <div class="crt-flicker"></div>
   <div id="error-box" style="position:fixed; z-index:999999; background:red; color:white; padding:20px; font-family:monospace; display:none; top:0; left:0; right:0; max-height:100vh; overflow:auto;"></div>
   <script>
+    // Early escape check for benign development WebSocket / HMR warning messages
+    function isBenignHmrError(str) {
+      if (!str) return false;
+      const lower = str.toLowerCase();
+      return (
+        lower.includes('websocket') ||
+        lower.includes('connection failed') ||
+        lower.includes('closed without opened') ||
+        lower.includes('vite') ||
+        lower.includes('hmr') ||
+        lower.includes('heartbeat')
+      );
+    }
+
     window.onerror = function(message, source, lineno, colno, error) {
+      const msgStr = typeof message === 'string' ? message : (message?.message || String(message || ''));
+      const srcStr = String(source || '');
+      if (isBenignHmrError(msgStr) || isBenignHmrError(srcStr)) {
+        console.warn('Suppressed benign uncaught window error:', msgStr);
+        return true; // Strictly returns true to fully prevent browser error reporting
+      }
+      
       const errBox = document.getElementById('error-box');
       if (errBox) {
         errBox.style.display = 'block';
@@ -24,8 +45,26 @@
           <b>Source:</b> ${source}:${lineno}:${colno}<br/>
           <b>Stack:</b> <pre>${error ? error.stack : 'No stack available'}</pre>`;
       }
+      return false;
     };
+
     window.addEventListener('unhandledrejection', function(event) {
+      let reasonStr = '';
+      if (event.reason) {
+        if (typeof event.reason === 'string') {
+          reasonStr = event.reason;
+        } else if (event.reason instanceof Error) {
+          reasonStr = event.reason.name + ': ' + event.reason.message + '\n' + (event.reason.stack || '');
+        } else {
+          reasonStr = event.reason.message || String(event.reason);
+        }
+      }
+      if (isBenignHmrError(reasonStr)) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.warn('Suppressed benign unhandled promise rejection:', reasonStr);
+        return;
+      }
       const errBox = document.getElementById('error-box');
       if (errBox) {
         errBox.style.display = 'block';

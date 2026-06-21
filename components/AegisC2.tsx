@@ -126,6 +126,34 @@ export const AegisC2: React.FC = () => {
     }
   }, [logs]);
 
+  useEffect(() => {
+    const sesInterval = setInterval(() => {
+      // Fluctuating active session latency in background dynamically
+      setSessions(prev => 
+        prev.map(s => ({
+          ...s,
+          latency: Math.max(2, Math.min(300, s.latency + Math.round((Math.random() - 0.5) * 6)))
+        }))
+      );
+      
+      // Randomly append a realistic live intrusion detection or operational background trace 20% of the time
+      if (Math.random() < 0.20) {
+        const types: Array<LogEntry['type']> = ['INFO', 'SUCCESS', 'ALERT'];
+        const msgs = [
+          `Heartbeat verified on active socket relay`,
+          `Synchronized telemetry matrices with peripheral egress nodes`,
+          `Observed dynamic stack variation from staging endpoint`,
+          `Refreshed internal routing table for secure C2 transport`,
+          `Encrypted operational log chunk archived to cloud cache`,
+        ];
+        const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        addLog(randomMsg, randomType);
+      }
+    }, 4000);
+    return () => clearInterval(sesInterval);
+  }, []);
+
   const menuItems = [
     { id: '1', name: 'RECON: Threaded Port Mapper', icon: <Search className="w-6 h-6" /> },
     { id: '2', name: 'INTEL: Service Banner Grabber', icon: <FileText className="w-6 h-6" /> },

@@ -3,8 +3,8 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CloudRain, CloudLightning, Sun, Cloud, Thermometer, Wind, AlertTriangle, Info, Activity, ShieldCheck } from 'lucide-react';
-import { generateWeatherImpactAssessment } from '../services/geminiService.ts';
-import { Coordinates } from '../types.ts';
+import { generateWeatherImpactAssessment } from '../services/geminiService';
+import { Coordinates } from '../types';
 
 interface Props {
   weather: string;

@@ -1,0 +1,123 @@
+{
+  "entities": {
+    "UserSettings": {
+      "title": "UserSettings",
+      "description": "User specific geographical configuration and satellite preferences.",
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number",
+          "description": "Latitude of the satellite tracking station location"
+        },
+        "lng": {
+          "type": "number",
+          "description": "Longitude of the satellite tracking station location"
+        },
+        "selectedSatId": {
+          "type": "string",
+          "description": "Identifer of the currently monitored satellite"
+        },
+        "defcon": {
+          "type": "integer",
+          "description": "Active alert readiness of the command center (DEFCON 1-5)"
+        },
+        "isStealthMode": {
+          "type": "boolean",
+          "description": "Indicates if electromagnetic emission is masked"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Standard timestamp representing the last modification state"
+        }
+      },
+      "required": ["lat", "lng", "defcon", "isStealthMode", "updatedAt"]
+    },
+    "TacticalEvent": {
+      "title": "TacticalEvent",
+      "description": "An operational sensor log, intelligence decrypt, or purple team execution trace.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the log event"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Log creation time"
+        },
+        "satName": {
+          "type": "string",
+          "description": "Associated satellite designation"
+        },
+        "satId": {
+          "type": "string",
+          "description": "Identifer of the associated target satellite"
+        },
+        "status": {
+          "type": "string",
+          "description": "Operational event categorization string"
+        },
+        "detail": {
+          "type": "string",
+          "description": "Decryption report or alert message payload"
+        },
+        "userId": {
+          "type": "string",
+          "description": "System operator identifier who authorized the action"
+        }
+      },
+      "required": ["id", "timestamp", "satName", "satId", "status", "detail", "userId"]
+    },
+    "JammingSession": {
+      "title": "JammingSession",
+      "description": "Records past jamming sessions including frequencies, power levels, target satellites, and effectiveness ratings.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the jamming session"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO timestamp of the session"
+        },
+        "targetSatellite": {
+          "type": "string",
+          "description": "Associated target satellite designated"
+        },
+        "frequency": {
+          "type": "number",
+          "description": "Transmission frequency used during jamming"
+        },
+        "power": {
+          "type": "number",
+          "description": "Power level output percentage or dBm"
+        },
+        "effectiveness": {
+          "type": "number",
+          "description": "Calculated jamming effectiveness rating"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Authorized operator identifier"
+        }
+      },
+      "required": ["id", "timestamp", "targetSatellite", "frequency", "power", "effectiveness", "userId"]
+    }
+  },
+  "firestore": {
+    "users/{userId}/settings/{settingId}": {
+      "schema": "UserSettings",
+      "description": "Monitors custom settings specific to a given user security profile."
+    },
+    "users/{userId}/events/{eventId}": {
+      "schema": "TacticalEvent",
+      "description": "High-priority audit trails resulting from localized command events."
+    },
+    "users/{userId}/jamming_sessions/{sessionId}": {
+      "schema": "JammingSession",
+      "description": "Contains persistent history of all spectrum denial and interference sessions."
+    }
+  }
+}

@@ -41,6 +41,26 @@ const YARA_DATABASE: YaraRule[] = [
       { id: '$p3', pattern: '"secret"', type: 'nocase' }
     ],
     condition: '2 of ($p*)'
+  },
+  {
+    name: 'APT_C2_Hardened_Beacon',
+    description: 'Heuristics for active command servers beaconing payload instructions to sub-orbital relays.',
+    strings: [
+      { id: '$a1', pattern: '"apt-c2-hardened.secure"', type: 'ascii' },
+      { id: '$a2', pattern: '"/api/v2/telemetry/beacon"', type: 'ascii' },
+      { id: '$a3', pattern: '0xE29A8B610D', type: 'hex' }
+    ],
+    condition: 'all of them'
+  },
+  {
+    name: 'Quantum_Entanglement_Cipher_Decoy',
+    description: 'Identifies quantum communication signal anomalies trying to bypass lattice cryptography protections.',
+    strings: [
+      { id: '$q1', pattern: '"q-entanglement-bridge.edu"', type: 'ascii' },
+      { id: '$q2', pattern: '"lattice-crypto-vault.int"', type: 'ascii' },
+      { id: '$q3', pattern: '"spin-polarization-override"', type: 'nocase' }
+    ],
+    condition: '2 of them'
   }
 ];
 
@@ -168,7 +188,7 @@ export const YaraIntelligence: React.FC = () => {
                  ))}
               </div>
               <div className="mt-8 pt-6 border-t border-slate-800 flex justify-center">
-                 <span className="text-[9px] font-mono text-slate-700">TOTAL_SIGNATURES: 0x03</span>
+                 <span className="text-[9px] font-mono text-slate-700">TOTAL_SIGNATURES: 0x05</span>
               </div>
            </div>
 

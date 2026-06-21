@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { playSystemVoice } from '../services/audioService.ts';
+import { playSystemVoice } from '../services/audioService';
 
 type QKDStatus = 'SYNCHRONIZED' | 'SYNCING' | 'DECOHERENCE_ERROR' | 'EAVESDROP_DETECTED' | 'AETHER_RESONANCE';
 interface QuantumEvent {

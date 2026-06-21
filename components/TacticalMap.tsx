@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { useRef } from 'react';
-import { Coordinates, Satellite } from '../types.ts';
+import { Coordinates, Satellite } from '../types';
 
 interface Props {
   userLoc: Coordinates;

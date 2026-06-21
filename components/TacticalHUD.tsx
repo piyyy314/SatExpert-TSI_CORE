@@ -1,10 +1,10 @@
 
 import * as React from 'react';
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Coordinates, Satellite, SatelliteStatus, WeatherCondition, TacticalEvent, BugReportEvent } from '../types.ts';
-import { fetchSatelliteStatusUpdates } from '../services/satelliteService.ts';
-import { audioController } from '../services/audioService.ts';
-import { generateBugReportPDF } from '../services/pdfService.ts';
+import { Coordinates, Satellite, SatelliteStatus, WeatherCondition, TacticalEvent, BugReportEvent } from '../types';
+import { fetchSatelliteStatusUpdates } from '../services/satelliteService';
+import { audioController } from '../services/audioService';
+import { generateBugReportPDF } from '../services/pdfService';
 
 interface Props {
   loc: Coordinates;

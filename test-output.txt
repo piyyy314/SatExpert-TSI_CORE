@@ -1,0 +1,2 @@
+Navigated to root.
+Exception: Error: page.$$: Protocol error (DOM.describeNode): Cannot find context with specified id

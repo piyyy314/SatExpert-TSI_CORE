@@ -7,6 +7,8 @@ import { Download } from 'lucide-react';
 export const CyberThreatMap: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [threats, setThreats] = useState<{id: number, x: number, y: number, type: string, intensity: number}[]>([]);
+  const threatsRef = useRef<{id: number, x: number, y: number, type: string, intensity: number}[]>([]);
+  const prevIdsRef = useRef<string>('');
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -34,20 +36,27 @@ export const CyberThreatMap: React.FC = () => {
       }
 
       // Draw "threats"
-      setThreats(prev => {
-        if (frame % 60 === 0 && prev.length < 10) {
-          return [...prev, {
-            id: Date.now() + Math.random(),
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            type: ['DDOS', 'INTRUSION', 'SPOOFING', 'MALWARE'][Math.floor(Math.random() * 4)],
-            intensity: Math.random() * 100
-          }];
-        }
-        return prev.filter(t => Math.random() > 0.01);
-      });
+      let currentThreats = threatsRef.current;
+      if (frame % 60 === 0 && currentThreats.length < 10) {
+        currentThreats = [...currentThreats, {
+          id: Date.now() + Math.random(),
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          type: ['DDOS', 'INTRUSION', 'SPOOFING', 'MALWARE'][Math.floor(Math.random() * 4)],
+          intensity: Math.random() * 100
+        }];
+      }
+      currentThreats = currentThreats.filter(t => Math.random() > 0.01);
+      threatsRef.current = currentThreats;
 
-      threats.forEach(t => {
+      // Only update state if list has changed to avoid continuous re-rendering
+      const idsString = currentThreats.map(t => t.id).join(',');
+      if (idsString !== prevIdsRef.current) {
+        prevIdsRef.current = idsString;
+        setThreats(currentThreats);
+      }
+
+      currentThreats.forEach(t => {
         const pulse = (Math.sin(frame / 10) + 1) / 2;
         ctx.fillStyle = `rgba(239, 68, 68, ${0.2 + pulse * 0.4})`;
         ctx.beginPath();
@@ -69,7 +78,7 @@ export const CyberThreatMap: React.FC = () => {
 
     const handle = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(handle);
-  }, [threats]);
+  }, []);
 
   const exportThreatReport = () => {
     if (threats.length === 0) return;

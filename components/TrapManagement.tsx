@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Download } from 'lucide-react';
-import { generatePQCKeyPair, signCanaryToken, verifyCanaryToken, bytesToHex } from '../services/pqcService.ts';
+import { generatePQCKeyPair, signCanaryToken, verifyCanaryToken, bytesToHex } from '../services/pqcService';
 
 interface Trap {
   id: string;

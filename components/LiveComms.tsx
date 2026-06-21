@@ -20,7 +20,15 @@ export const LiveComms: React.FC<{ isStealthMode: boolean; addMissionLog?: (deta
       }
       
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      let options = {};
+      if (typeof MediaRecorder.isTypeSupported === 'function') {
+          if (MediaRecorder.isTypeSupported('audio/webm')) {
+              options = { mimeType: 'audio/webm' };
+          } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+              options = { mimeType: 'audio/mp4' };
+          }
+      }
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -33,68 +41,77 @@ export const LiveComms: React.FC<{ isStealthMode: boolean; addMissionLog?: (deta
       mediaRecorder.onstop = async () => {
           setIsRecording(false);
           setIsProcessing(true);
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const mimeType = mediaRecorder.mimeType || 'audio/webm';
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
           
           try {
-              // Convert webm blob to base64
-              const arrayBuffer = await audioBlob.arrayBuffer();
-              
-              // We need PCM. The backend expects PCM rate=16000. 
-              // Wait, decodeAudioData in browser can decode WebM to RAW PCM!
-              const actx = new AudioContext({ sampleRate: 16000 });
-              const audioBuffer = await actx.decodeAudioData(arrayBuffer);
-              const pcmData = audioBuffer.getChannelData(0);
-              
-              const int16 = new Int16Array(pcmData.length);
-              for (let i = 0; i < pcmData.length; i++) {
-                  int16[i] = pcmData[i] * 32768;
-              }
-              const base64Audio = btoa(String.fromCharCode(...new Uint8Array(int16.buffer)));
-              
-              const response = await fetch('/api/gemini/action', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                      action: 'processLiveCommsAudio',
-                      payload: { base64Audio }
-                  })
-              });
-              
-              if (!response.ok) throw new Error("Backend processing failed.");
-              const data = await response.json();
-              if (data.error) throw new Error(data.error);
-              
-              const { transcription, audioBase64, textReply } = data.result;
-              
-              if (transcription) {
-                  setTranscriptions(prev => [...prev, {role: 'USER', text: transcription}]);
-              }
-              if (textReply) {
-                  setTranscriptions(prev => [...prev, {role: 'STIA', text: textReply}]);
-              }
-              if (audioBase64) {
-                 const playbackCtx = new AudioContext({ sampleRate: 24000 });
-                 const bs = atob(audioBase64);
-                 const ba = new Uint8Array(bs.length);
-                 for (let i = 0; i < bs.length; i++) ba[i] = bs.charCodeAt(i);
-                 
-                 // audioBase64 from Gemini is 24000 PCM
-                 const dataInt16 = new Int16Array(ba.buffer);
-                 const pcmBuf = playbackCtx.createBuffer(1, dataInt16.length, 24000);
-                 const channelData = pcmBuf.getChannelData(0);
-                 for (let i = 0; i < dataInt16.length; i++) {
-                     channelData[i] = dataInt16[i] / 32768.0;
-                 }
-                 const source = playbackCtx.createBufferSource();
-                 source.buffer = pcmBuf;
-                 source.connect(playbackCtx.destination);
-                 source.start();
-              }
-              
+              const reader = new FileReader();
+              reader.readAsDataURL(audioBlob);
+              reader.onloadend = async () => {
+                  try {
+                      const base64data = reader.result as string;
+                      const base64Audio = base64data.split(',')[1];
+                      
+                      const response = await fetch('/api/gemini/action', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                              action: 'processLiveCommsAudio',
+                              payload: { base64Audio, mimeType }
+                          })
+                      });
+                      
+                      if (!response.ok) {
+                          let errMsg = "Backend processing failed.";
+                          try {
+                              const data = await response.json();
+                              errMsg = data.message || data.error || errMsg;
+                          } catch (_) {}
+                          throw new Error(errMsg);
+                      }
+                      
+                      const data = await response.json();
+                      if (data.error) throw new Error(data.message || data.error);
+                      
+                      const { transcription, audioBase64, textReply } = data.result;
+                      
+                      if (transcription) {
+                          setTranscriptions(prev => [...prev, {role: 'USER', text: transcription}]);
+                      }
+                      if (textReply) {
+                          setTranscriptions(prev => [...prev, {role: 'STIA', text: textReply}]);
+                      }
+                      if (audioBase64) {
+                         const playbackCtx = new AudioContext({ sampleRate: 24000 });
+                         const bs = atob(audioBase64);
+                         const ba = new Uint8Array(bs.length);
+                         for (let i = 0; i < bs.length; i++) ba[i] = bs.charCodeAt(i);
+                         
+                         // audioBase64 from Gemini is 24000 PCM
+                         const dataInt16 = new Int16Array(ba.buffer);
+                         const pcmBuf = playbackCtx.createBuffer(1, dataInt16.length, 24000);
+                         const channelData = pcmBuf.getChannelData(0);
+                         for (let i = 0; i < dataInt16.length; i++) {
+                             channelData[i] = dataInt16[i] / 32768.0;
+                         }
+                         const source = playbackCtx.createBufferSource();
+                         source.buffer = pcmBuf;
+                         source.connect(playbackCtx.destination);
+                         source.start();
+                      }
+                  } catch (err: any) {
+                      console.error("Failed to process comms", err);
+                      setError(`COMMS_ERROR: ${err.message}`);
+                  } finally {
+                      setIsProcessing(false);
+                  }
+              };
+              reader.onerror = () => {
+                  throw new Error("Failed to read recorded audio chunk.");
+              };
           } catch (err: any) {
               console.error("Failed to process comms", err);
               setError(`COMMS_ERROR: ${err.message}`);
-          } finally {
               setIsProcessing(false);
           }
       };

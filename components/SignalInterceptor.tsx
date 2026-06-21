@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { analyzeInterceptedSignal, generateDecryptedMessage } from '../services/geminiService.ts';
+import { analyzeInterceptedSignal, generateDecryptedMessage } from '../services/geminiService';
 import { Download, ShieldAlert, Wifi, Zap } from 'lucide-react';
 
 type ScanState = 'IDLE' | 'SCANNING' | 'INTERCEPTED' | 'ANALYZING' | 'ANALYZED' | 'DECRYPTING' | 'DECRYPTED';

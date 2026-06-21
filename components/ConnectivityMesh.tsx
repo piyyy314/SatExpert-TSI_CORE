@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Globe, Link as LinkIcon, Zap, Shield, Cpu, Activity, Download } from 'lucide-react';
-import { Satellite } from '../types.ts';
+import { Satellite } from '../types';
 
 interface MeshLink {
   fromIdx: number;

@@ -22,7 +22,8 @@ import {
   Lock,
   Download
 } from 'lucide-react';
-import { analyzePortScan } from '../services/geminiService.ts';
+import { analyzePortScan } from '../services/geminiService';
+import { Neo4jGraphCanvas } from './Neo4jGraphCanvas';
 
 interface ThreatRecord {
   id: string;
@@ -46,7 +47,7 @@ interface ThreatRecord {
 export const ThreatDossier: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'intel' | 'visual'>('intel');
+  const [activeTab, setActiveTab] = useState<'intel' | 'visual' | 'polyglot'>('intel');
   const [records, setRecords] = useState<ThreatRecord[]>([
     {
       id: 'TR-1029',
@@ -365,6 +366,12 @@ ${selectedRecord.vulnerabilities.vulnerabilities.join('\n')}
              >
                 Sight_Visual
              </button>
+             <button 
+               onClick={() => setActiveTab('polyglot')}
+               className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'polyglot' ? 'bg-purple-600 text-white shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
+             >
+                Graph_Neo4j
+             </button>
           </div>
           <button className="px-6 py-4 bg-slate-900/60 hover:bg-slate-800 rounded-2xl border-2 border-slate-800 hover:border-slate-700 text-[10px] font-black uppercase text-slate-400 hover:text-white transition-all flex items-center space-x-2 shadow-xl active:scale-95">
              <Plus className="w-4 h-4" />
@@ -670,7 +677,7 @@ ${selectedRecord.vulnerabilities.vulnerabilities.join('\n')}
                        </div>
                     </div>
                  </motion.div>
-              ) : (
+              ) : activeTab === 'visual' ? (
                 <motion.div 
                   key="visual"
                   initial={{ opacity: 0, x: 20 }}
@@ -716,7 +723,7 @@ ${selectedRecord.vulnerabilities.vulnerabilities.join('\n')}
                                       animate={{ 
                                         opacity: [0.05, 0.2, 0.05],
                                         scale: [0.98, 1.02, 0.98],
-                                        backgroundColor: i % 5 === 0 ? 'rgba(239, 68, 68, 0.08)' : 'transparent'
+                                        backgroundColor: i % 5 === 0 ? 'rgba(239, 68, 68, 0.08)' : 'rgba(0, 0, 0, 0)'
                                       }}
                                       transition={{ duration: 5 + Math.random() * 3, repeat: Infinity }}
                                       className="border border-white/5 rounded-xl shadow-inner"
@@ -784,6 +791,16 @@ ${selectedRecord.vulnerabilities.vulnerabilities.join('\n')}
                          <span className="text-lg font-mono text-emerald-500 font-black tracking-widest shadow-emerald-500/20 text-glow">OPTIMAL_v8.0</span>
                       </div>
                    </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="polyglot"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
+                >
+                  <Neo4jGraphCanvas />
                 </motion.div>
               )}
            </AnimatePresence>

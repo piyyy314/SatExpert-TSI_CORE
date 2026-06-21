@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { Satellite, LookAngles } from '../types.ts';
+import { Satellite, LookAngles } from '../types';
 import { SignalVisualizer } from './SignalVisualizer.tsx';
 import { LookAngleCard } from './LookAngleCard.tsx';
 import { LinkBudgetCalculator } from './LinkBudgetCalculator.tsx';

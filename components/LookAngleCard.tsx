@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { LookAngles, Satellite } from '../types.ts';
+import { LookAngles, Satellite } from '../types';
 
 interface Props {
   angles: LookAngles;

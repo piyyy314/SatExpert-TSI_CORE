@@ -8,6 +8,20 @@ const PORT = 3000;
 
 app.use(express.json({limit: '50mb' }));
 
+app.get("/api/rss", async (req, res) => {
+    try {
+      const targetUrl = 'https://spacenews.com/feed/';
+      const response = await fetch(targetUrl);
+      if (!response.ok) throw new Error(`RSS feed fetch failed with status: ${response.status}`);
+      const xml = await response.text();
+      res.set('Content-Type', 'application/xml');
+      res.send(xml);
+    } catch (error) {
+      console.error("RSS_FETCH_FAILURE", error);
+      res.status(500).json({ error: "RSS_FETCH_FAILURE" });
+    }
+});
+
 const getAiInstance = () => {
     if (!process.env.GEMINI_API_KEY) {
         throw new Error("GEMINI_API_KEY environment variable is missing.");
@@ -28,6 +42,12 @@ const terminalSensorTool = {
 
 app.post("/api/gemini/action", async (req, res) => {
     try {
+        if (!process.env.GEMINI_API_KEY) {
+            return res.status(400).json({ 
+                error: "MISSING_API_KEY", 
+                message: "GEMINI_API_KEY environment variable is missing. Please configure your key under Settings > Secrets." 
+            });
+        }
         const ai = getAiInstance();
         const { action, payload } = req.body;
         
@@ -363,13 +383,15 @@ app.post("/api/gemini/action", async (req, res) => {
             return res.json({ result: response.text });
         }
         else if (action === "processLiveCommsAudio") {
-            const { base64Audio } = payload;
-            // 1. Transcribe
+            const { base64Audio, mimeType } = payload;
+            const inputMimeType = mimeType || 'audio/webm';
+            
+            // 1. Transcribe audio input using standard, stable gemini-3.5-flash
             const response1 = await ai.models.generateContent({
-                model: 'gemini-3-flash-preview',
+                model: 'gemini-3.5-flash',
                 contents: {
                     parts: [
-                        { inlineData: { data: base64Audio, mimeType: 'audio/pcm;rate=16000' } },
+                        { inlineData: { data: base64Audio, mimeType: inputMimeType } },
                         { text: "Transcribe precisely. If no speech is detected, return exactly 'NO_SPEECH_DETECTED'." }
                     ]
                 }
@@ -380,29 +402,46 @@ app.post("/api/gemini/action", async (req, res) => {
                 return res.json({ result: { transcription: "", audioBase64: "", textReply: "" } });
             }
 
-            // 2. Generate response text & speech
-            const response2 = await ai.models.generateContent({
-                model: 'gemini-3-flash-preview',
-                contents: `Operator says: "${transcription}". Provide a brief, tactical voice response as STIA agent.`,
-                config: {
-                    systemInstruction: "You are STIA. Respond in 1-2 sentences. Tone: Tactical, clinical.",
-                    responseModalities: ["AUDIO"],
-                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } } }
-                }
-            });
-
-            // Extract audio and text from response2
+            // 2. Generate response text & speech with a robust text-only fallback
             let audioBase64 = "";
             let textReply = "";
             
-            if (response2.candidates && response2.candidates[0].content) {
-                for (const part of response2.candidates[0].content.parts) {
-                    if (part.inlineData) {
-                        audioBase64 = part.inlineData.data;
+            try {
+                const response2 = await ai.models.generateContent({
+                    model: 'gemini-3.1-flash-tts-preview',
+                    contents: `Operator says: "${transcription}". Provide a brief, tactical voice response as STIA agent.`,
+                    config: {
+                        systemInstruction: "You are STIA. Respond in 1-2 sentences. Tone: Tactical, clinical.",
+                        responseModalities: ["AUDIO"],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } } }
                     }
-                    if (part.text) {
-                        textReply += part.text;
+                });
+
+                if (response2.candidates && response2.candidates[0].content) {
+                    for (const part of response2.candidates[0].content.parts) {
+                        if (part.inlineData) {
+                            audioBase64 = part.inlineData.data;
+                        }
+                        if (part.text) {
+                            textReply += part.text;
+                        }
                     }
+                }
+            } catch (ttsError: any) {
+                console.warn("TTS/Audio generation failed, falling back to text-only", ttsError);
+                try {
+                    // Fallback to standard text response on gemini-3.5-flash
+                    const fallbackResponse = await ai.models.generateContent({
+                        model: 'gemini-3.5-flash',
+                        contents: `Operator says: "${transcription}". Provide a brief, tactical text response as STIA agent.`,
+                        config: {
+                            systemInstruction: "You are STIA. Respond in 1-2 sentences. Tone: Tactical, clinical."
+                        }
+                    });
+                    textReply = fallbackResponse.text?.trim() || "";
+                } catch (textFallbackError: any) {
+                    console.error("Text fallback failed as well", textFallbackError);
+                    textReply = "Transmission acknowledged. Communication link secured.";
                 }
             }
 
@@ -421,6 +460,12 @@ app.post("/api/gemini/action", async (req, res) => {
 
     } catch (error: any) {
         console.error("STIA_SERVER_ERROR", error);
+        try {
+            const fs = await import('fs');
+            fs.writeFileSync(path.join(process.cwd(), 'gemini-error.txt'), `Time: ${new Date().toISOString()}\nError: ${error.message || error}\nStack: ${error.stack || ''}\n`);
+        } catch (e) {
+            console.error("Failed to write error file", e);
+        }
         if (error.message?.includes("Requested entity was not found")) {
             return res.status(403).json({ error: "KEY_AUTH_FAILURE", message: "Advanced API Key required for this operation." });
         }
@@ -440,6 +485,7 @@ async function startServer() {
     
     // In dev, Vite should handle index.html if appType is 'spa'.
     // But if it doesn't, we can add a manual fallback.
+    const fs = await import('fs');
     app.get('*all', async (req, res, next) => {
       if (req.url.startsWith('/api')) return next();
       // Only handle HTML requests or requests with no extension
@@ -447,7 +493,9 @@ async function startServer() {
       if (ext && ext !== '.html') return next();
       
       try {
-        const html = await vite.transformIndexHtml(req.url, path.join(process.cwd(), 'index.html'));
+        const indexPath = path.join(process.cwd(), 'index.html');
+        let html = fs.readFileSync(indexPath, 'utf-8');
+        html = await vite.transformIndexHtml(req.url, html);
         res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
       } catch (e) {
         vite.ssrFixStacktrace(e as Error);

@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Connection test collection for diagnostic latency queries
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Fundamental Core Security Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() 
+          && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string 
+          && id.size() <= 128 
+          && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Strict Payload Verification Helpers ---
+    function isValidUserSettings(data) {
+      return (data.lat is float || data.lat is int)
+          && (data.lng is float || data.lng is int)
+          && (data.defcon is int || data.defcon is float)
+          && data.isStealthMode is bool
+          && data.updatedAt is string
+          && data.updatedAt.size() <= 64
+          && (!data.keys().contains('selectedSatId') || (data.selectedSatId is string && data.selectedSatId.size() <= 128));
+    }
+
+    function isValidTacticalEvent(data, userId) {
+      return data.id is string && data.id.size() <= 128
+          && data.timestamp is string && data.timestamp.size() <= 64
+          && data.satName is string && data.satName.size() <= 128
+          && data.satId is string && data.satId.size() <= 128
+          && data.status is string && data.status.size() <= 64
+          && data.detail is string && data.detail.size() <= 2000
+          && data.userId == userId;
+    }
+
+    function isValidJammingSession(data, userId) {
+      return data.id is string && data.id.size() <= 128
+          && data.timestamp is string && data.timestamp.size() <= 64
+          && data.targetSatellite is string && data.targetSatellite.size() <= 128
+          && (data.frequency is float || data.frequency is int)
+          && (data.power is float || data.power is int)
+          && (data.effectiveness is float || data.effectiveness is int)
+          && data.userId == userId;
+    }
+
+    // --- Secure Path Access Blocks ---
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) && isValidId(userId);
+
+      // User Settings Subcollection
+      match /settings/{settingId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(settingId);
+        allow list: if isOwner(userId) && isValidId(userId);
+        
+        allow create: if isOwner(userId) 
+          && isValidId(userId) 
+          && isValidId(settingId)
+          && isValidUserSettings(request.resource.data)
+          && request.resource.data.keys().hasAll(['lat', 'lng', 'defcon', 'isStealthMode', 'updatedAt'])
+          && request.resource.data.keys().size() >= 5;
+
+        allow update: if isOwner(userId)
+          && isValidId(userId)
+          && isValidId(settingId)
+          && isValidUserSettings(request.resource.data);
+
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(settingId);
+      }
+
+      // Tactical Sensor & Audit Events logs (WORM: Write Once, Read Many)
+      match /events/{eventId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(eventId);
+        allow list: if isOwner(userId) && isValidId(userId);
+
+        allow create: if isOwner(userId)
+          && isValidId(userId)
+          && isValidId(eventId)
+          && isValidTacticalEvent(request.resource.data, userId)
+          && request.resource.data.keys().hasAll(['id', 'timestamp', 'satName', 'satId', 'status', 'detail', 'userId'])
+          && request.resource.data.keys().size() == 7;
+
+        // Force complete immutability for the operational logging trail
+        allow update, delete: if false;
+      }
+
+      // Jamming Sessions (WORM: Write Once, Read Many)
+      match /jamming_sessions/{sessionId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(sessionId);
+        allow list: if isOwner(userId) && isValidId(userId);
+
+        allow create: if isOwner(userId)
+          && isValidId(userId)
+          && isValidId(sessionId)
+          && isValidJammingSession(request.resource.data, userId)
+          && request.resource.data.keys().hasAll(['id', 'timestamp', 'targetSatellite', 'frequency', 'power', 'effectiveness', 'userId'])
+          && request.resource.data.keys().size() == 7;
+
+        allow update, delete: if false;
+      }
+    }
+  }
+}

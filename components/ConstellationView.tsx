@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { Satellite, SatelliteStatus } from '../types.ts';
+import { Satellite, SatelliteStatus } from '../types';
 
 interface Props {
   satellites: Satellite[];

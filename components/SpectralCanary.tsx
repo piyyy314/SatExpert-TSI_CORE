@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Radio, ShieldAlert, Wifi, Zap, Lock, Eye, Terminal } from 'lucide-react';
-import { audioController } from '../services/audioService.ts';
+import { audioController } from '../services/audioService';
 
 interface CanaryEvent {
   id: string;
