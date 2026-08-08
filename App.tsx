@@ -73,6 +73,8 @@ import { AIAssistantWidget } from './components/AIAssistantWidget';
 import { QuantumEntanglementComms } from './components/QuantumEntanglementComms';
 import { SwarmIntelligenceDashboard } from './components/SwarmIntelligenceDashboard';
 import { CloudSyncPortal } from './components/CloudSyncPortal';
+import { SARImagingSuite } from './components/SARImagingSuite';
+import { KyberlaserQkdVault } from './components/KyberlaserQkdVault';
 import { audioController } from './services/audioService';
 import { Coordinates, Satellite, LookAngles, WeatherCondition, MainView, SatelliteStatus, TacticalEvent } from './types';
 import { COMMON_SATELLITES } from './constants';
@@ -398,11 +400,11 @@ export const App: React.FC = () => {
   }, [userLoc, selectedSat, tick]);
 
   const VIEW_CATEGORIES = [
-    { name: 'TACTICAL_BASE', views: ['tactical', 'constellation', 'satellite_detail', 'mesh', 'weather', 'geolocator', 'cloud_portal'] },
+    { name: 'TACTICAL_BASE', views: ['tactical', 'constellation', 'satellite_detail', 'mesh', 'weather', 'geolocator', 'cloud_portal', 'sar_recon'] },
     { name: 'SENTINEL_AI', views: ['sentinel_core', 'quantum_intel_hub', 'palantir_audit', 'bug_bounty_lab'] },
     { name: 'SIGINT_SUITE', views: ['intelligence', 'interception', 'node_scanner', 'spoof_tracer', 'threat_dossier', 'yara_scanner', 'sniffer', 'analyzer', 'specter', 'traps', 'radio_intercept', 'quantum_decryptor', 'biometric_scanner', 'quantum_timeline', 'nmap_scan'] },
     { name: 'ACTIVE_OPS', views: ['tactical_suite', 'warfare', 'planner', 'neural', 'orbital_strike', 'drone_swarm', 'swarm_intelligence', 'kill_chain', 'cyber_attack', 'signal_jamming', 'botnet_command', 'script_env', 'remote_access', 'purple_team', 'zero_day_forge', 'apt_simulator', 'social_toolkit', 'ransomware_sim', 'scada_sc', 'deepfake_comms', 'dark_link', 'wifi_countermeasures', 'electromagnetic_pulse', 'ai_automated_exploit'] },
-    { name: 'CYBER_CMD', views: ['defense', 'simulation', 'aegis', 'usb_manager', 'vsat_config', 'grover', 'quantum_entanglement'] },
+    { name: 'CYBER_CMD', views: ['defense', 'simulation', 'aegis', 'usb_manager', 'vsat_config', 'grover', 'quantum_entanglement', 'lasercom_qkd'] },
     { name: 'AUX_DATA', views: ['media', 'live', 'calculations', 'terrain', 'news'] }
   ];
 
@@ -803,6 +805,14 @@ export const App: React.FC = () => {
 
             <ViewWrapper currentView={view} targetView="ai_automated_exploit" visitedViews={visitedViews}>
               <AIAutomatedExploit addMissionLog={addMissionLog} />
+            </ViewWrapper>
+
+            <ViewWrapper currentView={view} targetView="sar_recon" visitedViews={visitedViews}>
+              <SARImagingSuite addMissionLog={addMissionLog} />
+            </ViewWrapper>
+
+            <ViewWrapper currentView={view} targetView="lasercom_qkd" visitedViews={visitedViews}>
+              <KyberlaserQkdVault addMissionLog={addMissionLog} />
             </ViewWrapper>
 
             <ViewWrapper currentView={view} targetView="dark_link" visitedViews={visitedViews}>

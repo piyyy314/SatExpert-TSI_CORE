@@ -14,9 +14,7 @@ import {
   limit, 
   getDocFromServer,
   enableNetwork,
-  disableNetwork,
-  persistentLocalCache,
-  persistentMultipleTabManager
+  disableNetwork
 } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 import { TacticalEvent, Coordinates, JammingSession } from '../types';
@@ -27,13 +25,8 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase services
 export const auth = getAuth(app);
 // CRITICAL: The app will break without specifying the firestoreDatabaseId
-// Using initializeFirestore with experimentalForceLongPolling to bypass corporate firewall / iframe websocket blockages
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
-}, firebaseConfig.firestoreDatabaseId);
+// Allowing Firestore to connect natively using modern web socket protocols
+export const db = initializeFirestore(app, {}, firebaseConfig.firestoreDatabaseId);
 
 // Connection test collection string
 const TEST_REF_PATH = 'test/connection';
