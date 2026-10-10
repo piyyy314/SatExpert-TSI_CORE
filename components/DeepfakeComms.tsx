@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Mic, 
@@ -40,6 +40,18 @@ export const DeepfakeComms: React.FC = () => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [logs, setLogs] = useState<{ time: string, msg: string }[]>([]);
   const [waveformBars, setWaveformBars] = useState<number[]>(Array(40).fill(10));
+  const synthIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const callTimeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    return () => {
+      if (synthIntervalRef.current) clearInterval(synthIntervalRef.current);
+      callTimeoutRefs.current.forEach(t => clearTimeout(t));
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -58,6 +70,7 @@ export const DeepfakeComms: React.FC = () => {
   const synthesizeAudio = () => {
     if (!inputText.trim()) return;
     
+    if (synthIntervalRef.current) clearInterval(synthIntervalRef.current);
     setIsSynthesizing(true);
     setIsAudioReady(false);
     setLogs([]);
@@ -72,12 +85,12 @@ export const DeepfakeComms: React.FC = () => {
     ];
 
     let step = 0;
-    const interval = setInterval(() => {
+    synthIntervalRef.current = setInterval(() => {
       if (step < steps.length) {
         setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: steps[step] }]);
         step++;
       } else {
-        clearInterval(interval);
+        if (synthIntervalRef.current) clearInterval(synthIntervalRef.current);
         setIsSynthesizing(false);
         setIsAudioReady(true);
       }
@@ -85,8 +98,10 @@ export const DeepfakeComms: React.FC = () => {
   };
 
   const listenLive = () => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
     setIsPlayingAudio(true);
-    // Simple Web Speech API fallback
+    // Web Speech API
     const msg = new SpeechSynthesisUtterance(inputText);
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
@@ -106,13 +121,15 @@ export const DeepfakeComms: React.FC = () => {
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: `[+] Initiating secure VoIP SIP trunk hijacking...` }]);
     setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: `[+] Spoofing caller ID: ${activeModel?.role} (${activeModel?.name})` }]);
     
-    setTimeout(() => {
+    const t1 = setTimeout(() => {
       setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: `[!] Call connected. Injecting synthetic audio payload...` }]);
-      setTimeout(() => {
+      const t2 = setTimeout(() => {
         setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: `[+] Payload delivered. Disconnecting and wiping CDR logs.` }]);
         setIsExecutingCall(false);
       }, 4000);
+      callTimeoutRefs.current.push(t2);
     }, 2000);
+    callTimeoutRefs.current.push(t1);
   };
 
   const exportTranscript = () => {

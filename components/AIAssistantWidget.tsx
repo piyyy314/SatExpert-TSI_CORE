@@ -44,11 +44,12 @@ export const AIAssistantWidget: React.FC = () => {
             })
         });
 
+        const data = await response.json().catch(() => ({}));
+
         if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
+            throw new Error(data.message || data.error || `Server error: ${response.status}`);
         }
         
-        const data = await response.json();
         const newResponseText = data.result || "NO_RESPONSE.";
         setMessages(prev => [...prev, { role: 'model', content: newResponseText }]);
 

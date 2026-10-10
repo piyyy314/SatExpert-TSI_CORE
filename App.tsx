@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, useTransition } from 'react';
 import { Layout } from './components/Layout';
 import { LookAngleCard } from './components/LookAngleCard';
 import { AITechnician } from './components/AITechnician';
@@ -26,7 +26,7 @@ import { TrapManagement } from './components/TrapManagement';
 import { TrafficSniffer } from './components/TrafficSniffer';
 import { AegisC2 } from './components/AegisC2';
 import { GroverVisualizer } from './components/GroverVisualizer';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, RefreshCw } from 'lucide-react';
 import { VSATConfig } from './components/VSATConfig';
 import { QuantumEntropy } from './components/QuantumEntropy';
 import { SitrepBoard } from './components/SitrepBoard';
@@ -79,6 +79,7 @@ import { audioController } from './services/audioService';
 import { Coordinates, Satellite, LookAngles, WeatherCondition, MainView, SatelliteStatus, TacticalEvent } from './types';
 import { COMMON_SATELLITES } from './constants';
 import { calculateLookAngles } from './utils/geoUtils';
+import { calculateSimulatedOrbitalDrift, hasMeaningfulOrbitalDrift, debounce } from './utils/orbitalScheduler';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, saveUserSettingsToCloud, loadUserSettingsFromCloud, saveEventToCloud, fetchEventsFromCloud, testFirebaseConnection } from './services/firebaseService';
 
@@ -106,7 +107,7 @@ export const App: React.FC = () => {
   const [satellites, setSatellites] = useState<Satellite[]>(COMMON_SATELLITES);
   const [userLoc, setUserLoc] = useState<Coordinates>({ lat: 51.5074, lng: -0.1278 });
   const [selectedSat, setSelectedSat] = useState<Satellite>(satellites[0]);
-  const [lookAngles, setLookAngles] = useState<LookAngles | null>(null);
+  const [, startOrbitalTransition] = useTransition();
   const [view, setView] = useState<MainView>('sentinel_core');
   const [defcon, setDefcon] = useState<number>(5);
   const [isTracking, setIsTracking] = useState<boolean>(false);
@@ -117,9 +118,43 @@ export const App: React.FC = () => {
   const [isNeuralCleaning, setIsNeuralCleaning] = useState(false);
   const [isDecoyActive, setIsDecoyActive] = useState(false);
   const [isZPEActive, setIsZPEActive] = useState(false);
+  const [isThermalDecoyActive, setIsThermalDecoyActive] = useState(false);
+  const [thermalDecoySecondsRemaining, setThermalDecoySecondsRemaining] = useState(0);
   
   // Real-time ticking heartbeat state
   const [tick, setTick] = useState<number>(0);
+
+  // Debounced satellite orbital parameter updater
+  const debouncedSetSatellites = useMemo(() => {
+    return debounce((newSats: Satellite[] | ((prev: Satellite[]) => Satellite[])) => {
+      startOrbitalTransition(() => {
+        setSatellites(newSats);
+      });
+    }, 1500);
+  }, []);
+
+  // Cleanup debouncer on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSetSatellites.cancel();
+    };
+  }, [debouncedSetSatellites]);
+
+  // Handler for external / HUD satellite updates with debounced batching
+  const handleSatellitesUpdate = useCallback((newSats: Satellite[]) => {
+    debouncedSetSatellites((prevSats) => {
+      let hasChanges = false;
+      const merged = prevSats.map((sat) => {
+        const incoming = newSats.find((s) => s.id === sat.id);
+        if (incoming && (incoming.status !== sat.status || hasMeaningfulOrbitalDrift(sat, incoming))) {
+          hasChanges = true;
+          return { ...sat, ...incoming };
+        }
+        return sat;
+      });
+      return hasChanges ? merged : prevSats;
+    });
+  }, [debouncedSetSatellites]);
 
   // Keep-alive tracker to preserve active tool states across view changes
   const [visitedViews, setVisitedViews] = useState<Record<string, boolean>>({
@@ -134,28 +169,20 @@ export const App: React.FC = () => {
   }, [view]);
 
   useEffect(() => {
+    let tickCount = 0;
     const timer = setInterval(() => {
       setTick(prev => prev + 1);
-      
-      // Real-time fluctuating satellite orbital parameters dynamically so stats update live
-      setSatellites(prevSats => {
-        return prevSats.map(sat => {
-          const apogeeDiff = (Math.random() - 0.5) * 4;
-          const perigeeDiff = (Math.random() - 0.5) * 4;
-          const velocityDiff = (Math.random() - 0.5) * 0.006;
-          const longitudeDiff = (Math.random() - 0.5) * 0.003;
-          return {
-            ...sat,
-            apogee: Math.max(30000, Math.min(41000, Math.round((sat.apogee + apogeeDiff) * 10) / 10)),
-            perigee: Math.max(30000, Math.min(41000, Math.round((sat.perigee + perigeeDiff) * 10) / 10)),
-            velocity: Math.max(1.5, Math.min(6.5, Math.round((sat.velocity + velocityDiff) * 1000) / 1000)),
-            longitude: Math.max(-180, Math.min(180, Math.round((sat.longitude + longitudeDiff) * 10000) / 10000))
-          };
-        });
-      });
+      tickCount += 1;
 
-      // Atmospheric/Meteorological Drift: 5% chance of slow weather fluctuation (realistic rain-fade simulation)
-      if (Math.random() < 0.05) {
+      // Scheduled debounced orbital parameter drift every 3 ticks
+      if (tickCount % 3 === 0) {
+        startOrbitalTransition(() => {
+          setSatellites(prevSats => calculateSimulatedOrbitalDrift(prevSats));
+        });
+      }
+
+      // Atmospheric/Meteorological Drift: slow weather fluctuation (realistic rain-fade simulation)
+      if (Math.random() < 0.04) {
         const climateStates: WeatherCondition[] = ['CLEAR', 'OVERCAST', 'LIGHT_RAIN', 'HEAVY_STORM'];
         setWeather(current => {
           const currentIndex = climateStates.indexOf(current);
@@ -167,13 +194,30 @@ export const App: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Sync selectedSat references with real-time updates from satellites array
+  // Sync selectedSat references with real-time updates from satellites array when meaningful drift occurs
   useEffect(() => {
     const freshSelected = satellites.find(s => s.id === selectedSat.id);
-    if (freshSelected) {
-      setSelectedSat(freshSelected);
+    if (freshSelected && hasMeaningfulOrbitalDrift(selectedSat, freshSelected)) {
+      startOrbitalTransition(() => {
+        setSelectedSat(freshSelected);
+      });
     }
-  }, [satellites, selectedSat.id]);
+  }, [satellites, selectedSat]);
+
+  // Calibrated tracking ephemeris slot map: satId -> locked longitude
+  const [calibratedEphemeris, setCalibratedEphemeris] = useState<{ [satId: string]: number }>(() => {
+    const map: { [id: string]: number } = {};
+    COMMON_SATELLITES.forEach(s => {
+      map[s.id] = s.longitude;
+    });
+    return map;
+  });
+
+  // Calculate current orbital drift of selected satellite relative to its calibrated ephemeris lock
+  const calibratedLongitude = calibratedEphemeris[selectedSat.id] ?? selectedSat.longitude;
+  const rawDrift = Math.abs(selectedSat.longitude - calibratedLongitude);
+  const orbitalDrift = Math.round(rawDrift * 1000) / 1000;
+  const isOrbitalDriftAlert = orbitalDrift > 0.05;
 
   // Global Event Log State
   const [eventLogs, setEventLogs] = useState<TacticalEvent[]>([]);
@@ -205,6 +249,89 @@ export const App: React.FC = () => {
     setEventLogs(prev => [newEvent, ...prev].slice(0, 50));
     setHasNewLogs(true);
   }, [selectedSat]);
+
+  // Audio warning sound trigger upon crossing 0.05 units orbital drift threshold
+  const prevDriftAlertRef = useRef(false);
+  useEffect(() => {
+    if (isOrbitalDriftAlert && !prevDriftAlertRef.current) {
+      try {
+        audioController.playAlert();
+      } catch (e) {}
+    }
+    prevDriftAlertRef.current = isOrbitalDriftAlert;
+  }, [isOrbitalDriftAlert]);
+
+  // Re-sync satellite tracking coordinates via Tactical HUD
+  const handleResyncTrackingCoordinates = useCallback(() => {
+    setCalibratedEphemeris(prev => ({
+      ...prev,
+      [selectedSat.id]: selectedSat.longitude
+    }));
+    setIsTracking(true);
+    try {
+      audioController.playChirp();
+    } catch (e) {}
+    addMissionLog(
+      `ORBITAL_EPHEMERIS_RESYNC: Antenna pointing & satellite tracking coordinates re-synchronized with ${selectedSat.name}. Ephemeris drift cleared from ${orbitalDrift.toFixed(3)} units to 0.000 units.`,
+      'active'
+    );
+  }, [selectedSat, orbitalDrift, addMissionLog]);
+
+  // Simulate/inject orbital drift perturbation exceeding threshold (> 0.05 units)
+  const handleSimulateOrbitalDrift = useCallback((delta: number = 0.064) => {
+    const nextLong = Math.round((selectedSat.longitude + delta) * 10000) / 10000;
+    setSatellites(prevSats => prevSats.map(s => {
+      if (s.id === selectedSat.id) {
+        return { ...s, longitude: nextLong };
+      }
+      return s;
+    }));
+    setSelectedSat(prev => ({
+      ...prev,
+      longitude: nextLong
+    }));
+    try {
+      audioController.playAlert();
+    } catch (e) {}
+    addMissionLog(
+      `ORBITAL_DRIFT_EXCEEDED: Sentinel AI detected orbital drift perturbation on ${selectedSat.name}. Ephemeris drift +${delta.toFixed(3)} units exceeds 0.050 tolerance. Operator prompted to re-sync coordinates.`,
+      'CRITICAL'
+    );
+  }, [selectedSat, addMissionLog]);
+
+  // 30-Second Thermal Decoy Heat Signature Spoof Timer
+  useEffect(() => {
+    if (!isThermalDecoyActive) return;
+    const timer = setInterval(() => {
+      setThermalDecoySecondsRemaining(prev => {
+        if (prev <= 1) {
+          setIsThermalDecoyActive(false);
+          addMissionLog("THERMAL DECOY DISENGAGED: 30s Heat Signature Spoof cycle completed. BUC temperature telemetry normalized. Hostile ISR satellite departed.", "active");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isThermalDecoyActive, addMissionLog]);
+
+  const handleDeployThermalDecoy = useCallback((customDuration: number = 30) => {
+    setIsThermalDecoyActive(true);
+    setThermalDecoySecondsRemaining(customDuration);
+    try {
+      audioController.playAlert();
+    } catch (e) {}
+    addMissionLog(`THERMAL DECOY DEPLOYED: BUC Heat Signature Spoof active [${customDuration}s]. Hostile ISR infrared sensors blinded with phantom thermal bloom on ${selectedSat.name}.`, "STRIKE");
+  }, [selectedSat.name, addMissionLog]);
+
+  const handleCancelThermalDecoy = useCallback(() => {
+    setIsThermalDecoyActive(false);
+    setThermalDecoySecondsRemaining(0);
+    try {
+      audioController.playChirp();
+    } catch (e) {}
+    addMissionLog("THERMAL DECOY ABORTED: Operator cancelled Heat Signature Spoof. Telemetry returned to nominal.", "active");
+  }, [addMissionLog]);
 
   // Source of Truth Telemetry logic
   const telemetry = useMemo(() => {
@@ -239,14 +366,22 @@ export const App: React.FC = () => {
       snr = 20.0; rxPower = -30.0; packetLoss = 0.00; bucTemp = 35.0;
     }
 
+    // Thermal Decoy overrides BUC temperature telemetry during 30-second Heat Signature Spoof mode
+    if (isThermalDecoyActive) {
+      // Injects high-temperature decoy bloom (186°C - 198°C) to confuse hostile ISR satellites
+      bucTemp = 188.5 + (Math.sin(tick * 1.5) * 6.5) + (Math.cos(tick * 0.8) * 3.2);
+    }
+
     return {
       snr: Math.max(0, snr + (Math.random() - 0.5)).toFixed(2),
       rxPower: (rxPower + (Math.random() - 0.5)).toFixed(1),
       bucTemp: (bucTemp + (Math.random() - 0.5)).toFixed(1),
       packetLoss: Math.min(100, packetLoss + (Math.random() * 0.2)).toFixed(2),
-      status: snr > 10 ? "NOMINAL" : (snr > 4 ? "DEGRADED" : "CRITICAL")
+      status: isThermalDecoyActive ? "SPOOF_ACTIVE" : (snr > 10 ? "NOMINAL" : (snr > 4 ? "DEGRADED" : "CRITICAL")),
+      isThermalDecoyActive,
+      thermalDecoySecondsRemaining
     };
-  }, [weather, isJamming, jammingPower, defcon, isStealthMode, isNeuralCleaning, isZPEActive, tick]);
+  }, [weather, isJamming, jammingPower, defcon, isStealthMode, isNeuralCleaning, isZPEActive, isThermalDecoyActive, thermalDecoySecondsRemaining, tick]);
 
   // Auth state listener and initial cloud-load effect
   useEffect(() => {
@@ -352,7 +487,10 @@ export const App: React.FC = () => {
 
   // Sync to local storage & Cloud on settings mutation
   useEffect(() => {
+    if (isFirstMount.current) return;
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ loc: userLoc, satId: selectedSat.id, defcon }));
+    localStorage.setItem(STEALTH_STORAGE_KEY, JSON.stringify(isStealthMode));
     
     if (currentUser && !isLoadingCloud) {
       saveUserSettingsToCloud(currentUser.uid, {
@@ -364,40 +502,24 @@ export const App: React.FC = () => {
         updatedAt: new Date().toISOString()
       }).catch(err => console.error("Cloud synchronization mismatch:", err));
     }
-  }, [userLoc, selectedSat, defcon, currentUser, isLoadingCloud]);
+  }, [userLoc.lat, userLoc.lng, selectedSat.id, defcon, isStealthMode, currentUser, isLoadingCloud]);
 
   useEffect(() => {
-    if (!isFirstMount.current) {
-      localStorage.setItem(STEALTH_STORAGE_KEY, JSON.stringify(isStealthMode));
-      
-      if (currentUser && !isLoadingCloud) {
-        saveUserSettingsToCloud(currentUser.uid, {
-          lat: userLoc.lat,
-          lng: userLoc.lng,
-          selectedSatId: selectedSat.id,
-          defcon: defcon,
-          isStealthMode: isStealthMode,
-          updatedAt: new Date().toISOString()
-        }).catch(err => console.error("Cloud synchronization mismatch (stealth):", err));
-      }
-    }
-  }, [isStealthMode, currentUser, isLoadingCloud]);
-
-  useEffect(() => {
+    if (isFirstMount.current) return;
     localStorage.setItem(EVENT_LOG_STORAGE_KEY, JSON.stringify(eventLogs));
   }, [eventLogs]);
 
-  useEffect(() => {
-    // Add micro-fractional jitter to simulate real-time Earth station active signal tracking
+  // Memoized look angles calculation with smooth fractional tracking drift
+  const lookAngles: LookAngles = useMemo(() => {
     const computed = calculateLookAngles(userLoc, selectedSat.longitude);
-    setLookAngles({
+    return {
       ...computed,
-      azimuth: computed.azimuth + (Math.sin(Date.now() / 2000) * 0.015),
-      elevation: computed.elevation + (Math.cos(Date.now() / 2000) * 0.015),
-      skew: computed.skew + (Math.sin(Date.now() / 3000) * 0.005),
-      distance: computed.distance + (Math.sin(Date.now() / 5000) * 0.2)
-    });
-  }, [userLoc, selectedSat, tick]);
+      azimuth: computed.azimuth + (Math.sin(tick * 0.5) * 0.015),
+      elevation: computed.elevation + (Math.cos(tick * 0.5) * 0.015),
+      skew: computed.skew + (Math.sin(tick * 0.3) * 0.005),
+      distance: computed.distance + (Math.sin(tick * 0.2) * 0.2)
+    };
+  }, [userLoc.lat, userLoc.lng, selectedSat.longitude, tick]);
 
   const VIEW_CATEGORIES = [
     { name: 'TACTICAL_BASE', views: ['tactical', 'constellation', 'satellite_detail', 'mesh', 'weather', 'geolocator', 'cloud_portal', 'sar_recon'] },
@@ -497,6 +619,48 @@ export const App: React.FC = () => {
             </div>
           </div>
 
+          {/* Global AI Visual Alert Mechanism for Significant Orbital Drift (> 0.05 units) */}
+          {isOrbitalDriftAlert && (
+            <div className="rounded-2xl border-2 border-red-500 bg-gradient-to-r from-red-950/95 via-[#130306] to-amber-950/90 p-4.5 shadow-[0_0_35px_rgba(239,68,68,0.4)] animate-pulse flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500 animate-pulse" />
+              <div className="flex items-center space-x-3.5">
+                <div className="p-2.5 bg-red-600/30 border border-red-500 rounded-xl text-red-400 shrink-0 animate-bounce">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-red-300 bg-red-950/80 px-2.5 py-0.5 rounded border border-red-600">
+                      AI SENTINEL ALERT // SIGNIFICANT ORBITAL DRIFT
+                    </span>
+                    <span className="text-xs font-mono font-black text-amber-300">
+                      +{orbitalDrift.toFixed(3)} u &gt; 0.050 TOLERANCE LIMIT
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-200 font-mono mt-1">
+                    Ephemeris drift detected on <strong className="text-white">{selectedSat.name}</strong>. Spacecraft pointing error threatens RF carrier lock. Operator prompted to re-sync tracking coordinates via the Tactical HUD.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2.5 shrink-0 w-full md:w-auto">
+                <button
+                  onClick={handleResyncTrackingCoordinates}
+                  className="px-4 py-2 bg-gradient-to-r from-red-600 to-amber-600 hover:from-white hover:to-white text-white hover:text-red-950 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer flex items-center space-x-1.5"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>RE-SYNC COORDINATES</span>
+                </button>
+                {view !== 'tactical' && (
+                  <button
+                    onClick={() => setView('tactical')}
+                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-cyan-500/40 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                  >
+                    OPEN TACTICAL HUD
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="min-h-[70vh]">
             <ViewWrapper currentView={view} targetView="tactical" visitedViews={visitedViews}>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4">
@@ -507,7 +671,7 @@ export const App: React.FC = () => {
                     satellites={satellites} 
                     onLocChange={setUserLoc} 
                     onSatChange={setSelectedSat} 
-                    onSatellitesUpdate={setSatellites} 
+                    onSatellitesUpdate={handleSatellitesUpdate} 
                     isTracking={isTracking} 
                     onTrackingChange={setIsTracking} 
                     isJamming={isJamming} 
@@ -518,6 +682,15 @@ export const App: React.FC = () => {
                     setIsDecoyActive={setIsDecoyActive}
                     isZPEActive={isZPEActive}
                     setIsZPEActive={setIsZPEActive}
+                    isThermalDecoyActive={isThermalDecoyActive}
+                    thermalDecoySecondsRemaining={thermalDecoySecondsRemaining}
+                    onDeployThermalDecoy={handleDeployThermalDecoy}
+                    onCancelThermalDecoy={handleCancelThermalDecoy}
+                    orbitalDrift={orbitalDrift}
+                    isDriftAlert={isOrbitalDriftAlert}
+                    onResyncTracking={handleResyncTrackingCoordinates}
+                    onSimulateDrift={handleSimulateOrbitalDrift}
+                    syncedLongitude={calibratedLongitude}
                     weather={weather} 
                     setWeather={setWeather} 
                     isStealthMode={isStealthMode}
@@ -756,7 +929,24 @@ export const App: React.FC = () => {
             </ViewWrapper>
 
             <ViewWrapper currentView={view} targetView="sentinel_core" visitedViews={visitedViews}>
-              <SentinelAIControl />
+              <SentinelAIControl 
+                telemetry={telemetry}
+                isThermalDecoyActive={isThermalDecoyActive}
+                thermalDecoySecondsRemaining={thermalDecoySecondsRemaining}
+                onDeployThermalDecoy={handleDeployThermalDecoy}
+                onCancelThermalDecoy={handleCancelThermalDecoy}
+                selectedSat={selectedSat}
+                isJamming={isJamming}
+                jammingPower={jammingPower}
+                weather={weather}
+                addMissionLog={addMissionLog}
+                orbitalDrift={orbitalDrift}
+                isDriftAlert={isOrbitalDriftAlert}
+                onResyncTracking={handleResyncTrackingCoordinates}
+                onSimulateDrift={handleSimulateOrbitalDrift}
+                calibratedLongitude={calibratedLongitude}
+                onNavigateToTacticalHUD={() => setView('tactical')}
+              />
             </ViewWrapper>
 
             <ViewWrapper currentView={view} targetView="purple_team" visitedViews={visitedViews}>

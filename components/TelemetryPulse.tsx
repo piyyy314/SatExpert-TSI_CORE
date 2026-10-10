@@ -8,6 +8,8 @@ interface Props {
     bucTemp: string;
     packetLoss: string;
     status: string;
+    isThermalDecoyActive?: boolean;
+    thermalDecoySecondsRemaining?: number;
   };
   isStealthMode: boolean; // New prop
 }
@@ -36,9 +38,16 @@ export const TelemetryPulse: React.FC<Props> = ({ telemetry, isStealthMode }) =>
       <div className="h-8 w-px bg-slate-800"></div>
       
       <div className="flex flex-col items-end">
-        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">BUC Temp</span>
+        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center space-x-1">
+          {telemetry?.isThermalDecoyActive && <span className="text-amber-400 animate-pulse font-black">[SPOOF]</span>}
+          <span>BUC Temp</span>
+        </span>
         <div className="flex items-baseline space-x-1">
-          <span className={`text-sm font-bold mono ${parseFloat(displayedTelemetry.bucTemp) > 65 && !isStealthMode ? 'text-orange-500' : 'text-slate-300'} ${isStealthMode ? 'text-purple-400' : ''}`}>
+          <span className={`text-sm font-bold mono ${
+            telemetry?.isThermalDecoyActive 
+              ? 'text-amber-400 animate-pulse font-black' 
+              : (parseFloat(displayedTelemetry.bucTemp) > 65 && !isStealthMode ? 'text-orange-500' : 'text-slate-300')
+          } ${isStealthMode ? 'text-purple-400' : ''}`}>
             {displayedTelemetry.bucTemp}
           </span>
           <span className="text-[8px] text-slate-600 font-bold uppercase">°C</span>
@@ -60,9 +69,9 @@ export const TelemetryPulse: React.FC<Props> = ({ telemetry, isStealthMode }) =>
       <div className="hidden lg:flex flex-col items-center justify-center px-4 py-1.5 bg-slate-900 border border-slate-800 rounded-lg">
          <span className="text-[7px] text-slate-500 uppercase font-black mb-0.5">Hardware_Link</span>
          <span className={`text-[9px] font-black uppercase tracking-tighter ${
-           isStealthMode ? 'text-purple-500' : (displayedTelemetry.status === 'NOMINAL' ? 'text-green-500' : displayedTelemetry.status === 'DEGRADED' ? 'text-amber-500' : 'text-red-500')
+           telemetry?.isThermalDecoyActive ? 'text-amber-400 animate-pulse' : (isStealthMode ? 'text-purple-500' : (displayedTelemetry.status === 'NOMINAL' ? 'text-green-500' : displayedTelemetry.status === 'DEGRADED' ? 'text-amber-500' : 'text-red-500'))
          }`}>
-           {isStealthMode ? 'STEALTH' : displayedTelemetry.status}
+           {telemetry?.isThermalDecoyActive ? 'SPOOF_MODE' : (isStealthMode ? 'STEALTH' : displayedTelemetry.status)}
          </span>
       </div>
     </div>

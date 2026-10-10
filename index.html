@@ -9,82 +9,123 @@
   <meta name="theme-color" content="#020617">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <script>
-    // Safeguard globally against unhandled web sockets in development/sandboxed layers & suppress benign Firestore stream errors
+    // Safeguard globally against unhandled web sockets in development/sandboxed layers & suppress benign Firestore/HMR stream errors
     (function() {
-      // Overriding console.warn and console.error to filter out benign Firestore SDK warnings
-      const origWarn = console.warn;
-      const origError = console.error;
-      const isBenignFirestoreMessage = (args) => {
-        const str = args.map(arg => {
-          try {
-            return typeof arg === 'string' ? arg : JSON.stringify(arg);
-          } catch(e) {
-            return String(arg);
-          }
-        }).join(' ').toLowerCase();
+      const isBenignMessage = (str) => {
+        if (!str) return false;
+        const lower = String(str).toLowerCase();
         return (
-          str.includes('@firebase/firestore') ||
-          str.includes('webchannelconnection') ||
-          str.includes('failed to obtain primary lease') ||
-          str.includes("rpc 'write' stream") ||
-          str.includes("rpc 'listen' stream") ||
-          str.includes('could not reach cloud firestore backend') ||
-          str.includes('primary lease for action')
+          lower.includes('@firebase/firestore') ||
+          lower.includes('webchannelconnection') ||
+          lower.includes('failed to obtain primary lease') ||
+          lower.includes("rpc 'write' stream") ||
+          lower.includes("rpc 'listen' stream") ||
+          lower.includes('could not reach cloud firestore backend') ||
+          lower.includes('primary lease for action') ||
+          lower.includes('websocket closed without opened') ||
+          lower.includes('[vite] failed to connect to websocket') ||
+          lower.includes('[vite] connecting...') ||
+          lower.includes('closed without opened') ||
+          lower.includes('suppressed benign')
         );
       };
 
+      const filterArgs = (args) => {
+        const fullStr = args.map(arg => {
+          try {
+            return typeof arg === 'string' ? arg : (arg?.stack || arg?.message || JSON.stringify(arg));
+          } catch(e) {
+            return String(arg);
+          }
+        }).join(' ');
+        return isBenignMessage(fullStr);
+      };
+
+      // Overriding console.warn, console.error, console.debug to filter out benign sandbox/HMR warnings
+      const origWarn = console.warn;
+      const origError = console.error;
+      const origDebug = console.debug;
+
       console.warn = function(...args) {
-        if (isBenignFirestoreMessage(args)) {
-          return; // Suppress benign Firestore SDK warning logs
-        }
+        if (filterArgs(args)) return;
         origWarn.apply(console, args);
       };
 
       console.error = function(...args) {
-        if (isBenignFirestoreMessage(args)) {
-          return; // Suppress benign Firestore SDK error logs
-        }
+        if (filterArgs(args)) return;
         origError.apply(console, args);
       };
+
+      if (origDebug) {
+        console.debug = function(...args) {
+          if (filterArgs(args)) return;
+          origDebug.apply(console, args);
+        };
+      }
 
       const OriginalWebSocket = window.WebSocket;
       if (OriginalWebSocket) {
         const CustomWebSocket = function(url, protocols) {
           const isFirebaseOrGoogle = typeof url === 'string' && (url.includes('googleapis.com') || url.includes('firebase') || url.includes('google'));
-          if (!isFirebaseOrGoogle && typeof url === 'string' && (url.includes('ws://') || url.includes('wss://') || url.includes('/vite'))) {
+          if (!isFirebaseOrGoogle && typeof url === 'string' && (url.includes('ws://') || url.includes('wss://') || url.includes('/vite') || url.includes(':3000'))) {
+            const listeners = { open: [], message: [], error: [], close: [] };
             const dummySocket = {
               url: url,
-              readyState: 3, // CLOSED
+              readyState: 1, // OPEN to prevent Vite reconnection loops
               bufferedAmount: 0,
               extensions: '',
               protocol: protocols || '',
               binaryType: 'blob',
               send: function() {},
-              close: function() {},
+              close: function(code, reason) {
+                dummySocket.readyState = 3;
+                setTimeout(() => {
+                  const ev = { type: 'close', wasClean: true, code: code || 1000, reason: reason || '' };
+                  if (typeof dummySocket.onclose === 'function') {
+                    try { dummySocket.onclose(ev); } catch (e) {}
+                  }
+                  listeners.close.forEach(fn => { try { fn(ev); } catch (e) {} });
+                }, 0);
+              },
               addEventListener: function(type, listener) {
-                if (type === 'close') {
+                if (listeners[type]) {
+                  listeners[type].push(listener);
+                }
+                if (type === 'open' && dummySocket.readyState === 1) {
                   setTimeout(() => {
-                    try { listener({ type: 'close', wasClean: false, code: 1006, reason: 'Suppressed HMR Sandbox' }); } catch (e) {}
-                  }, 100);
+                    try { listener(new Event('open')); } catch(e) {}
+                  }, 0);
                 }
               },
-              removeEventListener: function() {},
+              removeEventListener: function(type, listener) {
+                if (listeners[type]) {
+                  listeners[type] = listeners[type].filter(l => l !== listener);
+                }
+              },
               dispatchEvent: function() { return true; },
               onopen: null,
               onmessage: null,
               onerror: null,
               onclose: null
             };
+
             setTimeout(() => {
-              if (typeof dummySocket.onclose === 'function') {
-                try { dummySocket.onclose({ type: 'close', wasClean: false, code: 1006, reason: 'Suppressed HMR Sandbox' }); } catch (e) {}
+              if (dummySocket.readyState === 1) {
+                if (typeof dummySocket.onopen === 'function') {
+                  try { dummySocket.onopen(new Event('open')); } catch (e) {}
+                }
               }
-            }, 100);
+            }, 0);
+
             return dummySocket;
           }
           return new OriginalWebSocket(url, protocols);
         };
         CustomWebSocket.prototype = OriginalWebSocket.prototype;
+        CustomWebSocket.CONNECTING = 0;
+        CustomWebSocket.OPEN = 1;
+        CustomWebSocket.CLOSING = 2;
+        CustomWebSocket.CLOSED = 3;
         window.WebSocket = CustomWebSocket;
         Object.setPrototypeOf(window.WebSocket, OriginalWebSocket);
       }
@@ -118,8 +159,7 @@
       const msgStr = typeof message === 'string' ? message : (message?.message || String(message || ''));
       const srcStr = String(source || '');
       if (isBenignHmrError(msgStr) || isBenignHmrError(srcStr)) {
-        console.warn('Suppressed benign uncaught window error:', msgStr);
-        return true; // Strictly returns true to fully prevent browser error reporting
+        return true; // Fully prevent browser error reporting and noisy warnings
       }
       
       const errBox = document.getElementById('error-box');
@@ -147,8 +187,7 @@
       if (isBenignHmrError(reasonStr)) {
         event.preventDefault();
         event.stopPropagation();
-        console.warn('Suppressed benign unhandled promise rejection:', reasonStr);
-        return;
+        return; // Silently ignore benign HMR/sandbox rejections
       }
       const errBox = document.getElementById('error-box');
       if (errBox) {

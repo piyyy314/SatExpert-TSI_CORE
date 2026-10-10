@@ -12,8 +12,10 @@ import {
   AlertTriangle,
   ChevronRight,
   Database,
-  Radar
+  Radar,
+  Key
 } from 'lucide-react';
+import { QuantumKeyVisualizer } from './QuantumKeyVisualizer';
 
 interface TabProps {
   id: string;
@@ -26,9 +28,9 @@ interface TabProps {
 const Tab: React.FC<TabProps> = ({ label, icon, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`flex items-center space-x-2 px-6 py-3 rounded-xl transition-all duration-300 font-black uppercase tracking-widest text-[10px] border-b-2 ${
+    className={`flex items-center space-x-2 px-6 py-3 rounded-xl transition-all duration-300 font-black uppercase tracking-widest text-[10px] border-b-2 cursor-pointer ${
       active 
-        ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' 
+        ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.2)]' 
         : 'border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-900/50'
     }`}
   >
@@ -38,7 +40,7 @@ const Tab: React.FC<TabProps> = ({ label, icon, active, onClick }) => (
 );
 
 export const QuantumIntelligenceHub: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'hardware' | 'crypto' | 'platforms' | 'risk'>('hardware');
+  const [activeTab, setActiveTab] = useState<'quantum_key' | 'hardware' | 'crypto' | 'platforms' | 'risk'>('quantum_key');
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -52,6 +54,13 @@ export const QuantumIntelligenceHub: React.FC = () => {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Tab 
+            id="quantum_key" 
+            label="Quantum Key (QKD)" 
+            icon={<Key className="w-4 h-4 text-cyan-400" />} 
+            active={activeTab === 'quantum_key'} 
+            onClick={() => setActiveTab('quantum_key')} 
+          />
           <Tab 
             id="hardware" 
             label="Hardware Metrics" 
@@ -85,6 +94,19 @@ export const QuantumIntelligenceHub: React.FC = () => {
 
       <div className="min-h-[600px] relative">
         <AnimatePresence mode="wait">
+          {activeTab === 'quantum_key' && (
+            <motion.div
+              key="quantum_key"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <QuantumKeyVisualizer />
+            </motion.div>
+          )}
+
           {activeTab === 'hardware' && (
             <motion.div
               key="hardware"

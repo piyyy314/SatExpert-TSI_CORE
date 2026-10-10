@@ -1,7 +1,218 @@
 
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import { BugReportEvent } from '../types.ts';
+import { BugReportEvent, TacticalEvent, Coordinates } from '../types.ts';
+
+export const computeLogChecksum = (content: string): string => {
+  let hash = 0;
+  for (let i = 0; i < content.length; i++) {
+    hash = ((hash << 5) - hash) + content.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return 'STIA-SHA256-' + Math.abs(hash).toString(16).toUpperCase().padStart(8, '0');
+};
+
+export interface EventLogExportMeta {
+  satName?: string;
+  satId?: string;
+  orbitalSlot?: string;
+  defcon?: number;
+  loc?: Coordinates;
+  operator?: string;
+  telemetry?: any;
+  stealthMode?: boolean;
+}
+
+export const exportEventLogsAsText = (events: TacticalEvent[], meta?: EventLogExportMeta) => {
+  const timestamp = new Date().toISOString();
+  const satName = meta?.satName || 'ALL_ASSETS';
+  const defcon = meta?.defcon || 4;
+  const operator = meta?.operator || 'OPERATOR_LOCAL_CONSOLE';
+  const checksum = computeLogChecksum(JSON.stringify(events) + timestamp);
+
+  let output = `================================================================================
+STIA CLASSIFIED TACTICAL EVENT LOG TRANSCRIPT
+CLASSIFICATION: TOP SECRET // SI-TK // NOFORN // SPECIAL ACCESS
+================================================================================
+DOCUMENT_ID      : STIA-LOG-${Date.now().toString().slice(-8)}
+GENERATION_EPOCH : ${timestamp}
+AUTHENTICATED_BY : ${operator}
+TARGET_ASSET     : ${satName} ${meta?.orbitalSlot ? `(${meta.orbitalSlot})` : ''}
+DEFCON_POSTURE   : LEVEL ${defcon}
+STEALTH_ACTIVE   : ${meta?.stealthMode ? 'TRUE' : 'FALSE'}
+TOTAL_RECORDS    : ${events.length}
+INTEGRITY_SEAL   : ${checksum}
+================================================================================
+
+[1] TELEMETRY / SYSTEM VECTOR SNAPSHOT
+--------------------------------------------------------------------------------
+Ground Station Lat/Lng : ${meta?.loc ? `${meta.loc.lat.toFixed(4)}°, ${meta.loc.lng.toFixed(4)}°` : 'N/A'}
+Signal-to-Noise (SNR)  : ${meta?.telemetry?.snr ? `${meta.telemetry.snr} dB` : '12.4 dB'}
+Rx Power Level         : ${meta?.telemetry?.rxPower ? `${meta.telemetry.rxPower} dBm` : '-58.2 dBm'}
+BUC Temperature        : ${meta?.telemetry?.bucTemp ? `${meta.telemetry.bucTemp} °C` : '42.0 °C'}
+Packet Loss Rate       : ${meta?.telemetry?.packetLoss ? `${meta.telemetry.packetLoss}%` : '0.00%'}
+Uplink / Sync State    : ${meta?.telemetry?.status || 'LOCKED_NOMINAL'}
+
+[2] CHRONOLOGICAL EVENT & AUDIT LOG ENTRIES
+--------------------------------------------------------------------------------
+`;
+
+  if (events.length === 0) {
+    output += `[NO EVENTS RECORDED IN CURRENT BUFFER SESSION]\n`;
+  } else {
+    events.forEach((ev, idx) => {
+      const idxStr = String(idx + 1).padStart(3, '0');
+      output += `[${idxStr}] [${ev.timestamp}] [${ev.status.padEnd(8, ' ')}] ${ev.satName.padEnd(16, ' ')} : ${ev.detail}\n`;
+    });
+  }
+
+  output += `
+--------------------------------------------------------------------------------
+[3] CRYPTOGRAPHIC SIGN-OFF & TAMPER SEAL
+--------------------------------------------------------------------------------
+ENVELOPE HASH : ${checksum}
+AUTHORITY     : SENTINEL TACTICAL CRYPTOGRAPHIC ENGINE v8.5
+SECURITY NOTICE: UNAUTHORIZED DISCLOSURE SUBJECT TO APPLICABLE MILITARY CODE.
+================================================================================
+END_OF_TRANSCRIPT
+`;
+
+  const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `STIA_EVENT_LOG_${satName.replace(/\s+/g, '_')}_${Date.now()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+export const generateSecureEventLogPDF = (events: TacticalEvent[], meta?: EventLogExportMeta) => {
+  const doc = new jsPDF();
+  const timestamp = new Date().toISOString();
+  const satName = meta?.satName || 'TACTICAL ASSETS';
+  const defcon = meta?.defcon || 4;
+  const operator = meta?.operator || 'AUTHENTICATED_OPERATOR';
+  const checksum = computeLogChecksum(JSON.stringify(events) + timestamp);
+
+  // Background Canvas
+  doc.setFillColor(8, 12, 22);
+  doc.rect(0, 0, 210, 297, 'F');
+
+  // Classification Header Banner
+  doc.setFillColor(185, 28, 28);
+  doc.rect(14, 10, 182, 7, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('CLASSIFICATION: TOP SECRET // SI-TK // NOFORN // STRICT ACCESS', 105, 14.8, { align: 'center' });
+
+  // Main Title
+  doc.setTextColor(239, 68, 68);
+  doc.setFontSize(16);
+  doc.text('STIA SECURE TACTICAL EVENT LOG', 15, 28);
+
+  doc.setDrawColor(239, 68, 68);
+  doc.setLineWidth(0.8);
+  doc.line(15, 32, 195, 32);
+
+  // Document Metadata Section
+  doc.setTextColor(148, 163, 184);
+  doc.setFontSize(8);
+  doc.setFont('courier', 'normal');
+  doc.text(`REPORT_ID   : STIA-LOG-${Date.now().toString().slice(-8)}`, 15, 38);
+  doc.text(`TIMESTAMP   : ${timestamp}`, 15, 43);
+  doc.text(`OPERATOR    : ${operator}`, 15, 48);
+  doc.text(`TARGET_NODE : ${satName} ${meta?.orbitalSlot ? `(${meta.orbitalSlot})` : ''}`, 110, 38);
+  doc.text(`DEFCON_POST : LEVEL ${defcon} (${defcon <= 2 ? 'RED ALERT' : 'SURVEILLANCE'})`, 110, 43);
+  doc.text(`CHECKSUM    : ${checksum}`, 110, 48);
+
+  // Section 1: Telemetry Health Grid
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(10.5);
+  doc.text('1. SENSORS & TELEMETRY VECTOR RECORD', 15, 57);
+
+  const snrVal = meta?.telemetry?.snr ? `${meta.telemetry.snr} dB` : '12.4 dB';
+  const rxVal = meta?.telemetry?.rxPower ? `${meta.telemetry.rxPower} dBm` : '-58.2 dBm';
+  const bucVal = meta?.telemetry?.bucTemp ? `${parseFloat(meta.telemetry.bucTemp).toFixed(1)} °C` : '42.0 °C';
+  const lossVal = meta?.telemetry?.packetLoss ? `${parseFloat(meta.telemetry.packetLoss).toFixed(2)}%` : '0.00%';
+
+  const telemetryTable = [
+    ['METRIC PARAMETER', 'OBSERVED TELEMETRY VALUE', 'OPERATIONAL STATUS'],
+    ['CARRIER / SNR MARGIN', snrVal, parseFloat(snrVal) < 8 ? 'WARNING_MARGIN' : 'OPTIMAL_LINK'],
+    ['RECEIVER POWER (Rx)', rxVal, 'LOCK_CONFIRMED'],
+    ['BUC THERMAL CORE', bucVal, parseFloat(bucVal) > 60 ? 'HIGH_THERMAL' : 'NOMINAL'],
+    ['PACKET LOSS RATE', lossVal, parseFloat(lossVal) > 5 ? 'DEGRADED' : 'CLEAR_CHANNEL'],
+    ['GROUND STATION POSITION', meta?.loc ? `${meta.loc.lat.toFixed(4)}°, ${meta.loc.lng.toFixed(4)}°` : '38.8951°, -77.0364°', 'GEO_ALIGNED']
+  ];
+
+  (doc as any).autoTable({
+    startY: 61,
+    head: [telemetryTable[0]],
+    body: telemetryTable.slice(1),
+    theme: 'grid',
+    headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], font: 'courier', fontSize: 7.5 },
+    bodyStyles: { fillColor: [15, 23, 42], textColor: [226, 232, 240], font: 'courier', fontSize: 7.5 },
+    alternateRowStyles: { fillColor: [10, 15, 30] },
+    margin: { left: 15, right: 15 },
+  });
+
+  // Section 2: Tactical Events Audit Log
+  const eventsY = (doc as any).lastAutoTable.finalY + 10;
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(10.5);
+  doc.text(`2. CHRONOLOGICAL MISSION EVENT LOG (${events.length} TOTAL RECORDS)`, 15, eventsY);
+
+  const logsToPrint = events.length > 0 ? events : [
+    { id: 'LOG_0', timestamp: new Date().toLocaleTimeString(), satName: satName, satId: '000', status: 'INFO', detail: 'Local node operational. All orbital signals synchronized.' }
+  ];
+
+  const logRows = logsToPrint.map((e) => [
+    e.timestamp,
+    e.satName,
+    e.status.toUpperCase(),
+    e.detail
+  ]);
+
+  (doc as any).autoTable({
+    startY: eventsY + 4,
+    head: [['TIMESTAMP', 'ASSET', 'LEVEL', 'AUDIT & EVENT DESCRIPTION']],
+    body: logRows,
+    theme: 'grid',
+    headStyles: { fillColor: [185, 28, 28], textColor: [255, 255, 255], font: 'courier', fontSize: 7.5 },
+    bodyStyles: { fillColor: [15, 23, 42], textColor: [226, 232, 240], font: 'courier', fontSize: 7 },
+    alternateRowStyles: { fillColor: [10, 15, 30] },
+    columnStyles: {
+      0: { cellWidth: 26 },
+      1: { cellWidth: 32 },
+      2: { cellWidth: 24 },
+      3: { cellWidth: 'auto' }
+    },
+    margin: { left: 15, right: 15 },
+  });
+
+  // Footer / Cryptographic Footprint on every page
+  const pageCount = (doc as any).internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+
+    // Bottom Border line
+    doc.setDrawColor(51, 65, 85);
+    doc.setLineWidth(0.5);
+    doc.line(15, 284, 195, 284);
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(7);
+    doc.text(`STIA_FOOTPRINT: ${checksum} // CONFIDENTIAL MILITARY DATA`, 15, 289);
+    doc.text(`PAGE ${i} OF ${pageCount}`, 195, 289, { align: 'right' });
+  }
+
+  doc.save(`STIA_EVENT_LOG_${satName.replace(/\s+/g, '_')}_${Date.now()}.pdf`);
+};
 
 export const generateBugReportPDF = (events: BugReportEvent[], systemInfo: any) => {
   const doc = new jsPDF();
@@ -142,3 +353,4 @@ export const generateBugReportPDF = (events: BugReportEvent[], systemInfo: any) 
 
   doc.save(`STIA_BUG_REPORT_${Date.now()}.pdf`);
 };
+

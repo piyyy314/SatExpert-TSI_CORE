@@ -38,6 +38,8 @@ export const VSATConfig: React.FC = () => {
   const [logs, setLogs] = useState<ConfigLog[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [authError, setAuthError] = useState<string | null>(null);
+
   const addLog = (action: string, category: ConfigLog['category'], status: ConfigLog['status'] = 'SUCCESS') => {
     const newLog: ConfigLog = {
       id: Math.random().toString(36).substring(2, 9),
@@ -53,10 +55,11 @@ export const VSATConfig: React.FC = () => {
     // Auth: any 6-digit code starting with '7'
     if (authCode === '777888' || authCode === 'TSA_ADMIN') {
       setIsAuthorized(true);
+      setAuthError(null);
       addLog('Authorized Access Granted', 'SECURITY', 'SUCCESS');
     } else {
       addLog('Unauthorized Access Attempt', 'SECURITY', 'FAILURE');
-      alert('INVALID AUTHORIZATION CRYPTO-KEY');
+      setAuthError('INVALID AUTHORIZATION CRYPTO-KEY');
     }
   };
 
@@ -102,10 +105,15 @@ export const VSATConfig: React.FC = () => {
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Enter RSA-4096 Secure Access Token</p>
             </div>
             <div className="space-y-4">
+               {authError && (
+                 <div className="bg-red-950/60 border border-red-500/50 text-red-400 text-[10px] font-black uppercase tracking-widest py-2 px-3 rounded-lg animate-pulse">
+                   {authError}
+                 </div>
+               )}
                <input 
                  type="password"
                  value={authCode}
-                 onChange={(e) => setAuthCode(e.target.value)}
+                 onChange={(e) => { setAuthCode(e.target.value); setAuthError(null); }}
                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-center text-emerald-400 mono tracking-[0.5em] outline-none focus:border-emerald-500"
                  placeholder="••••••••"
                />

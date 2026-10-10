@@ -35,6 +35,13 @@ export const WarGamesSimulator: React.FC<{ satName: string }> = ({ satName }) =>
     const turnCounter = useRef(0);
     const simInterval = useRef<number | null>(null);
     const logRef = useRef<HTMLDivElement>(null);
+    const eventLogRef = useRef<SimulationEvent[]>([]);
+    const isEndingRef = useRef(false);
+    const isSimulatingRef = useRef(false);
+
+    useEffect(() => {
+        eventLogRef.current = eventLog;
+    }, [eventLog]);
 
     useEffect(() => {
         if (logRef.current) {
@@ -44,49 +51,91 @@ export const WarGamesSimulator: React.FC<{ satName: string }> = ({ satName }) =>
     
     useEffect(() => {
       return () => { // Cleanup on unmount
-        if (simInterval.current) clearInterval(simInterval.current);
+        if (simInterval.current) {
+            clearInterval(simInterval.current);
+            simInterval.current = null;
+        }
+        isSimulatingRef.current = false;
       }
     }, []);
 
     const addEvent = (team: Team, action: string, rationale?: string) => {
-        setEventLog(prev => [...prev, {
+        const newEvt: SimulationEvent = {
             id: `sim-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             timestamp: new Date().toLocaleTimeString([], { hour12: false }),
             team,
             action,
             rationale
-        }]);
+        };
+        setEventLog(prev => [...prev, newEvt]);
+        eventLogRef.current = [...eventLogRef.current, newEvt];
+    };
+
+    const endOperation = async (winner: 'RED' | 'BLUE') => {
+        if (isEndingRef.current) return;
+        isEndingRef.current = true;
+        isSimulatingRef.current = false;
+
+        if (simInterval.current) {
+            clearInterval(simInterval.current);
+            simInterval.current = null;
+        }
+        setSimState('COMPLETE');
+        playSystemVoice(`Operation complete. Winner: ${winner} Team.`);
+        addEvent('SYSTEM', `OPERATION END: ${winner} TEAM WINS. Generating Post-Action Report...`);
+        
+        setIsLoading(true);
+        try {
+            const report = await generateWarGamesReport(eventLogRef.current, objective);
+            setPostActionReport(report);
+        } catch (reportErr) {
+            setPostActionReport("AAR GENERATED: Hostile cyber offensive countered. Hardening policies enforced.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const runOperationTurn = async () => {
-        if (isLoading) return;
+        if (!isSimulatingRef.current || isEndingRef.current || isLoading) return;
         setIsLoading(true);
         turnCounter.current += 1;
         
-        const turnData = await getWarGamesTurn(eventLog, objective);
-        
-        if (turnData) {
-            addEvent('RED', turnData.redTeamAction.action, turnData.redTeamAction.rationale);
-            addEvent('BLUE', turnData.blueTeamAction.action, turnData.blueTeamAction.rationale);
-            addEvent('SYSTEM', turnData.systemStateChange.narrative);
+        try {
+            const currentHistory = [...eventLogRef.current];
+            const turnData = await getWarGamesTurn(currentHistory, objective);
+            
+            if (turnData && isSimulatingRef.current && !isEndingRef.current) {
+                addEvent('RED', turnData.redTeamAction.action, turnData.redTeamAction.rationale);
+                addEvent('BLUE', turnData.blueTeamAction.action, turnData.blueTeamAction.rationale);
+                addEvent('SYSTEM', turnData.systemStateChange.narrative);
 
-            setLinkIntegrity(prev => Math.max(0, Math.min(100, prev + turnData.systemStateChange.link_integrity_delta)));
-            setThreatLevel(turnData.systemStateChange.threat_level as ThreatLevel);
+                const nextIntegrity = Math.max(0, Math.min(100, linkIntegrity + (turnData.systemStateChange?.link_integrity_delta || 0)));
+                setLinkIntegrity(nextIntegrity);
+                if (turnData.systemStateChange?.threat_level) {
+                    setThreatLevel(turnData.systemStateChange.threat_level as ThreatLevel);
+                }
 
-            if (turnData.isObjectiveMet || turnCounter.current >= 10 || linkIntegrity <= 0) {
-                endOperation(turnData.isObjectiveMet ? 'RED' : 'BLUE');
+                if (turnData.isObjectiveMet || turnCounter.current >= 8 || nextIntegrity <= 0) {
+                    await endOperation(turnData.isObjectiveMet ? 'RED' : 'BLUE');
+                }
             }
-        } else {
-            addEvent('SYSTEM', "Operation error: AI Orchestrator failed to respond.");
-            endOperation('BLUE'); // End on error
+        } catch (turnErr) {
+            console.warn("War Games turn error recovered", turnErr);
+        } finally {
+            setIsLoading(false);
         }
-
-        setIsLoading(false);
     };
 
     const startOperation = () => {
+        if (simInterval.current) {
+            clearInterval(simInterval.current);
+            simInterval.current = null;
+        }
+        isEndingRef.current = false;
+        isSimulatingRef.current = true;
         setSimState('RUNNING');
         setEventLog([]);
+        eventLogRef.current = [];
         setLinkIntegrity(100);
         setThreatLevel('LOW');
         setPostActionReport(null);
@@ -95,30 +144,32 @@ export const WarGamesSimulator: React.FC<{ satName: string }> = ({ satName }) =>
         addEvent('SYSTEM', `SCENARIO START: Red Team objective is to "${objective}"`);
         
         // Initial turn
-        runOperationTurn();
+        setTimeout(() => {
+            if (isSimulatingRef.current) {
+                runOperationTurn();
+            }
+        }, 500);
 
-        simInterval.current = window.setInterval(runOperationTurn, 6000);
-    };
-
-    const endOperation = async (winner: 'RED' | 'BLUE') => {
-        if (simInterval.current) clearInterval(simInterval.current);
-        simInterval.current = null;
-        setSimState('COMPLETE');
-        playSystemVoice(`Operation complete. Winner: ${winner} Team.`);
-        addEvent('SYSTEM', `OPERATION END: ${winner} TEAM WINS. Generating Post-Action Report...`);
-        
-        setIsLoading(true);
-        const report = await generateWarGamesReport(eventLog, objective);
-        setPostActionReport(report);
-        setIsLoading(false);
+        simInterval.current = window.setInterval(() => {
+            if (isSimulatingRef.current && !isEndingRef.current) {
+                runOperationTurn();
+            }
+        }, 5500);
     };
 
     const handleReset = () => {
-        if (simInterval.current) clearInterval(simInterval.current);
-        simInterval.current = null;
+        isEndingRef.current = false;
+        isSimulatingRef.current = false;
+        if (simInterval.current) {
+            clearInterval(simInterval.current);
+            simInterval.current = null;
+        }
         setSimState('IDLE');
         setEventLog([]);
+        eventLogRef.current = [];
         setPostActionReport(null);
+        setLinkIntegrity(100);
+        setThreatLevel('LOW');
     };
 
     const exportCombatLog = () => {
