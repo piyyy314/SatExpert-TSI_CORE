@@ -26,7 +26,7 @@ import { TrapManagement } from './components/TrapManagement';
 import { TrafficSniffer } from './components/TrafficSniffer';
 import { AegisC2 } from './components/AegisC2';
 import { GroverVisualizer } from './components/GroverVisualizer';
-import { ShieldCheck, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { VSATConfig } from './components/VSATConfig';
 import { QuantumEntropy } from './components/QuantumEntropy';
 import { SitrepBoard } from './components/SitrepBoard';
@@ -109,6 +109,8 @@ export const App: React.FC = () => {
   const [selectedSat, setSelectedSat] = useState<Satellite>(satellites[0]);
   const [, startOrbitalTransition] = useTransition();
   const [view, setView] = useState<MainView>('sentinel_core');
+  const [activeCategory, setActiveCategory] = useState<string>('SENTINEL_AI');
+  const [isBridgeExpanded, setIsBridgeExpanded] = useState<boolean>(true);
   const [defcon, setDefcon] = useState<number>(5);
   const [isTracking, setIsTracking] = useState<boolean>(false);
   const [weather, setWeather] = useState<WeatherCondition>('CLEAR');
@@ -538,123 +540,188 @@ export const App: React.FC = () => {
         </div>
       )}
       <Layout isStealthMode={isStealthMode} setIsStealthMode={setIsStealthMode}>
-        <div className="flex flex-col space-y-8 max-w-7xl mx-auto pb-12 transition-all duration-1000">
+        <div className="flex flex-col space-y-3.5 sm:space-y-4 max-w-[1600px] mx-auto pb-6 transition-all duration-700">
           
-          <div className={`flex flex-col xl:flex-row items-stretch justify-between gap-6 glass p-6 rounded-[32px] border-2 border-slate-800 shadow-[0_32px_64px_rgba(0,0,0,0.6)] relative overflow-hidden group ${defcon === 1 || isJamming ? 'defcon-alert' : ''}`}>
-             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                <span className="text-[60px] font-black text-white italic tracking-tighter uppercase whitespace-nowrap overflow-hidden">TSI_TACTICAL_BRIDGE</span>
+          {/* TSI Tactical Command Bridge (Compact & Ergonomic for Laptop/Desktop Displays) */}
+          <div className={`glass p-3 sm:p-3.5 rounded-2xl border border-slate-800 shadow-[0_12px_32px_rgba(0,0,0,0.5)] relative overflow-hidden group ${defcon === 1 || isJamming ? 'defcon-alert' : ''}`}>
+             <div className="absolute top-0 right-0 p-2 opacity-5 pointer-events-none">
+                <span className="text-[28px] font-black text-white italic tracking-tighter uppercase whitespace-nowrap overflow-hidden">TSI_TACTICAL_BRIDGE</span>
              </div>
-             <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent"></div>
+             <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-500/25 to-transparent"></div>
              
-             <div className="flex flex-col xl:flex-row items-stretch gap-8 z-20 w-full">
-              <div className="flex flex-col w-full">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-slate-800 pb-3 px-2 gap-4">
-                   <div className="flex items-center space-x-4">
-                      <div className="flex space-x-1">
-                         {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-cyan-500/40"></div>)}
-                      </div>
-                      <span className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.4em] break-all max-w-[200px] sm:max-w-none">BRIDGE_CONTROL_INTERFACE_V8.0</span>
+             {/* Bridge Top Control Strip: Category Tabs + Quick Defcon + Telemetry + Expand/Collapse */}
+             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 relative z-20">
+               {/* Left: Bridge Title & Category Filter Tabs */}
+               <div className="flex flex-wrap items-center gap-2">
+                 <div className="flex items-center space-x-2 mr-1">
+                   <div className="flex space-x-1">
+                     {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-cyan-500/50"></div>)}
                    </div>
-                   <div className="flex items-center space-x-4 flex-wrap">
-                      <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest bg-slate-900 px-2 py-1 rounded border border-slate-800 shrink-0">UPLINK: ACTIVE</span>
-                      <span className="text-[9px] font-mono text-slate-400 font-bold tracking-widest shrink-0">{new Date().toISOString()}</span>
-                   </div>
-                </div>
-                
-                <div className="flex xl:grid xl:grid-cols-5 flex-wrap gap-4 xl:gap-8 max-h-[300px] xl:max-h-none overflow-y-auto w-full custom-scrollbar">
-                  {VIEW_CATEGORIES.map(cat => (
-                    <div key={cat.name} className="space-y-2 min-w-[200px] flex-1">
-                       <div className="flex items-center justify-between mx-1">
-                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">{cat.name}</span>
-                          <div className="w-8 h-[1px] bg-slate-800"></div>
-                       </div>
-                       <div className="flex flex-wrap gap-1.5 p-1">
-                          {cat.views.map((v) => (
-                            <button
-                              key={v}
-                              onClick={() => setView(v as MainView)}
-                              className={`px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300 border-2 whitespace-nowrap overflow-hidden text-ellipsis ${
-                                view === v 
-                                  ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_15px_rgba(34,211,238,0.3)] scale-105 z-10' 
-                                  : 'text-slate-500 border-slate-900/50 hover:border-slate-700 hover:text-cyan-400 hover:bg-slate-900/80 active:scale-95'
-                              }`}
-                            >
-                               {v.replace('_', ' ')}
-                            </button>
-                          ))}
-                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="w-full h-px xl:w-px xl:h-auto bg-slate-800/60 self-stretch my-6 xl:mx-2 xl:my-0"></div>
+                   <span className="text-[9px] font-black text-cyan-400 uppercase tracking-[0.25em] whitespace-nowrap">BRIDGE_C2</span>
+                 </div>
 
-              <div className="flex flex-col justify-center min-w-0 xl:min-w-[120px]">
-                <div className="flex items-center space-x-2 mb-4 px-1">
-                   <ShieldCheck className="w-4 h-4 text-slate-600" />
-                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Defcon</span>
-                </div>
-                <div className="flex flex-row xl:flex-col gap-1.5 flex-wrap bg-slate-950/40 p-2 rounded-2xl border border-slate-800/30">
-                  {[1, 2, 3, 4, 5].map(lvl => (
-                    <button 
-                      key={lvl} 
-                      onClick={() => setDefcon(lvl)} 
-                      className={`flex-grow xl:h-8 min-h-[32px] rounded-xl flex items-center justify-center xl:justify-start px-4 space-x-3 text-[10px] font-black transition-all border ${
-                        defcon === lvl 
-                          ? (lvl <= 2 ? 'bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40') 
-                          : 'bg-slate-900/60 border-slate-800/40 text-slate-600 hover:border-slate-700'
-                      }`}
-                    >
-                      <span className="w-4">{lvl}</span>
-                      <div className={`hidden xl:block h-1 flex-grow rounded-full ${defcon === lvl ? (lvl <= 2 ? 'bg-white' : 'bg-cyan-400') : 'bg-slate-800'}`}></div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-center xl:justify-end flex-grow z-20 xl:min-w-[300px]">
-               <TelemetryPulse telemetry={telemetry} isStealthMode={isStealthMode} />
-            </div>
+                 {/* Active View Badge */}
+                 <div className="bg-cyan-950/70 border border-cyan-500/40 px-2 py-0.5 rounded-lg flex items-center space-x-1.5 shrink-0">
+                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+                   <span className="text-[8px] font-mono font-black uppercase text-cyan-200">{view.replace(/_/g, ' ')}</span>
+                 </div>
+
+                 {/* Category Tabs */}
+                 <div className="flex items-center space-x-1 overflow-x-auto py-0.5 scrollbar-hide max-w-full">
+                   {VIEW_CATEGORIES.map(cat => {
+                     const isCurrent = activeCategory === cat.name;
+                     return (
+                       <button
+                         key={cat.name}
+                         onClick={() => {
+                           setActiveCategory(cat.name);
+                           if (!isBridgeExpanded) setIsBridgeExpanded(true);
+                         }}
+                         className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                           isCurrent
+                             ? 'bg-slate-800 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                             : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900/60 border border-transparent'
+                         }`}
+                       >
+                         {cat.name.replace('_', ' ')} <span className="opacity-50 text-[7px]">({cat.views.length})</span>
+                       </button>
+                     );
+                   })}
+                   <button
+                     onClick={() => {
+                       setActiveCategory('ALL');
+                       if (!isBridgeExpanded) setIsBridgeExpanded(true);
+                     }}
+                     className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                       activeCategory === 'ALL'
+                         ? 'bg-slate-800 text-cyan-300 border border-cyan-500/40'
+                         : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900/60 border border-transparent'
+                     }`}
+                   >
+                     ALL (64)
+                   </button>
+                 </div>
+               </div>
+
+               {/* Right: Defcon Strip + Telemetry + Toggle Button */}
+               <div className="flex items-center justify-between xl:justify-end gap-2.5 shrink-0">
+                 {/* Compact DEFCON Selector */}
+                 <div className="flex items-center space-x-1 bg-slate-950/70 p-1 rounded-xl border border-slate-800/80">
+                   <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-wider px-1.5 hidden sm:inline">DEFCON</span>
+                   {[1, 2, 3, 4, 5].map(lvl => (
+                     <button
+                       key={lvl}
+                       onClick={() => setDefcon(lvl)}
+                       className={`w-5.5 h-5.5 rounded-lg text-[8.5px] font-mono font-black transition-all flex items-center justify-center border cursor-pointer ${
+                         defcon === lvl
+                           ? (lvl <= 2 ? 'bg-red-500 text-white border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-cyan-500 text-slate-950 border-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.4)]')
+                           : 'bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300'
+                       }`}
+                     >
+                       {lvl}
+                     </button>
+                   ))}
+                 </div>
+
+                 {/* Telemetry Pulse */}
+                 <div className="hidden lg:flex items-center pl-2 border-l border-slate-800/70">
+                   <TelemetryPulse telemetry={telemetry} isStealthMode={isStealthMode} />
+                 </div>
+
+                 {/* Expand / Collapse Button */}
+                 <button
+                   onClick={() => setIsBridgeExpanded(!isBridgeExpanded)}
+                   className="p-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-cyan-400 border border-slate-800 transition-colors cursor-pointer"
+                   title={isBridgeExpanded ? "Collapse View Selector" : "Expand View Selector"}
+                 >
+                   {isBridgeExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                 </button>
+               </div>
+             </div>
+
+             {/* Expanded View Selector Row (Sleek, Compact Pills) */}
+             {isBridgeExpanded && (
+               <div className="mt-2 pt-2 border-t border-slate-800/60 relative z-20 animate-in fade-in duration-200">
+                 {activeCategory === 'ALL' ? (
+                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 max-h-[140px] overflow-y-auto custom-scrollbar p-1">
+                     {VIEW_CATEGORIES.map(cat => (
+                       <div key={cat.name} className="space-y-1">
+                         <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-wider block">{cat.name}</span>
+                         <div className="flex flex-col gap-1">
+                           {cat.views.map(v => (
+                             <button
+                               key={v}
+                               onClick={() => setView(v as MainView)}
+                               className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider transition-all border text-left truncate cursor-pointer ${
+                                 view === v
+                                   ? 'bg-cyan-500 border-cyan-400 text-slate-950 font-bold'
+                                   : 'text-slate-400 border-slate-900 hover:border-slate-700 hover:text-cyan-400 hover:bg-slate-900/50'
+                               }`}
+                             >
+                               {v.replace(/_/g, ' ')}
+                             </button>
+                           ))}
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 ) : (
+                   <div className="flex flex-wrap gap-1.5 items-center">
+                     {VIEW_CATEGORIES.find(c => c.name === activeCategory)?.views.map(v => (
+                       <button
+                         key={v}
+                         onClick={() => setView(v as MainView)}
+                         className={`px-2.5 py-1 rounded-lg text-[8.5px] font-black uppercase tracking-wider transition-all border whitespace-nowrap cursor-pointer ${
+                           view === v
+                             ? 'bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(34,211,238,0.35)] font-bold'
+                             : 'text-slate-400 border-slate-900/60 hover:border-slate-700 hover:text-cyan-400 hover:bg-slate-900/80 active:scale-95'
+                         }`}
+                       >
+                         {v.replace(/_/g, ' ')}
+                       </button>
+                     ))}
+                   </div>
+                 )}
+               </div>
+             )}
           </div>
 
           {/* Global AI Visual Alert Mechanism for Significant Orbital Drift (> 0.05 units) */}
           {isOrbitalDriftAlert && (
-            <div className="rounded-2xl border-2 border-red-500 bg-gradient-to-r from-red-950/95 via-[#130306] to-amber-950/90 p-4.5 shadow-[0_0_35px_rgba(239,68,68,0.4)] animate-pulse flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-500 animate-pulse" />
-              <div className="flex items-center space-x-3.5">
-                <div className="p-2.5 bg-red-600/30 border border-red-500 rounded-xl text-red-400 shrink-0 animate-bounce">
-                  <AlertTriangle className="w-5 h-5 text-red-400" />
+            <div className="rounded-xl border border-red-500 bg-gradient-to-r from-red-950/95 via-[#130306] to-amber-950/90 p-2.5 sm:p-3 shadow-[0_0_25px_rgba(239,68,68,0.35)] animate-pulse flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-500 via-amber-400 to-red-500 animate-pulse" />
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 bg-red-600/30 border border-red-500 rounded-lg text-red-400 shrink-0">
+                  <AlertTriangle className="w-4 h-4 text-red-400" />
                 </div>
                 <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-red-300 bg-red-950/80 px-2.5 py-0.5 rounded border border-red-600">
-                      AI SENTINEL ALERT // SIGNIFICANT ORBITAL DRIFT
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-red-300 bg-red-950/80 px-2 py-0.5 rounded border border-red-600">
+                      AI SENTINEL ALERT // ORBITAL DRIFT
                     </span>
-                    <span className="text-xs font-mono font-black text-amber-300">
-                      +{orbitalDrift.toFixed(3)} u &gt; 0.050 TOLERANCE LIMIT
+                    <span className="text-[11px] font-mono font-black text-amber-300">
+                      +{orbitalDrift.toFixed(3)} u &gt; 0.050 TOLERANCE
                     </span>
                   </div>
-                  <p className="text-xs text-slate-200 font-mono mt-1">
-                    Ephemeris drift detected on <strong className="text-white">{selectedSat.name}</strong>. Spacecraft pointing error threatens RF carrier lock. Operator prompted to re-sync tracking coordinates via the Tactical HUD.
+                  <p className="text-[10.5px] text-slate-200 font-mono mt-0.5 line-clamp-1 sm:line-clamp-none">
+                    Ephemeris drift detected on <strong className="text-white">{selectedSat.name}</strong>. Re-sync tracking coordinates via Tactical HUD.
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2.5 shrink-0 w-full md:w-auto">
+              <div className="flex items-center space-x-2 shrink-0 w-full md:w-auto">
                 <button
                   onClick={handleResyncTrackingCoordinates}
-                  className="px-4 py-2 bg-gradient-to-r from-red-600 to-amber-600 hover:from-white hover:to-white text-white hover:text-red-950 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer flex items-center space-x-1.5"
+                  className="px-3 py-1.5 bg-gradient-to-r from-red-600 to-amber-600 hover:from-white hover:to-white text-white hover:text-red-950 font-black text-[9px] uppercase tracking-wider rounded-lg transition-all shadow-md cursor-pointer flex items-center space-x-1.5"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>RE-SYNC COORDINATES</span>
+                  <RefreshCw className="w-3 h-3" />
+                  <span>RE-SYNC</span>
                 </button>
                 {view !== 'tactical' && (
                   <button
                     onClick={() => setView('tactical')}
-                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-cyan-500/40 font-black text-[10px] uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-cyan-500/40 font-black text-[9px] uppercase tracking-wider rounded-lg transition-all cursor-pointer"
                   >
-                    OPEN TACTICAL HUD
+                    TACTICAL HUD
                   </button>
                 )}
               </div>

@@ -426,38 +426,38 @@ export const TacticalHUD: React.FC<Props> = ({
   };
 
   return (
-    <div className="glass rounded-[3rem] p-8 border-2 border-slate-800 relative z-50 overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.7)] group/hud">
-      <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover/hud:opacity-10 transition-opacity">
-         <div className="w-24 h-24 border-t-4 border-r-4 border-red-600/40 rounded-tr-[3.5rem]"></div>
+    <div className="glass rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 border border-slate-800 relative z-50 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.6)] group/hud">
+      <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none group-hover/hud:opacity-10 transition-opacity">
+         <div className="w-16 h-16 border-t-2 border-r-2 border-red-600/40 rounded-tr-2xl"></div>
       </div>
-      <div className="absolute bottom-0 left-0 p-4 opacity-5 pointer-events-none group-hover/hud:opacity-10 transition-opacity">
-         <div className="w-24 h-24 border-b-4 border-l-4 border-red-600/40 rounded-bl-[3.5rem]"></div>
+      <div className="absolute bottom-0 left-0 p-3 opacity-5 pointer-events-none group-hover/hud:opacity-10 transition-opacity">
+         <div className="w-16 h-16 border-b-2 border-l-2 border-red-600/40 rounded-bl-2xl"></div>
       </div>
       
-      <div className="space-y-8 relative z-10">
+      <div className="space-y-3.5 sm:space-y-4 relative z-10">
         <div className="relative" ref={dropdownRef}>
-          <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-6 gap-6">
-            <div className="flex flex-col space-y-1">
-              <div className="flex items-center space-x-3">
-                 <div className="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-pulse"></div>
-                 <label className="block text-[12px] font-black uppercase tracking-[0.4em] text-white italic">Target_Acquisition</label>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-3">
+            <div className="flex flex-col space-y-0.5">
+              <div className="flex items-center space-x-2">
+                 <div className="w-2 h-2 rounded-full bg-red-600 shadow-[0_0_12px_rgba(239,68,68,0.8)] animate-pulse"></div>
+                 <label className="block text-[11px] font-black uppercase tracking-[0.3em] text-white italic">Target_Acquisition</label>
               </div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-5 italic opacity-60">Orbital_Asset_Lock_v8.0 // ACTIVE_TRACKING</p>
+              <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest pl-4 italic opacity-60">Orbital_Asset_Lock_v8.0 // ACTIVE</p>
             </div>
             
             <button 
               onClick={() => { setShowEventLog(true); setHasNewLogs(false); }}
-              className={`group flex items-center space-x-4 px-7 py-4 rounded-2xl border-2 transition-all duration-500 uppercase tracking-[0.3em] text-[11px] font-black italic shadow-2xl active:scale-95 ${
+              className={`group flex items-center space-x-2.5 px-4 py-2 rounded-xl border transition-all duration-300 uppercase tracking-[0.2em] text-[9.5px] font-black italic shadow-lg active:scale-95 cursor-pointer ${
                 hasNewLogs 
-                  ? 'bg-red-600 border-white text-white shadow-[0_0_40px_rgba(239,68,68,0.5)] animate-pulse' 
-                  : 'bg-slate-950/80 border-slate-800 text-slate-500 hover:text-red-500 hover:border-red-500/50'
+                  ? 'bg-red-600 border-white text-white shadow-[0_0_25px_rgba(239,68,68,0.5)] animate-pulse' 
+                  : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/50'
               }`}
             >
               <div className="relative flex items-center justify-center">
-                 <svg className={`w-5 h-5 transition-transform ${hasNewLogs ? 'scale-110' : 'group-hover:scale-125'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <svg className={`w-4 h-4 transition-transform ${hasNewLogs ? 'scale-110' : 'group-hover:scale-110'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                  </svg>
-                 {hasNewLogs && <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full border-2 border-red-600 animate-ping"></div>}
+                 {hasNewLogs && <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full border-2 border-red-600 animate-ping"></div>}
               </div>
               <span>Sitrep_Console</span>
             </button>
@@ -467,7 +467,7 @@ export const TacticalHUD: React.FC<Props> = ({
             <input
               type="text"
               placeholder={isOpen ? "Scan_Asset_Registry..." : sat.name}
-              className={`w-full bg-[#050810] border-2 ${isOpen ? 'border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.2)]' : 'border-slate-800'} rounded-[2rem] p-6 pl-14 text-lg font-black text-white outline-none transition-all tracking-tighter italic placeholder:text-slate-800 group-hover/search:border-slate-700 shadow-inner`}
+              className={`w-full bg-[#050810] border-2 ${isOpen ? 'border-red-500 shadow-[0_0_25px_rgba(239,68,68,0.2)]' : 'border-slate-800'} rounded-xl p-3 sm:p-3.5 pl-11 text-sm sm:text-base font-black text-white outline-none transition-all tracking-tight italic placeholder:text-slate-800 group-hover/search:border-slate-700 shadow-inner`}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -475,38 +475,38 @@ export const TacticalHUD: React.FC<Props> = ({
               }}
               onFocus={() => setIsOpen(true)}
             />
-            <div className="absolute left-5 top-1/2 -translate-y-1/2">
-              <svg className={`w-6 h-6 ${isOpen ? 'text-red-500' : 'text-slate-700 group-hover/search:text-slate-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2">
+              <svg className={`w-5 h-5 ${isOpen ? 'text-red-500' : 'text-slate-700 group-hover/search:text-slate-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center bg-black/40 px-4 py-2 rounded-xl border border-slate-900 shadow-xl">
+            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center bg-black/40 px-3 py-1 rounded-lg border border-slate-900 shadow-md">
                {!isOpen && <StatusBadge status={sat.status} />}
             </div>
           </div>
 
           {isOpen && (
-            <div className="absolute mt-3 w-full glass bg-[#050810] border-2 border-red-500 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.8)] overflow-hidden max-h-[350px] flex flex-col z-[100] animate-in slide-in-from-top-4 duration-300">
-              <div className="bg-red-500/10 px-6 py-3 border-b border-slate-900 flex items-center justify-between">
-                <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] italic">Authorized_Asset_Registry</span>
+            <div className="absolute mt-2 w-full glass bg-[#050810] border-2 border-red-500 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden max-h-[260px] flex flex-col z-[100] animate-in slide-in-from-top-3 duration-200">
+              <div className="bg-red-500/10 px-4 py-2 border-b border-slate-900 flex items-center justify-between">
+                <span className="text-[9px] font-black text-red-500 uppercase tracking-[0.25em] italic">Authorized_Asset_Registry</span>
                 <div className="flex space-x-1">
                    {[1,2,3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-red-500/40 animate-pulse" />)}
                 </div>
               </div>
-              <div className="overflow-y-auto py-2 scrollbar-hide">
+              <div className="overflow-y-auto py-1.5 scrollbar-hide">
                 {filteredSatellites.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => handleSelect(s)}
-                    className={`w-full text-left px-6 py-4 hover:bg-white/5 transition-all flex items-center justify-between border-b border-slate-900/50 last:border-none group/item ${s.id === sat.id ? 'bg-red-500/5' : ''}`}
+                    className={`w-full text-left px-4 py-2.5 hover:bg-white/5 transition-all flex items-center justify-between border-b border-slate-900/50 last:border-none group/item cursor-pointer ${s.id === sat.id ? 'bg-red-500/5' : ''}`}
                   >
                     <div className="flex flex-col">
-                      <span className={`text-[13px] font-black uppercase italic tracking-tight transition-colors ${s.id === sat.id ? 'text-red-400' : 'text-slate-200 group-hover/item:text-red-400'}`}>{s.name}</span>
-                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{s.operator}</span>
+                      <span className={`text-xs font-black uppercase italic tracking-tight transition-colors ${s.id === sat.id ? 'text-red-400' : 'text-slate-200 group-hover/item:text-red-400'}`}>{s.name}</span>
+                      <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{s.operator}</span>
                     </div>
                     <div className="flex flex-col items-end">
-                       <span className="text-[11px] text-red-500 font-mono font-black italic tracking-tighter">{s.orbitalSlot}</span>
-                       <div className={`w-1.5 h-1.5 rounded-full mt-1 ${s.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-700'}`} />
+                       <span className="text-[10px] text-red-500 font-mono font-black italic tracking-tight">{s.orbitalSlot}</span>
+                       <div className={`w-1.5 h-1.5 rounded-full mt-0.5 ${s.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-700'}`} />
                     </div>
                   </button>
                 ))}
@@ -515,14 +515,14 @@ export const TacticalHUD: React.FC<Props> = ({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-black/40 rounded-[1.8rem] border-2 border-slate-900 p-5 flex flex-col shadow-inner group hover:border-red-500/20 transition-colors">
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 italic">Authority_ID</span>
-            <span className="text-[12px] font-black text-slate-200 uppercase tracking-tight italic truncate">{sat.operator || 'UNSPECIFIED'}</span>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-black/40 rounded-xl border border-slate-900 p-3 sm:p-3.5 flex flex-col shadow-inner group hover:border-red-500/20 transition-colors">
+            <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.25em] mb-1 italic">Authority_ID</span>
+            <span className="text-[11px] font-black text-slate-200 uppercase tracking-tight italic truncate">{sat.operator || 'UNSPECIFIED'}</span>
           </div>
-          <div className="bg-black/40 rounded-[1.8rem] border-2 border-slate-900 p-5 flex flex-col items-end text-right shadow-inner group hover:border-red-500/20 transition-colors">
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 italic">Position_Node</span>
-            <span className="text-[12px] font-black text-red-500 font-mono tracking-tighter italic shadow-red-500/10 text-glow">{sat.orbitalSlot}</span>
+          <div className="bg-black/40 rounded-xl border border-slate-900 p-3 sm:p-3.5 flex flex-col items-end text-right shadow-inner group hover:border-red-500/20 transition-colors">
+            <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.25em] mb-1 italic">Position_Node</span>
+            <span className="text-[11px] font-black text-red-500 font-mono tracking-tight italic">{sat.orbitalSlot}</span>
           </div>
         </div>
 
@@ -530,64 +530,64 @@ export const TacticalHUD: React.FC<Props> = ({
         {/* VISUAL ALERT MECHANISM: AI DETECTED ORBITAL DRIFT (> 0.05)     */}
         {/* ============================================================== */}
         {isDriftExceeded && (
-          <div className="relative overflow-hidden rounded-[2.5rem] border-2 border-red-500 bg-gradient-to-br from-red-950/90 via-[#0d0407] to-amber-950/70 p-6 shadow-[0_0_50px_rgba(239,68,68,0.4)] animate-in slide-in-from-top-3 duration-500">
+          <div className="relative overflow-hidden rounded-2xl border border-red-500 bg-gradient-to-br from-red-950/90 via-[#0d0407] to-amber-950/70 p-3.5 sm:p-4 shadow-[0_0_35px_rgba(239,68,68,0.35)] animate-in slide-in-from-top-2 duration-300">
             {/* Top flashing hazard line */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-amber-400 to-red-600 animate-pulse" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-600 animate-pulse" />
 
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 relative z-10">
-              <div className="flex items-start space-x-4">
-                <div className="p-3.5 rounded-2xl bg-red-600/30 border-2 border-red-500 text-red-400 shadow-[0_0_25px_rgba(239,68,68,0.6)] shrink-0 animate-bounce">
-                  <AlertTriangle className="w-6 h-6 text-red-400" />
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3.5 relative z-10">
+              <div className="flex items-start space-x-3">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-red-600/30 border border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.5)] shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
                 </div>
-                <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-3 py-1 rounded-full bg-red-600 text-white font-black text-[9px] uppercase tracking-[0.25em] shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-pulse">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white font-black text-[8px] uppercase tracking-[0.2em] shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse">
                       AI CRITICAL ALERT // ORBITAL DRIFT DETECTED
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-lg bg-black/60 border border-red-500/60 font-mono text-[10px] font-black text-amber-300">
+                    <span className="px-2 py-0.5 rounded-md bg-black/60 border border-red-500/60 font-mono text-[9.5px] font-black text-amber-300">
                       DRIFT: +{currentDriftValue.toFixed(4)} u &gt; 0.050 LIMIT
                     </span>
                   </div>
-                  <h4 className="text-base font-black text-white uppercase italic tracking-tight flex items-center gap-2">
-                    <span>Ephemeris Desynchronization on {sat.name}</span>
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping inline-block" />
+                  <h4 className="text-sm font-black text-white uppercase italic tracking-tight flex items-center gap-1.5">
+                    <span>Ephemeris Desync on {sat.name}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block" />
                   </h4>
-                  <p className="text-[11px] text-red-200/90 font-mono leading-relaxed max-w-2xl">
-                    <strong className="text-white">AI SENTINEL DIRECTIVE:</strong> Ground station tracking gimbal pointing error exceeds allowable 0.05 tolerance (+{currentDriftValue.toFixed(4)} units). RF carrier slip and link fade imminent. Prompting operator to re-sync satellite tracking coordinates immediately.
+                  <p className="text-[10px] text-red-200/90 font-mono leading-relaxed max-w-2xl">
+                    <strong className="text-white">AI SENTINEL DIRECTIVE:</strong> Tracking gimbal pointing error exceeds allowable 0.05 tolerance (+{currentDriftValue.toFixed(4)} units). Prompting operator to re-sync tracking coordinates immediately.
                   </p>
                 </div>
               </div>
 
               {/* Operator Action Re-Sync Button */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto shrink-0">
                 <button
                   onClick={handleResyncTracking}
                   disabled={isSyncingCoordinates}
-                  className="px-6 py-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-white hover:to-white text-white hover:text-red-950 font-black text-[11px] uppercase tracking-[0.25em] shadow-[0_0_35px_rgba(239,68,68,0.6)] border-2 border-red-400/80 transition-all duration-300 active:scale-95 flex items-center justify-center space-x-2.5 cursor-pointer group/sync"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-white hover:to-white text-white hover:text-red-950 font-black text-[9.5px] uppercase tracking-[0.2em] shadow-[0_0_25px_rgba(239,68,68,0.5)] border border-red-400/80 transition-all duration-300 active:scale-95 flex items-center justify-center space-x-2 cursor-pointer group/sync"
                 >
-                  <RefreshCw className={`w-4 h-4 text-white group-hover/sync:text-red-950 ${isSyncingCoordinates ? 'animate-spin' : 'group-hover/sync:rotate-180 transition-transform duration-500'}`} />
-                  <span className="italic">{isSyncingCoordinates ? 'CALIBRATING GIMBAL...' : 'RE-SYNC TRACKING COORDINATES'}</span>
+                  <RefreshCw className={`w-3.5 h-3.5 text-white group-hover/sync:text-red-950 ${isSyncingCoordinates ? 'animate-spin' : 'group-hover/sync:rotate-180 transition-transform duration-500'}`} />
+                  <span className="italic">{isSyncingCoordinates ? 'CALIBRATING GIMBAL...' : 'RE-SYNC COORDINATES'}</span>
                 </button>
               </div>
             </div>
 
             {/* Diagnostic Metrics Matrix */}
-            <div className="mt-5 pt-4 border-t border-red-900/50 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[10px] font-mono">
-              <div className="bg-black/60 p-3 rounded-2xl border border-red-900/60">
-                <span className="text-slate-400 block text-[8px] uppercase tracking-wider">Calibrated Ephemeris Lock</span>
+            <div className="mt-3 pt-2.5 border-t border-red-900/50 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[9px] font-mono">
+              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60">
+                <span className="text-slate-400 block text-[7.5px] uppercase tracking-wider">Ephemeris Lock</span>
                 <span className="text-slate-200 font-bold text-xs">{activeSyncedLongitude.toFixed(3)}°</span>
               </div>
-              <div className="bg-black/60 p-3 rounded-2xl border border-red-900/60">
-                <span className="text-slate-400 block text-[8px] uppercase tracking-wider">Live Detected Position</span>
+              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60">
+                <span className="text-slate-400 block text-[7.5px] uppercase tracking-wider">Detected Position</span>
                 <span className="text-amber-400 font-bold text-xs">{(sat.longitude + internalDriftOffset).toFixed(3)}°</span>
               </div>
-              <div className="bg-black/60 p-3 rounded-2xl border border-red-900/60">
-                <span className="text-slate-400 block text-[8px] uppercase tracking-wider">Pointing Offset Skew</span>
-                <span className="text-red-400 font-black text-xs">+{currentDriftValue.toFixed(4)} units</span>
+              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60">
+                <span className="text-slate-400 block text-[7.5px] uppercase tracking-wider">Pointing Offset Skew</span>
+                <span className="text-red-400 font-black text-xs">+{currentDriftValue.toFixed(4)} u</span>
               </div>
-              <div className="bg-black/60 p-3 rounded-2xl border border-red-900/60">
-                <span className="text-slate-400 block text-[8px] uppercase tracking-wider">Carrier Gain Margin</span>
-                <span className="text-red-400 font-black text-xs">-{ (currentDriftValue * 36).toFixed(1) } dB Attenuation</span>
+              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60">
+                <span className="text-slate-400 block text-[7.5px] uppercase tracking-wider">Attenuation</span>
+                <span className="text-red-400 font-black text-xs">-{ (currentDriftValue * 36).toFixed(1) } dB</span>
               </div>
             </div>
           </div>
@@ -595,32 +595,32 @@ export const TacticalHUD: React.FC<Props> = ({
 
         {/* Temporary Re-sync confirmation banner */}
         {syncConfirmation && (
-          <div className="p-4 rounded-2xl bg-emerald-950/60 border-2 border-emerald-500 text-emerald-300 flex items-center justify-between shadow-[0_0_25px_rgba(16,185,129,0.3)] animate-in fade-in duration-300">
-            <div className="flex items-center space-x-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-              <span className="text-[10px] font-black uppercase tracking-widest font-mono">{syncConfirmation}</span>
+          <div className="p-2.5 sm:p-3 rounded-xl bg-emerald-950/60 border border-emerald-500 text-emerald-300 flex items-center justify-between shadow-[0_0_15px_rgba(16,185,129,0.25)] animate-in fade-in duration-300">
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-[9px] font-black uppercase tracking-wider font-mono">{syncConfirmation}</span>
             </div>
-            <span className="text-[9px] font-mono text-emerald-400/80 bg-black/40 px-2.5 py-1 rounded-lg border border-emerald-500/40">LOCK: 100%</span>
+            <span className="text-[8px] font-mono text-emerald-400/80 bg-black/40 px-2 py-0.5 rounded border border-emerald-500/40">LOCK: 100%</span>
           </div>
         )}
 
         {/* Satellite Tracking Coordinates & Ephemeris Telemetry Console */}
-        <div className="bg-black/40 rounded-[2rem] border-2 border-slate-900 p-5 space-y-4 shadow-inner group hover:border-slate-800 transition-colors">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-xl border ${isDriftExceeded ? 'bg-red-950/40 border-red-500 text-red-400 animate-pulse' : 'bg-slate-900 border-slate-800 text-cyan-400'}`}>
-                <Compass className="w-4 h-4" />
+        <div className="bg-black/40 rounded-xl border border-slate-900 p-3 sm:p-3.5 space-y-2.5 shadow-inner group hover:border-slate-800 transition-colors">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex items-center space-x-2.5">
+              <div className={`p-1.5 rounded-lg border ${isDriftExceeded ? 'bg-red-950/40 border-red-500 text-red-400 animate-pulse' : 'bg-slate-900 border-slate-800 text-cyan-400'}`}>
+                <Compass className="w-3.5 h-3.5" />
               </div>
               <div>
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 block italic">Satellite_Tracking_Coordinates</span>
-                <span className="text-[11px] font-mono font-bold text-white">
+                <span className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-500 block italic">Satellite_Tracking_Coordinates</span>
+                <span className="text-[10px] font-mono font-bold text-white">
                   Ground: {loc.lat.toFixed(2)}°N, {loc.lng.toFixed(2)}°E // Ephemeris Slot: {sat.orbitalSlot}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              <span className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border font-mono ${
+              <span className={`px-2 py-0.5 rounded-md text-[7.5px] font-black uppercase tracking-wider border font-mono ${
                 isDriftExceeded 
                   ? 'bg-red-600/20 text-red-400 border-red-500 animate-pulse' 
                   : 'bg-emerald-950/40 text-emerald-400 border-emerald-500/40'
@@ -675,24 +675,24 @@ export const TacticalHUD: React.FC<Props> = ({
         </div>
 
         {/* Real-time BUC Temperature Sensor Telemetry Monitor */}
-        <div className={`p-4 rounded-[1.8rem] border-2 transition-all duration-500 flex items-center justify-between shadow-inner ${
+        <div className={`p-3 rounded-xl border transition-all duration-500 flex items-center justify-between shadow-inner ${
           activeThermalDecoy 
-            ? 'bg-amber-950/40 border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.25)]' 
+            ? 'bg-amber-950/40 border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]' 
             : 'bg-black/40 border-slate-900 group hover:border-slate-800'
         }`}>
-          <div className="flex items-center space-x-3">
-            <div className={`p-2.5 rounded-xl border transition-colors ${activeThermalDecoy ? 'bg-amber-500/20 border-amber-400 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)]' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
-              <Flame className={`w-4 h-4 ${activeThermalDecoy ? 'animate-bounce text-amber-400' : ''}`} />
+          <div className="flex items-center space-x-2.5">
+            <div className={`p-2 rounded-lg border transition-colors ${activeThermalDecoy ? 'bg-amber-500/20 border-amber-400 text-amber-400' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+              <Flame className={`w-3.5 h-3.5 ${activeThermalDecoy ? 'animate-bounce text-amber-400' : ''}`} />
             </div>
             <div>
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 block italic">BUC_Transponder_Temp</span>
-              <span className={`text-[12px] font-mono font-black italic tracking-tight ${activeThermalDecoy ? 'text-amber-400 animate-pulse text-glow' : 'text-slate-300'}`}>
-                {telemetry.bucTemp} °C {activeThermalDecoy ? '⚡ [SPOOF OVERRIDE BLOOM]' : '[NOMINAL TELEMETRY]'}
+              <span className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-500 block italic">BUC_Transponder_Temp</span>
+              <span className={`text-[11px] font-mono font-black italic tracking-tight ${activeThermalDecoy ? 'text-amber-400 animate-pulse' : 'text-slate-300'}`}>
+                {telemetry.bucTemp} °C {activeThermalDecoy ? '⚡ [SPOOF BLOOM]' : '[NOMINAL]'}
               </span>
             </div>
           </div>
           <div className="text-right">
-            <span className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border transition-all ${
+            <span className={`text-[7.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border transition-all ${
               activeThermalDecoy 
                 ? 'bg-amber-500/20 text-amber-300 border-amber-400/40 animate-pulse' 
                 : 'bg-slate-900 text-slate-500 border-slate-800'
@@ -702,54 +702,51 @@ export const TacticalHUD: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="bg-black/40 rounded-[2.5rem] border-2 border-slate-900 p-6 space-y-6 shadow-inner">
-          <div className="flex items-center justify-between px-2">
-             <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] italic">Atmospheric_Interference_Sim</span>
-             <div className="flex items-center space-x-2">
-                <div className="w-1 h-3 bg-red-500/20 rounded-full" />
-                <span className="text-[9px] text-slate-600 font-black uppercase tracking-widest italic">Ka-Band_v8.0</span>
+        <div className="bg-black/40 rounded-xl border border-slate-900 p-3.5 space-y-3 shadow-inner">
+          <div className="flex items-center justify-between px-1">
+             <span className="text-[9px] font-black text-white uppercase tracking-[0.25em] italic">Atmospheric_Interference_Sim</span>
+             <div className="flex items-center space-x-1.5">
+                <div className="w-1 h-2 bg-red-500/20 rounded-full" />
+                <span className="text-[8px] text-slate-600 font-black uppercase tracking-wider italic">Ka-Band_v8.0</span>
              </div>
           </div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-2">
             {(['CLEAR', 'OVERCAST', 'LIGHT_RAIN', 'HEAVY_STORM'] as WeatherCondition[]).map((cond) => (
               <button 
                 key={cond}
                 onClick={() => setWeather(cond)}
                 disabled={isStealthMode}
-                className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-300 active:scale-95 shadow-lg ${
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all duration-300 active:scale-95 shadow-md cursor-pointer ${
                   isStealthMode ? 'opacity-30 cursor-not-allowed' : ''
                 } ${
                   weather === cond 
-                    ? 'bg-red-500/10 border-red-500/60 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.15)]' 
+                    ? 'bg-red-500/10 border-red-500/60 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.15)]' 
                     : 'bg-slate-950/80 border-slate-900 text-slate-600 hover:border-slate-700 hover:text-slate-400'
                 }`}
               >
-                <span className="text-2xl mb-2 filter drop-shadow-[0_0_8px_rgba(239,68,68,0.3)]">{weatherIcons[cond]}</span>
-                <span className="text-[8px] font-black uppercase tracking-widest text-center leading-none">{(cond || '').replace('_', ' ')}</span>
+                <span className="text-lg mb-1">{weatherIcons[cond]}</span>
+                <span className="text-[7.5px] font-black uppercase tracking-wider text-center leading-none">{(cond || '').replace('_', ' ')}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className={`rounded-[2.5rem] border-2 p-6 space-y-6 transition-all duration-700 shadow-2xl relative overflow-hidden group/ew ${isStealthMode ? 'bg-cyan-900/10 border-cyan-500/30' : (isJamming || isDecoyActive || activeThermalDecoy ? 'bg-red-950/20 border-red-500/40 shadow-[0_0_40px_rgba(239,68,68,0.1)]' : 'bg-slate-950/60 border-slate-900')}`}>
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover/ew:opacity-20 transition-opacity">
-             <div className="w-12 h-12 border-t-2 border-r-2 border-white/20 rounded-tr-2xl" />
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between relative z-10 px-2 gap-4">
-            <div className="flex flex-col space-y-1">
-              <span className={`text-[12px] font-black uppercase tracking-[0.4em] italic ${isStealthMode ? 'text-cyan-400' : (isJamming || isDecoyActive || activeThermalDecoy ? 'text-amber-500' : 'text-white')}`}>Electronic_Warfare</span>
-              <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest italic leading-none">Protocol: Aether_Strike_v8.0 // EW-DECOY</p>
+        <div className={`rounded-xl border p-3.5 space-y-3 transition-all duration-500 shadow-xl relative overflow-hidden group/ew ${isStealthMode ? 'bg-cyan-900/10 border-cyan-500/30' : (isJamming || isDecoyActive || activeThermalDecoy ? 'bg-red-950/20 border-red-500/40' : 'bg-slate-950/60 border-slate-900')}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between relative z-10 px-1 gap-2.5">
+            <div className="flex flex-col space-y-0.5">
+              <span className={`text-[10px] font-black uppercase tracking-[0.3em] italic ${isStealthMode ? 'text-cyan-400' : (isJamming || isDecoyActive || activeThermalDecoy ? 'text-amber-500' : 'text-white')}`}>Electronic_Warfare</span>
+              <p className="text-[8px] text-slate-600 font-bold uppercase tracking-wider italic leading-none">Protocol: Aether_Strike // EW-DECOY</p>
             </div>
             
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button 
                 onClick={() => setIsJamming(!isJamming)}
                 disabled={isStealthMode}
-                className={`px-4 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-500 active:scale-95 italic border-2 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-[8.5px] font-black uppercase tracking-wider transition-all duration-300 active:scale-95 italic border cursor-pointer ${
                   isStealthMode 
                     ? 'bg-slate-900/50 border-slate-800 text-slate-800 cursor-not-allowed' 
                     : (isJamming 
-                        ? 'bg-red-600 border-red-400 text-white shadow-[0_0_30px_rgba(239,68,68,0.5)] animate-pulse' 
+                        ? 'bg-red-600 border-red-400 text-white shadow-[0_0_20px_rgba(239,68,68,0.5)] animate-pulse' 
                         : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-white'
                       )
                 }`}
@@ -759,11 +756,11 @@ export const TacticalHUD: React.FC<Props> = ({
               <button 
                 onClick={toggleDecoy}
                 disabled={isStealthMode}
-                className={`px-4 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-500 active:scale-95 italic border-2 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-[8.5px] font-black uppercase tracking-wider transition-all duration-300 active:scale-95 italic border cursor-pointer ${
                   isStealthMode 
                     ? 'bg-slate-900/50 border-slate-800 text-slate-800 cursor-not-allowed' 
                     : (isDecoyActive 
-                        ? 'bg-red-600 border-red-400 text-white shadow-[0_0_30px_rgba(239,68,68,0.5)] animate-pulse' 
+                        ? 'bg-red-600 border-red-400 text-white shadow-[0_0_20px_rgba(239,68,68,0.5)] animate-pulse' 
                         : 'bg-slate-900/80 border-slate-800 text-slate-500 hover:text-white'
                       )
                 }`}
@@ -773,17 +770,17 @@ export const TacticalHUD: React.FC<Props> = ({
               <button 
                 onClick={toggleThermalDecoy}
                 disabled={isStealthMode}
-                className={`px-4 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-500 active:scale-95 italic border-2 flex items-center space-x-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-[8.5px] font-black uppercase tracking-wider transition-all duration-300 active:scale-95 italic border flex items-center space-x-1 cursor-pointer ${
                   isStealthMode 
                     ? 'bg-slate-900/50 border-slate-800 text-slate-800 cursor-not-allowed' 
                     : (activeThermalDecoy 
-                        ? 'bg-gradient-to-r from-amber-600 to-orange-600 border-amber-300 text-white shadow-[0_0_35px_rgba(245,158,11,0.6)] animate-pulse' 
+                        ? 'bg-gradient-to-r from-amber-600 to-orange-600 border-amber-300 text-white shadow-[0_0_25px_rgba(245,158,11,0.6)] animate-pulse' 
                         : 'bg-amber-950/30 border-amber-500/40 text-amber-400 hover:bg-amber-600 hover:text-white hover:border-amber-400'
                       )
                 }`}
-                title={activeThermalDecoy ? "Click to abort Thermal Decoy" : "Deploy Thermal Decoy: Overrides BUC temperature telemetry and triggers 30-second Heat Signature Spoof"}
+                title={activeThermalDecoy ? "Click to abort Thermal Decoy" : "Deploy Thermal Decoy"}
               >
-                <Flame className={`w-3.5 h-3.5 ${activeThermalDecoy ? 'text-white animate-bounce' : 'text-amber-400'}`} />
+                <Flame className={`w-3 h-3 ${activeThermalDecoy ? 'text-white animate-bounce' : 'text-amber-400'}`} />
                 <span>{activeThermalDecoy ? `Spoof [${activeCountdown}s]` : 'Thermal_Decoy'}</span>
               </button>
             </div>

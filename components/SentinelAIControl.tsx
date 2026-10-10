@@ -543,31 +543,31 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-1000">
+    <div className="space-y-4 sm:space-y-5 animate-in fade-in zoom-in-95 duration-700">
       {/* Sentinel Core Header */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-white/10 pb-8">
-        <div className="flex items-center space-x-6">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <div className="flex items-center space-x-3.5 sm:space-x-4">
           <div className="relative">
-            <div className={`absolute inset-0 bg-cyan-500 blur-2xl opacity-20 ${activeDecoy ? 'bg-amber-500 animate-ping' : 'animate-pulse'}`}></div>
-            <div className={`p-4 bg-slate-900 rounded-3xl border relative z-10 transition-colors ${activeDecoy ? 'border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.4)]' : 'border-cyan-500/30'}`}>
+            <div className={`absolute inset-0 bg-cyan-500 blur-xl opacity-20 ${activeDecoy ? 'bg-amber-500 animate-ping' : 'animate-pulse'}`}></div>
+            <div className={`p-2.5 sm:p-3 bg-slate-900 rounded-2xl border relative z-10 transition-colors ${activeDecoy ? 'border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]' : 'border-cyan-500/30'}`}>
               {activeDecoy ? (
-                <Flame className="w-10 h-10 text-amber-500 animate-bounce" />
+                <Flame className="w-6 h-6 sm:w-7 sm:h-7 text-amber-500 animate-bounce" />
               ) : (
-                <BrainCircuit className="w-10 h-10 text-cyan-400" />
+                <BrainCircuit className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400" />
               )}
             </div>
           </div>
           <div>
-            <div className="flex items-center space-x-3">
-              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-none">
+            <div className="flex items-center space-x-2.5">
+              <h2 className="text-xl sm:text-2xl font-black text-white uppercase italic tracking-tighter leading-none">
                 Sentinel <span className="text-cyan-500">Core v6</span>
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-cyan-950 border border-cyan-500/30 text-cyan-400">
+              <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-cyan-950 border border-cyan-500/30 text-cyan-400">
                 AI DECISION ENGINE
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.35em] mt-2 flex items-center">
-              <Activity className="w-3 h-3 mr-2 text-rose-500 animate-pulse" />
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.25em] mt-1.5 flex items-center">
+              <Activity className="w-2.5 h-2.5 mr-1.5 text-rose-500 animate-pulse" />
               {activeDecoy 
                 ? `HEAT SIGNATURE SPOOF ACTIVE [${activeCountdown}s] // BUC OVERRIDE ACTIVE` 
                 : 'Autonomous Threat Mitigation & Telemetry Decision Matrix'}
@@ -576,16 +576,16 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
         </div>
 
         {/* Top Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
           {[
             { label: 'System Load', value: `${systemLoad.toFixed(1)}%`, color: 'text-cyan-400' },
             { label: 'Neural Threads', value: activeThreads, color: 'text-white' },
             { label: 'Integrity', value: `${integrityScale.toFixed(2)}%`, color: 'text-emerald-400' },
             { label: 'Uptime', value: formatUptime(uptimeSeconds), color: 'text-amber-400' },
           ].map((stat, i) => (
-            <div key={i} className="glass px-4 py-2 rounded-xl bg-slate-900/40 border-slate-800 flex flex-col justify-center">
-              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">{stat.label}</span>
-              <span className={`text-sm font-black font-mono tracking-tighter ${stat.color}`}>{stat.value}</span>
+            <div key={i} className="glass px-3 py-1.5 rounded-xl bg-slate-900/40 border-slate-800 flex flex-col justify-center">
+              <span className="text-[7.5px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">{stat.label}</span>
+              <span className={`text-xs sm:text-sm font-black font-mono tracking-tight ${stat.color}`}>{stat.value}</span>
             </div>
           ))}
         </div>
@@ -595,44 +595,44 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
       {/* VISUAL ALERT MECHANISM: AI DETECTED ORBITAL DRIFT (> 0.05 u)   */}
       {/* ============================================================== */}
       {isDriftExceeded && (
-        <div className="rounded-[2.5rem] border-2 border-red-500 bg-gradient-to-r from-red-950/90 via-[#0e0307] to-amber-950/80 p-6 shadow-[0_0_40px_rgba(239,68,68,0.4)] animate-in slide-in-from-top-3 duration-500 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-amber-400 to-red-600 animate-pulse" />
+        <div className="rounded-2xl border border-red-500 bg-gradient-to-r from-red-950/90 via-[#0e0307] to-amber-950/80 p-3 sm:p-4 shadow-[0_0_30px_rgba(239,68,68,0.35)] animate-in slide-in-from-top-2 duration-400 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-600 animate-pulse" />
           
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 relative z-10">
-            <div className="flex items-start space-x-4">
-              <div className="p-3.5 bg-red-600/30 border-2 border-red-500 rounded-2xl text-red-400 shrink-0 animate-bounce">
-                <AlertOctagon className="w-6 h-6 text-red-400" />
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 relative z-10">
+            <div className="flex items-start space-x-3">
+              <div className="p-2 sm:p-2.5 bg-red-600/30 border border-red-500 rounded-xl text-red-400 shrink-0">
+                <AlertOctagon className="w-5 h-5 text-red-400" />
               </div>
-              <div className="space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-3 py-1 rounded-full bg-red-600 text-white font-black text-[9px] uppercase tracking-[0.25em] shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-pulse">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white font-black text-[8px] uppercase tracking-[0.2em] shadow-[0_0_12px_rgba(239,68,68,0.7)] animate-pulse">
                     AI ORBITAL DRIFT ALERT // EXCEEDS 0.050 TOLERANCE
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-lg bg-black/60 border border-red-500/60 font-mono text-[10px] font-black text-amber-300">
+                  <span className="px-2 py-0.5 rounded-md bg-black/60 border border-red-500/60 font-mono text-[9.5px] font-black text-amber-300">
                     DETECTED DRIFT: +{currentDrift.toFixed(4)} UNITS
                   </span>
                 </div>
-                <h4 className="text-base font-black text-white uppercase italic tracking-tight">
+                <h4 className="text-sm font-black text-white uppercase italic tracking-tight">
                   Ephemeris Divergence Flagged on {selectedSat?.name || 'Target Asset'}
                 </h4>
-                <p className="text-[11px] text-red-200/90 font-mono leading-relaxed max-w-3xl">
-                  <strong className="text-white">SENTINEL AI DIRECTIVE:</strong> Autonomous orbital vector tracking flagged drift of +{currentDrift.toFixed(4)} units exceeding the 0.050 mission boundary. Antenna beam-squint and carrier phase-lock slip imminent. Prompting operator to re-sync satellite tracking coordinates via Tactical HUD.
+                <p className="text-[10.5px] text-red-200/90 font-mono leading-relaxed max-w-3xl">
+                  <strong className="text-white">SENTINEL AI DIRECTIVE:</strong> Drift of +{currentDrift.toFixed(4)} units exceeds 0.050 mission boundary. Operator prompted to re-sync satellite tracking coordinates via Tactical HUD.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full lg:w-auto">
               <button
                 onClick={handleResyncFromAI}
-                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-white hover:to-white text-white hover:text-red-950 font-black text-[10px] uppercase tracking-[0.2em] shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all cursor-pointer flex items-center justify-center space-x-2 border border-white/20"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-white hover:to-white text-white hover:text-red-950 font-black text-[9px] uppercase tracking-[0.15em] shadow-md transition-all cursor-pointer flex items-center justify-center space-x-1.5 border border-white/20"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3 h-3" />
                 <span>RE-SYNC COORDINATES NOW</span>
               </button>
               {onNavigateToTacticalHUD && (
                 <button
                   onClick={onNavigateToTacticalHUD}
-                  className="px-5 py-3 rounded-2xl bg-slate-900/90 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 font-black text-[10px] uppercase tracking-[0.2em] border border-cyan-500/40 transition-all cursor-pointer flex items-center justify-center space-x-2"
+                  className="px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 font-black text-[9px] uppercase tracking-[0.15em] border border-cyan-500/40 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
                 >
                   <span>OPEN TACTICAL HUD</span>
                 </button>
@@ -644,55 +644,55 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
 
       {/* Internal Resync Confirmation */}
       {internalResyncNotice && (
-        <div className="p-4 rounded-2xl bg-emerald-950/60 border-2 border-emerald-500 text-emerald-300 flex items-center justify-between shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-in fade-in duration-300 font-mono text-[10px] font-black uppercase tracking-widest">
-          <div className="flex items-center space-x-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="p-2.5 sm:p-3 rounded-xl bg-emerald-950/60 border border-emerald-500 text-emerald-300 flex items-center justify-between shadow-[0_0_15px_rgba(16,185,129,0.25)] animate-in fade-in duration-300 font-mono text-[9px] font-black uppercase tracking-widest">
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>{internalResyncNotice}</span>
           </div>
-          <span className="bg-black/50 px-2 py-0.5 rounded border border-emerald-500/40">DRIFT: 0.000 u</span>
+          <span className="bg-black/50 px-2 py-0.5 rounded border border-emerald-500/40 text-[8.5px]">DRIFT: 0.000 u</span>
         </div>
       )}
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
-        <div className="flex items-center space-x-2 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800/80 pb-2.5">
+        <div className="flex items-center space-x-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
           <button
             onClick={() => setActiveTab('decision_matrix')}
-            className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center space-x-2 ${
+            className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
               activeTab === 'decision_matrix'
-                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
+                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            <BrainCircuit className="w-3.5 h-3.5" />
+            <BrainCircuit className="w-3 h-3" />
             <span>AI Decision Matrix</span>
-            <span className="text-[8px] px-1.5 py-0.2 bg-slate-950/40 rounded ml-1 font-mono">
+            <span className="text-[7.5px] px-1 py-0.2 bg-slate-950/40 rounded ml-1 font-mono">
               OPT {matrixAnalysis.calculatedDuration}s
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab('overwatch')}
-            className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center space-x-2 ${
+            className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
               activeTab === 'overwatch'
-                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
+                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            <Network className="w-3.5 h-3.5" />
+            <Network className="w-3 h-3" />
             <span>Autonomous Overwatch</span>
           </button>
 
           <button
             onClick={() => setActiveTab('syslog')}
-            className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center space-x-2 ${
+            className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
               activeTab === 'syslog'
-                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
+                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            <Terminal className="w-3.5 h-3.5" />
-            <span>Core Syslog & Intercept</span>
+            <Terminal className="w-3 h-3" />
+            <span>Core Syslog</span>
           </button>
         </div>
 
@@ -753,21 +753,21 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
       {activeTab === 'decision_matrix' && (
         <div className="space-y-6 animate-in fade-in duration-500">
           {/* Top Banner: Real-time Telemetry Trend Analysis & Optimal Duration Recommendation */}
-          <div className="glass p-8 rounded-[40px] border-slate-800 bg-slate-950/60 relative overflow-hidden shadow-2xl">
+          <div className="glass p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border-slate-800 bg-slate-950/60 relative overflow-hidden shadow-xl">
             <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 pb-6 border-b border-white/5">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4 pb-3.5 border-b border-white/5">
               <div className="space-y-1">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-                    <Flame className="w-5 h-5 text-amber-400" />
+                <div className="flex items-center space-x-2.5">
+                  <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+                    <Flame className="w-4 h-4 text-amber-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-white uppercase italic tracking-tight">
+                    <h3 className="text-base sm:text-lg font-black text-white uppercase italic tracking-tight">
                       AI Decision Matrix <span className="text-amber-400">// Heat Signature Spoof Optimizer</span>
                     </h3>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
                       Real-time telemetry trend derivative modeling vs. hostile satellite infrared dwell windows
                     </p>
                   </div>
@@ -775,22 +775,22 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
               </div>
 
               {/* Confidence & Target Stats */}
-              <div className="flex items-center gap-4">
-                <div className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-2xl text-center">
-                  <span className="block text-[8px] font-black text-slate-500 uppercase tracking-widest">CONFIDENCE</span>
-                  <span className="text-sm font-black font-mono text-emerald-400">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="px-3 py-1.5 bg-slate-900/80 border border-slate-800 rounded-xl text-center">
+                  <span className="block text-[7px] font-black text-slate-500 uppercase tracking-widest">CONFIDENCE</span>
+                  <span className="text-xs sm:text-sm font-black font-mono text-emerald-400">
                     {matrixAnalysis.confidenceScore.toFixed(1)}%
                   </span>
                 </div>
-                <div className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-2xl text-center">
-                  <span className="block text-[8px] font-black text-slate-500 uppercase tracking-widest">DECEPTION RATING</span>
-                  <span className="text-sm font-black font-mono text-cyan-400">
+                <div className="px-3 py-1.5 bg-slate-900/80 border border-slate-800 rounded-xl text-center">
+                  <span className="block text-[7px] font-black text-slate-500 uppercase tracking-widest">DECEPTION RATING</span>
+                  <span className="text-xs sm:text-sm font-black font-mono text-cyan-400">
                     {matrixAnalysis.deceptionProbability.toFixed(1)}%
                   </span>
                 </div>
-                <div className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-2xl text-center">
-                  <span className="block text-[8px] font-black text-slate-500 uppercase tracking-widest">THERMAL STRESS</span>
-                  <span className={`text-sm font-black font-mono ${matrixAnalysis.thermalStress > 70 ? 'text-rose-400' : 'text-amber-400'}`}>
+                <div className="px-3 py-1.5 bg-slate-900/80 border border-slate-800 rounded-xl text-center">
+                  <span className="block text-[7px] font-black text-slate-500 uppercase tracking-widest">THERMAL STRESS</span>
+                  <span className={`text-xs sm:text-sm font-black font-mono ${matrixAnalysis.thermalStress > 70 ? 'text-rose-400' : 'text-amber-400'}`}>
                     {matrixAnalysis.thermalStress}%
                   </span>
                 </div>
@@ -798,33 +798,33 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
             </div>
 
             {/* Main Interactive Optimization Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
               {/* Left Column: Live Recommendation Card & Trigger */}
-              <div className="lg:col-span-5 space-y-6">
-                <div className="p-6 bg-gradient-to-br from-slate-900/90 to-slate-950/90 rounded-3xl border-2 border-amber-500/30 relative overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.15)]">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[9px] font-black uppercase tracking-[0.25em] text-amber-400 flex items-center">
-                      <Sparkles className="w-3.5 h-3.5 mr-1.5" /> AI Recommended Duration
+              <div className="lg:col-span-5 space-y-4">
+                <div className="p-4 sm:p-5 bg-gradient-to-br from-slate-900/90 to-slate-950/90 rounded-2xl border border-amber-500/30 relative overflow-hidden shadow-[0_0_20px_rgba(245,158,11,0.12)]">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-[8.5px] font-black uppercase tracking-[0.2em] text-amber-400 flex items-center">
+                      <Sparkles className="w-3 h-3 mr-1.5" /> AI Recommended Duration
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[8px] font-black font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="px-1.5 py-0.5 rounded text-[7.5px] font-black font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30">
                       OPTIMAL ENVELOPE
                     </span>
                   </div>
 
-                  <div className="flex items-baseline space-x-3 mb-4">
-                    <span className="text-6xl font-black font-mono tracking-tighter text-white">
+                  <div className="flex items-baseline space-x-2.5 mb-2.5">
+                    <span className="text-4xl sm:text-5xl font-black font-mono tracking-tight text-white">
                       {matrixAnalysis.calculatedDuration}
                     </span>
-                    <span className="text-xl font-black text-amber-400 font-mono uppercase">SECONDS</span>
+                    <span className="text-base font-black text-amber-400 font-mono uppercase">SECONDS</span>
                   </div>
 
-                  <p className="text-[11px] text-slate-300 font-medium leading-relaxed mb-6">
-                    Matches hostile <span className="text-white font-mono">{matrixAnalysis.hostileSatName}</span> pass dwell window ({matrixAnalysis.baseDwellWindow}s) adjusted for ambient dissipation velocity and electronic background.
+                  <p className="text-[10px] text-slate-300 font-medium leading-relaxed mb-4">
+                    Matches hostile <span className="text-white font-mono">{matrixAnalysis.hostileSatName}</span> pass dwell window ({matrixAnalysis.baseDwellWindow}s) adjusted for ambient dissipation velocity.
                   </p>
 
                   {/* Manual Duration Slider / Preset Fine-Tuning */}
-                  <div className="space-y-3 pt-4 border-t border-white/10 mb-6">
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
+                  <div className="space-y-2 pt-3 border-t border-white/10 mb-4">
+                    <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-400">
                       <span>Operator Selected Duration:</span>
                       <span className="text-amber-400 font-mono text-xs">{selectedDuration}s</span>
                     </div>
@@ -836,19 +836,19 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
                       step="1"
                       value={selectedDuration}
                       onChange={(e) => setSelectedDuration(Number(e.target.value))}
-                      className="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                      className="w-full accent-amber-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
                     />
 
-                    <div className="flex justify-between text-[8px] font-mono text-slate-500">
-                      <span>10s (Minimum Burst)</span>
+                    <div className="flex justify-between text-[7.5px] font-mono text-slate-500">
+                      <span>10s (Burst)</span>
                       <span className="text-amber-400 font-bold">AI Opt: {matrixAnalysis.calculatedDuration}s</span>
                       <span>60s (Deep Mask)</span>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-2">
+                    <div className="flex items-center gap-2 pt-1">
                       <button
                         onClick={() => setSelectedDuration(matrixAnalysis.calculatedDuration)}
-                        className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 transition-colors"
+                        className="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500 hover:text-slate-950 transition-colors cursor-pointer"
                       >
                         Reset to AI Optimal ({matrixAnalysis.calculatedDuration}s)
                       </button>
@@ -857,46 +857,46 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
 
                   {/* Operator Execution Trigger */}
                   {activeDecoy ? (
-                    <div className="space-y-3">
-                      <div className="p-4 bg-amber-950/60 rounded-2xl border border-amber-500/60 text-center animate-pulse">
-                        <span className="block text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">
+                    <div className="space-y-2.5">
+                      <div className="p-3 bg-amber-950/60 rounded-xl border border-amber-500/60 text-center animate-pulse">
+                        <span className="block text-[9px] font-black text-amber-400 uppercase tracking-widest mb-0.5">
                           HEAT SIGNATURE SPOOF ACTIVE
                         </span>
-                        <span className="text-3xl font-black font-mono text-white">
+                        <span className="text-2xl font-black font-mono text-white">
                           {activeCountdown}s REMAINING
                         </span>
                       </div>
                       <button
                         onClick={handleCancelSpoof}
-                        className="w-full py-4 bg-red-600 hover:bg-red-500 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] transition-all shadow-[0_0_25px_rgba(239,68,68,0.4)] flex items-center justify-center space-x-2"
+                        className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl font-black uppercase tracking-wider text-[10px] transition-all shadow-md flex items-center justify-center space-x-1.5 cursor-pointer"
                       >
-                        <AlertOctagon className="w-4 h-4" />
+                        <AlertOctagon className="w-3.5 h-3.5" />
                         <span>ABORT SPOOF // REVERT NOMINAL</span>
                       </button>
                     </div>
                   ) : (
                     <button
                       onClick={() => handleDeploySpoofWithDuration(selectedDuration)}
-                      className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-2xl font-black uppercase tracking-widest text-[12px] transition-all shadow-[0_0_30px_rgba(245,158,11,0.4)] flex items-center justify-center space-x-2 group"
+                      className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black uppercase tracking-wider text-[11px] transition-all shadow-[0_0_20px_rgba(245,158,11,0.35)] flex items-center justify-center space-x-2 group cursor-pointer"
                     >
-                      <Flame className="w-5 h-5 text-slate-950 group-hover:scale-110 transition-transform" />
+                      <Flame className="w-4 h-4 text-slate-950 group-hover:scale-110 transition-transform" />
                       <span>DEPLOY HEAT SIGNATURE SPOOF [{selectedDuration}s]</span>
                     </button>
                   )}
                 </div>
 
                 {/* Hostile Threat Assessment Badge */}
-                <div className="p-5 bg-slate-900/60 rounded-3xl border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+                <div className="p-3.5 sm:p-4 bg-slate-900/60 rounded-2xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
                     <span className="flex items-center text-rose-400">
-                      <Target className="w-3.5 h-3.5 mr-1.5" /> Target Hostile Recon Platform
+                      <Target className="w-3 h-3 mr-1" /> Target Hostile Recon Platform
                     </span>
                     <span className="font-mono text-slate-400">RECON PASS ACTIVE</span>
                   </div>
-                  <div className="text-xs font-black text-white font-mono">
+                  <div className="text-[11px] font-black text-white font-mono">
                     {matrixAnalysis.hostileSatName}
                   </div>
-                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800 text-[9px]">
+                  <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-slate-800 text-[8.5px]">
                     <div>
                       <span className="block text-slate-500 font-bold uppercase">Seeker Focal Band</span>
                       <span className="text-slate-300 font-mono font-bold">{matrixAnalysis.hostileFocalBand}</span>
@@ -910,17 +910,17 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
               </div>
 
               {/* Right Column: Telemetry Trend Graphs, Decision Profiles & AI Rationale */}
-              <div className="lg:col-span-7 space-y-6">
+              <div className="lg:col-span-7 space-y-4">
                 {/* Telemetry Trends Monitor */}
-                <div className="p-6 bg-slate-900/50 rounded-3xl border border-slate-800 space-y-4">
+                <div className="p-4 sm:p-5 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Activity className="w-4 h-4 text-cyan-400" />
-                      <h4 className="text-xs font-black text-white uppercase tracking-widest">
+                      <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                      <h4 className="text-[11px] font-black text-white uppercase tracking-wider">
                         Real-Time Telemetry Trend Buffer
                       </h4>
                     </div>
-                    <div className="flex items-center space-x-3 text-[9px] font-mono">
+                    <div className="flex items-center space-x-2.5 text-[8.5px] font-mono">
                       <span className="text-amber-400">
                         BUC dTemp/dt: {matrixAnalysis.tempSlope >= 0 ? '+' : ''}{matrixAnalysis.tempSlope.toFixed(2)}°C/s
                       </span>
@@ -931,21 +931,21 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
                   </div>
 
                   {/* Sparkline Visualizer */}
-                  <div className="h-28 w-full bg-slate-950/80 rounded-2xl border border-slate-900 p-3 relative flex flex-col justify-between overflow-hidden">
-                    <div className="flex items-center justify-between text-[8px] font-mono text-slate-600">
+                  <div className="h-24 w-full bg-slate-950/80 rounded-xl border border-slate-900 p-2.5 relative flex flex-col justify-between overflow-hidden">
+                    <div className="flex items-center justify-between text-[7.5px] font-mono text-slate-600">
                       <span>JUNCTION LIMIT: 85°C</span>
-                      <span className="text-amber-500">TARGET SPOOF BLOOM: 190°C</span>
+                      <span className="text-amber-500">TARGET SPOOF: 190°C</span>
                       <span>TIME (T-12s - NOW)</span>
                     </div>
 
                     {/* Bars visualizer */}
-                    <div className="flex items-end justify-between gap-1.5 h-16 pt-2">
+                    <div className="flex items-end justify-between gap-1 h-12 pt-1">
                       {telemetryHistory.map((pt, idx) => {
                         const tempHeight = Math.min(100, Math.max(15, (pt.bucTemp / 90) * 100));
                         return (
-                          <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group relative">
+                          <div key={idx} className="flex-1 flex flex-col items-center gap-0.5 h-full justify-end group relative">
                             {/* Hover tooltip */}
-                            <div className="absolute -top-7 opacity-0 group-hover:opacity-100 bg-slate-900 text-white border border-slate-700 text-[8px] px-1.5 py-0.5 rounded font-mono pointer-events-none transition-opacity whitespace-nowrap z-20">
+                            <div className="absolute -top-6 opacity-0 group-hover:opacity-100 bg-slate-900 text-white border border-slate-700 text-[7.5px] px-1 py-0.5 rounded font-mono pointer-events-none transition-opacity whitespace-nowrap z-20">
                               {pt.bucTemp.toFixed(1)}°C | {pt.snr.toFixed(1)}dB
                             </div>
                             <div
@@ -958,7 +958,7 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
                                   : 'bg-cyan-500/80'
                               }`}
                             />
-                            <span className="text-[7px] text-slate-600 font-mono hidden md:block">{pt.time}</span>
+                            <span className="text-[6.5px] text-slate-600 font-mono hidden md:block">{pt.time}</span>
                           </div>
                         );
                       })}
@@ -967,15 +967,15 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
                 </div>
 
                 {/* AI Rationale Engine */}
-                <div className="p-6 bg-slate-900/50 rounded-3xl border border-slate-800 space-y-3">
-                  <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-cyan-400">
-                    <BrainCircuit className="w-4 h-4" />
+                <div className="p-3.5 sm:p-4 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-2">
+                  <div className="flex items-center space-x-1.5 text-[9px] font-black uppercase tracking-wider text-cyan-400">
+                    <BrainCircuit className="w-3.5 h-3.5" />
                     <span>Decision Matrix Inference Rationale</span>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {matrixAnalysis.rationaleBullets.map((bullet, idx) => (
-                      <div key={idx} className="flex items-start space-x-2 text-[11px] text-slate-300">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 mt-0.5 flex-shrink-0" />
+                      <div key={idx} className="flex items-start space-x-2 text-[10px] text-slate-300">
+                        <CheckCircle2 className="w-3 h-3 text-cyan-400 mt-0.5 flex-shrink-0" />
                         <span>{bullet}</span>
                       </div>
                     ))}
@@ -983,33 +983,33 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
                 </div>
 
                 {/* Selectable Tactical Spoof Profiles */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
-                      <Sliders className="w-3.5 h-3.5 mr-1.5 text-amber-400" /> Tactical Spoof Profiles
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider flex items-center">
+                      <Sliders className="w-3 h-3 mr-1 text-amber-400" /> Tactical Spoof Profiles
                     </span>
-                    <span className="text-[9px] font-mono text-slate-500">Click to load profile</span>
+                    <span className="text-[8px] font-mono text-slate-500">Click to load profile</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {matrixAnalysis.profiles.map((profile) => (
                       <div
                         key={profile.id}
                         onClick={() => setSelectedDuration(profile.duration)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                        className={`p-3 rounded-xl border transition-all cursor-pointer ${
                           selectedDuration === profile.duration
-                            ? 'bg-amber-500/10 border-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                            ? 'bg-amber-500/10 border-amber-500 text-white shadow-[0_0_12px_rgba(245,158,11,0.18)]'
                             : 'bg-slate-900/40 border-slate-800 hover:border-slate-700 text-slate-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-black uppercase tracking-wider">{profile.name}</span>
-                          <span className="text-xs font-mono font-black text-amber-400">{profile.duration}s</span>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] font-black uppercase tracking-wider">{profile.name}</span>
+                          <span className="text-[11px] font-mono font-black text-amber-400">{profile.duration}s</span>
                         </div>
-                        <p className="text-[9px] text-slate-400 leading-snug mb-3">
+                        <p className="text-[8.5px] text-slate-400 leading-snug mb-2">
                           {profile.description}
                         </p>
-                        <div className="grid grid-cols-2 gap-2 text-[8px] font-mono border-t border-white/5 pt-2">
+                        <div className="grid grid-cols-2 gap-1.5 text-[7.5px] font-mono border-t border-white/5 pt-1.5">
                           <div>
                             <span className="text-slate-500 block">STRAIN:</span>
                             <span className="text-slate-300">{profile.strain}</span>
@@ -1025,68 +1025,68 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
                 </div>
 
                 {/* Orbital Drift & Ephemeris Matrix Analysis Card */}
-                <div className={`p-6 rounded-3xl border-2 transition-all duration-500 space-y-4 ${
+                <div className={`p-4 sm:p-5 rounded-2xl border transition-all duration-500 space-y-3 ${
                   isDriftExceeded 
-                    ? 'bg-red-950/40 border-red-500/80 shadow-[0_0_30px_rgba(239,68,68,0.25)]' 
+                    ? 'bg-red-950/40 border-red-500/80 shadow-[0_0_20px_rgba(239,68,68,0.2)]' 
                     : 'bg-slate-900/50 border-slate-800'
                 }`}>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <div className="flex items-center space-x-2.5">
-                      <Compass className={`w-4 h-4 ${isDriftExceeded ? 'text-red-400 animate-spin' : 'text-cyan-400'}`} />
-                      <h4 className="text-xs font-black text-white uppercase tracking-widest">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5">
+                    <div className="flex items-center space-x-2">
+                      <Compass className={`w-3.5 h-3.5 ${isDriftExceeded ? 'text-red-400 animate-spin' : 'text-cyan-400'}`} />
+                      <h4 className="text-[11px] font-black text-white uppercase tracking-wider">
                         AI Orbital Drift & Ephemeris Vector Matrix
                       </h4>
                     </div>
-                    <span className={`px-2.5 py-0.5 rounded text-[8px] font-black font-mono border ${
+                    <span className={`px-2 py-0.5 rounded text-[7.5px] font-black font-mono border ${
                       isDriftExceeded 
                         ? 'bg-red-600/30 text-red-300 border-red-500 animate-pulse' 
                         : 'bg-emerald-950/40 text-emerald-400 border-emerald-500/30'
                     }`}>
-                      {isDriftExceeded ? 'DRIFT TOLERANCE EXCEEDED (> 0.05 u)' : 'EPHEMERIS LOCK NOMINAL (< 0.05 u)'}
+                      {isDriftExceeded ? 'DRIFT EXCEEDED (> 0.05 u)' : 'EPHEMERIS NOMINAL (< 0.05 u)'}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[10px] font-mono">
-                    <div className="bg-black/40 p-3 rounded-2xl border border-white/5">
-                      <span className="text-slate-500 block text-[8px] uppercase">Measured Drift Delta</span>
-                      <span className={`font-black text-sm ${isDriftExceeded ? 'text-red-400' : 'text-cyan-300'}`}>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[9px] font-mono">
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                      <span className="text-slate-500 block text-[7.5px] uppercase">Measured Drift</span>
+                      <span className={`font-black text-xs ${isDriftExceeded ? 'text-red-400' : 'text-cyan-300'}`}>
                         +{currentDrift.toFixed(4)} u
                       </span>
                     </div>
-                    <div className="bg-black/40 p-3 rounded-2xl border border-white/5">
-                      <span className="text-slate-500 block text-[8px] uppercase">Alert Threshold</span>
-                      <span className="font-bold text-amber-400 text-sm">0.050 u</span>
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                      <span className="text-slate-500 block text-[7.5px] uppercase">Threshold</span>
+                      <span className="font-bold text-amber-400 text-xs">0.050 u</span>
                     </div>
-                    <div className="bg-black/40 p-3 rounded-2xl border border-white/5">
-                      <span className="text-slate-500 block text-[8px] uppercase">Antenna Skew Offset</span>
-                      <span className="font-bold text-slate-200 text-sm">+{ (currentDrift * 0.95).toFixed(3) }°</span>
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                      <span className="text-slate-500 block text-[7.5px] uppercase">Pointing Skew</span>
+                      <span className="font-bold text-slate-200 text-xs">+{ (currentDrift * 0.95).toFixed(3) }°</span>
                     </div>
-                    <div className="bg-black/40 p-3 rounded-2xl border border-white/5">
-                      <span className="text-slate-500 block text-[8px] uppercase">Carrier Attenuation</span>
-                      <span className={`font-bold text-sm ${isDriftExceeded ? 'text-rose-400' : 'text-slate-400'}`}>
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                      <span className="text-slate-500 block text-[7.5px] uppercase">Attenuation</span>
+                      <span className={`font-bold text-xs ${isDriftExceeded ? 'text-rose-400' : 'text-slate-400'}`}>
                         -{ (currentDrift * 36).toFixed(1) } dB
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
-                    <span className="text-[9px] text-slate-400 font-mono">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-white/5">
+                    <span className="text-[8.5px] text-slate-400 font-mono">
                       {isDriftExceeded 
-                        ? '⚠️ Sentinel AI Directive: Significant orbital drift detected. Operator prompted to re-sync tracking coordinates via Tactical HUD.'
+                        ? '⚠️ Sentinel AI Directive: Orbital drift exceeds 0.05 units. Prompting operator to re-sync tracking coordinates via Tactical HUD.'
                         : '✓ Tracking lock verified. Antenna gimbal coordinates align with orbital ephemeris.'}
                     </span>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1.5">
                       <button
                         onClick={() => handleSimulateDriftFromAI(0.065)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-amber-950/60 border border-slate-700 hover:border-amber-500/50 text-slate-300 hover:text-amber-300 text-[8px] font-black uppercase tracking-wider transition-all cursor-pointer"
+                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-amber-950/60 border border-slate-700 hover:border-amber-500/50 text-slate-300 hover:text-amber-300 text-[7.5px] font-black uppercase tracking-wider transition-all cursor-pointer"
                         title="Simulate orbital drift exceeding 0.05 units"
                       >
                         Simulate Drift (+0.065u)
                       </button>
                       <button
                         onClick={handleResyncFromAI}
-                        className="px-3.5 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-500/40 text-[8px] font-black uppercase tracking-wider transition-all cursor-pointer"
+                        className="px-3 py-1 rounded-lg bg-cyan-950/40 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-500/40 text-[7.5px] font-black uppercase tracking-wider transition-all cursor-pointer"
                       >
                         Re-Sync Ephemeris
                       </button>
