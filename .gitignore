@@ -12,11 +12,21 @@ node_modules
 dist
 dist-ssr
 *.local.env
+# Environment & Secrets (Never commit secrets to GitHub)
 .env
+.env.local
+.env.*.local
 .env.production
 .env.test
-coverage
-*.tsbuildinfo
+*.local.env
+
+# Firebase private credentials & keys (Prevents secret exposure on GitHub)
+firebase-applet-config.json
+firebase_applet_config.xml
+serviceAccountKey.json
+service-account*.json
+*.keystore
+*.jks
 
 # Editor directories and files
 .vscode/*
@@ -28,3 +38,4 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+

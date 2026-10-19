@@ -762,6 +762,7 @@ export const App: React.FC = () => {
                     setWeather={setWeather} 
                     isStealthMode={isStealthMode}
                     telemetry={telemetry} 
+                    defcon={defcon}
                     eventLogs={eventLogs}
                     setEventLogs={setEventLogs}
                     hasNewLogs={hasNewLogs}

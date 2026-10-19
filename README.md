@@ -183,20 +183,32 @@ npm start
 
 ---
 
-## ⚙️ Environment Configuration
+## ⚙️ Environment Configuration & GitHub Secret Hardening
 
-Create a `.env` file in the root directory following `.env.example`:
+To ensure that sensitive API keys and credentials are never exposed in public repositories:
+
+1. **GitHub Protection via `.gitignore`**:
+   - `firebase-applet-config.json` and `.env*` files are strictly added to `.gitignore`.
+   - A sanitized template `firebase-applet-config.example.json` is provided for public reference.
+
+2. **Environment Variables**:
+   Create a `.env` file in the root directory following `.env.example`:
 
 ```env
 # Server Port (Default: 3000)
 PORT=3000
 
-# Optional Google Gemini AI Integration (Server-Side)
+# Server-Side Google Gemini AI Integration (Never exposed to browser)
 GEMINI_API_KEY=your_gemini_api_key_here
 
-# Firebase Configuration (Optional for Cloud Audit Trails)
-VITE_FIREBASE_API_KEY=your_firebase_key
+# Hardened Firebase Configuration (Vite client overrides)
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_DATABASE_ID=ai-studio-f55368ed-a497-4968-b73a-50421b2c02b7
+VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
 ```
 
 ---

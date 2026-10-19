@@ -100,3 +100,97 @@ body {
   from { transform: translateY(-100%); }
   to { transform: translateY(1000%); }
 }
+
+/* TacticalHUD & DEFCON State Change Micro-Animations */
+@keyframes defcon-shift-flash {
+  0% {
+    box-shadow: 0 0 0px 0px rgba(239, 68, 68, 0);
+    filter: brightness(1);
+  }
+  30% {
+    box-shadow: 0 0 45px 4px var(--defcon-glow-color, rgba(239, 68, 68, 0.45));
+    filter: brightness(1.15);
+  }
+  100% {
+    box-shadow: 0 0 0px 0px rgba(239, 68, 68, 0);
+    filter: brightness(1);
+  }
+}
+
+.animate-defcon-shift {
+  animation: defcon-shift-flash 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes alert-stripes-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
+}
+
+.hazard-stripes-animated {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(239, 68, 68, 0.35) 0,
+    rgba(239, 68, 68, 0.35) 10px,
+    rgba(0, 0, 0, 0.5) 10px,
+    rgba(0, 0, 0, 0.5) 20px
+  );
+  background-size: 40px 40px;
+  animation: alert-stripes-move 1.2s linear infinite;
+}
+
+.hazard-stripes-amber {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(245, 158, 11, 0.35) 0,
+    rgba(245, 158, 11, 0.35) 10px,
+    rgba(0, 0, 0, 0.5) 10px,
+    rgba(0, 0, 0, 0.5) 20px
+  );
+  background-size: 40px 40px;
+  animation: alert-stripes-move 1.4s linear infinite;
+}
+
+@keyframes critical-beacon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.75;
+  }
+}
+
+.animate-critical-beacon {
+  animation: critical-beacon-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes tactical-radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar-sweep {
+  animation: tactical-radar-sweep 4s linear infinite;
+}
+
+/* Subtle HUD panel transitions for state changes */
+.hud-panel {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.5s ease-out,
+              background-color 0.5s ease-out,
+              box-shadow 0.6s ease-out,
+              opacity 0.35s ease-out;
+}
+
+.hud-panel:hover {
+  transform: translateY(-1px);
+}

@@ -31,3 +31,22 @@ The SatExpert team takes software and cryptographic security seriously. If you d
 - **Initial Acknowledgement**: Within 24–48 hours of receipt.
 - **Triage & Assessment**: Within 5 business days.
 - **Fix & Patch Deployment**: Critical flaws patched within 7 business days, followed by public coordinated disclosure.
+
+---
+
+## 🔒 Secret & Credential Protection on GitHub
+
+To guarantee that private credentials and API keys are NEVER exposed in public GitHub repositories:
+
+1. **Ignored Configuration Files**:
+   - `firebase-applet-config.json` is strictly added to `.gitignore`.
+   - All `.env`, `.env.local`, and `*.local.env` files are blocked from version control.
+   - Use `firebase-applet-config.example.json` and `.env.example` as sanitized templates.
+
+2. **Environment Variable Injection**:
+   - Production and CI/CD pipelines use Vite client environment variables (`VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, etc.) injected at build time rather than hardcoded files.
+   - Server-side API tokens (e.g. `GEMINI_API_KEY`) are kept strictly on the backend server and never sent to client bundles.
+
+3. **In-App Masking**:
+   - Diagnostic and telemetry consoles mask sensitive keys (`AIzaSy...****`) to prevent shoulder surfing or recording leaks.
+

@@ -16,7 +16,7 @@ import {
   enableNetwork,
   disableNetwork
 } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json';
+import { firebaseConfig } from './firebaseConfig';
 import { TacticalEvent, Coordinates, JammingSession } from '../types';
 
 // Initialize the Firebase core application

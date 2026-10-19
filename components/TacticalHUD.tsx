@@ -41,6 +41,7 @@ interface Props {
   onResyncTracking?: () => void;
   onSimulateDrift?: (delta?: number) => void;
   syncedLongitude?: number;
+  defcon?: number;
 }
 
 const StatusBadge: React.FC<{ status?: SatelliteStatus | string }> = ({ status }) => {
@@ -71,7 +72,8 @@ export const TacticalHUD: React.FC<Props> = ({
   eventLogs, setEventLogs, hasNewLogs, setHasNewLogs,
   isThermalDecoyActive, thermalDecoySecondsRemaining,
   onDeployThermalDecoy, onCancelThermalDecoy,
-  orbitalDrift, isDriftAlert, onResyncTracking, onSimulateDrift, syncedLongitude
+  orbitalDrift, isDriftAlert, onResyncTracking, onSimulateDrift, syncedLongitude,
+  defcon = 5
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -79,6 +81,102 @@ export const TacticalHUD: React.FC<Props> = ({
   const [isAcknowledging, setIsAcknowledging] = useState(false);
   const [animateLabel, setAnimateLabel] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // DEFCON state change micro-animation & sound trigger
+  const [isDefconFlashing, setIsDefconFlashing] = useState<boolean>(false);
+  const prevDefconRef = useRef<number>(defcon);
+
+  useEffect(() => {
+    if (prevDefconRef.current !== defcon) {
+      setIsDefconFlashing(true);
+      try {
+        if (defcon <= 2) {
+          audioController.playAlert();
+        } else {
+          audioController.playChirp();
+        }
+      } catch (e) {}
+      const timer = setTimeout(() => setIsDefconFlashing(false), 850);
+      prevDefconRef.current = defcon;
+      return () => clearTimeout(timer);
+    }
+  }, [defcon]);
+
+  const defconTheme = useMemo(() => {
+    switch (defcon) {
+      case 1:
+        return {
+          level: 1,
+          label: 'DEFCON 1 // COCKED PISTOL',
+          subtext: 'MAXIMUM READINESS // NUCLEAR & ORBITAL THREAT IMMINENT',
+          border: 'border-red-500/80',
+          glow: 'shadow-[0_0_50px_rgba(239,68,68,0.35)]',
+          accentBg: 'bg-red-950/60',
+          accentText: 'text-red-400',
+          accentBorder: 'border-red-500/60',
+          glowColorVar: 'rgba(239, 68, 68, 0.55)',
+          badgeColor: 'bg-red-600 text-white',
+          pulse: true,
+        };
+      case 2:
+        return {
+          level: 2,
+          label: 'DEFCON 2 // FAST PACE',
+          subtext: 'ARMED FORCES DEPLOYMENT ARMED // TACTICAL STRIKE POSTURE',
+          border: 'border-amber-500/70',
+          glow: 'shadow-[0_0_40px_rgba(245,158,11,0.25)]',
+          accentBg: 'bg-amber-950/50',
+          accentText: 'text-amber-400',
+          accentBorder: 'border-amber-500/50',
+          glowColorVar: 'rgba(245, 158, 11, 0.45)',
+          badgeColor: 'bg-amber-500 text-slate-950',
+          pulse: true,
+        };
+      case 3:
+        return {
+          level: 3,
+          label: 'DEFCON 3 // ROUND HOUSE',
+          subtext: 'AIR FORCE READY TO MOBILIZE IN 15 MINUTES',
+          border: 'border-yellow-500/50',
+          glow: 'shadow-[0_0_30px_rgba(234,179,8,0.2)]',
+          accentBg: 'bg-yellow-950/40',
+          accentText: 'text-yellow-400',
+          accentBorder: 'border-yellow-500/40',
+          glowColorVar: 'rgba(234, 179, 8, 0.35)',
+          badgeColor: 'bg-yellow-500 text-slate-950',
+          pulse: false,
+        };
+      case 4:
+        return {
+          level: 4,
+          label: 'DEFCON 4 // DOUBLE TAKE',
+          subtext: 'INTELLIGENCE WATCH & ENHANCED SURVEILLANCE',
+          border: 'border-cyan-500/40',
+          glow: 'shadow-[0_0_25px_rgba(6,182,212,0.15)]',
+          accentBg: 'bg-cyan-950/40',
+          accentText: 'text-cyan-400',
+          accentBorder: 'border-cyan-500/30',
+          glowColorVar: 'rgba(6, 182, 212, 0.35)',
+          badgeColor: 'bg-cyan-600 text-white',
+          pulse: false,
+        };
+      case 5:
+      default:
+        return {
+          level: 5,
+          label: 'DEFCON 5 // FADE OUT',
+          subtext: 'NORMAL PEACETIME READINESS // NOMINAL PATROL',
+          border: 'border-slate-800',
+          glow: 'shadow-[0_20px_50px_rgba(0,0,0,0.6)]',
+          accentBg: 'bg-black/40',
+          accentText: 'text-emerald-400',
+          accentBorder: 'border-slate-900',
+          glowColorVar: 'rgba(16, 185, 129, 0.25)',
+          badgeColor: 'bg-emerald-600 text-white',
+          pulse: false,
+        };
+    }
+  }, [defcon]);
 
   // Thermal Decoy local fallback state
   const [internalThermalDecoy, setInternalThermalDecoy] = useState(false);
@@ -426,12 +524,85 @@ export const TacticalHUD: React.FC<Props> = ({
   };
 
   return (
-    <div className="glass rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 border border-slate-800 relative z-50 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.6)] group/hud">
+    <div 
+      className={`glass rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 border relative z-50 overflow-hidden group/hud hud-panel transition-all duration-700 ease-out ${
+        isDefconFlashing ? 'animate-defcon-shift' : ''
+      } ${
+        isDriftExceeded 
+          ? 'border-red-500/90 shadow-[0_0_40px_rgba(239,68,68,0.35)]' 
+          : activeThermalDecoy
+          ? 'border-amber-500/80 shadow-[0_0_35px_rgba(245,158,11,0.3)]'
+          : `${defconTheme.border} ${defconTheme.glow}`
+      }`}
+      style={{
+        '--defcon-glow-color': defconTheme.glowColorVar,
+      } as React.CSSProperties}
+    >
       <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none group-hover/hud:opacity-10 transition-opacity">
          <div className="w-16 h-16 border-t-2 border-r-2 border-red-600/40 rounded-tr-2xl"></div>
       </div>
       <div className="absolute bottom-0 left-0 p-3 opacity-5 pointer-events-none group-hover/hud:opacity-10 transition-opacity">
          <div className="w-16 h-16 border-b-2 border-l-2 border-red-600/40 rounded-bl-2xl"></div>
+      </div>
+      
+      {/* Dynamic DEFCON Status Strip & Micro-Animation Pip Bar */}
+      <div className={`-mt-1 mb-3.5 p-2 px-3 rounded-xl border flex items-center justify-between text-[9px] font-mono hud-panel transition-all duration-500 ${defconTheme.accentBg} ${defconTheme.accentBorder}`}>
+        <div className="flex items-center space-x-2.5">
+          <div className="relative flex items-center justify-center">
+            <div className={`w-2 h-2 rounded-full ${defcon <= 2 ? 'bg-red-500 animate-ping' : defconTheme.badgeColor.split(' ')[0]}`} />
+            {defconTheme.pulse && (
+              <div className="absolute w-4 h-4 rounded-full border border-red-500/60 animate-ping pointer-events-none" />
+            )}
+          </div>
+          <div className="flex flex-col">
+            <span className={`font-black uppercase tracking-wider ${defconTheme.accentText} flex items-center gap-1.5`}>
+              <span>{defconTheme.label}</span>
+              {isDefconFlashing && (
+                <span className="text-[7.5px] px-1.5 py-0.2 bg-white/20 rounded font-black text-white animate-pulse">
+                  SHIFT TRIGGERED
+                </span>
+              )}
+            </span>
+            <span className="text-[7.5px] text-slate-500 uppercase tracking-widest leading-none hidden sm:inline">
+              {defconTheme.subtext}
+            </span>
+          </div>
+        </div>
+
+        {/* DEFCON Level Pips with smooth transitions */}
+        <div className="flex items-center space-x-1 pl-2">
+          {[5, 4, 3, 2, 1].map((lvl) => {
+            const isActive = defcon <= lvl;
+            const isCurrent = defcon === lvl;
+            const pipColors: Record<number, string> = {
+              5: 'bg-emerald-500 border-emerald-400',
+              4: 'bg-cyan-500 border-cyan-400',
+              3: 'bg-yellow-500 border-yellow-400',
+              2: 'bg-amber-500 border-amber-400',
+              1: 'bg-red-600 border-red-400',
+            };
+            return (
+              <div
+                key={lvl}
+                className={`flex flex-col items-center transition-all duration-300 ${
+                  isCurrent ? 'scale-110' : 'scale-100'
+                }`}
+                title={`DEFCON ${lvl}`}
+              >
+                <div
+                  className={`w-2.5 sm:w-3.5 h-1.5 rounded-sm border transition-all duration-500 ${
+                    isActive
+                      ? `${pipColors[lvl]} shadow-[0_0_8px_rgba(255,255,255,0.3)]`
+                      : 'bg-slate-900/80 border-slate-800 opacity-40'
+                  }`}
+                />
+                <span className={`text-[6.5px] font-black mt-0.5 ${isActive ? 'text-slate-300' : 'text-slate-700'}`}>
+                  {lvl}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
       
       <div className="space-y-3.5 sm:space-y-4 relative z-10">
@@ -530,13 +701,13 @@ export const TacticalHUD: React.FC<Props> = ({
         {/* VISUAL ALERT MECHANISM: AI DETECTED ORBITAL DRIFT (> 0.05)     */}
         {/* ============================================================== */}
         {isDriftExceeded && (
-          <div className="relative overflow-hidden rounded-2xl border border-red-500 bg-gradient-to-br from-red-950/90 via-[#0d0407] to-amber-950/70 p-3.5 sm:p-4 shadow-[0_0_35px_rgba(239,68,68,0.35)] animate-in slide-in-from-top-2 duration-300">
-            {/* Top flashing hazard line */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-400 to-red-600 animate-pulse" />
+          <div className="relative overflow-hidden rounded-2xl border border-red-500 bg-gradient-to-br from-red-950/90 via-[#0d0407] to-amber-950/70 p-3.5 sm:p-4 shadow-[0_0_40px_rgba(239,68,68,0.4)] animate-in fade-in slide-in-from-top-3 zoom-in-[0.98] duration-500 ease-out hud-panel">
+            {/* Top animated hazard stripes */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 hazard-stripes-animated" />
 
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3.5 relative z-10">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3.5 relative z-10 pt-1">
               <div className="flex items-start space-x-3">
-                <div className="p-2 sm:p-2.5 rounded-xl bg-red-600/30 border border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.5)] shrink-0">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-red-600/30 border border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.5)] shrink-0 animate-critical-beacon">
                   <AlertTriangle className="w-5 h-5 text-red-400" />
                 </div>
                 <div className="space-y-1">
@@ -558,7 +729,7 @@ export const TacticalHUD: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Operator Action Re-Sync Button */}
+              {/* Operator Action Re-Sync Button with micro-interaction */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto shrink-0">
                 <button
                   onClick={handleResyncTracking}
@@ -573,19 +744,19 @@ export const TacticalHUD: React.FC<Props> = ({
 
             {/* Diagnostic Metrics Matrix */}
             <div className="mt-3 pt-2.5 border-t border-red-900/50 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[9px] font-mono">
-              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60">
+              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60 transition-colors duration-300 hover:border-red-500/80">
                 <span className="text-slate-400 block text-[7.5px] uppercase tracking-wider">Ephemeris Lock</span>
                 <span className="text-slate-200 font-bold text-xs">{activeSyncedLongitude.toFixed(3)}°</span>
               </div>
-              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60">
+              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60 transition-colors duration-300 hover:border-red-500/80">
                 <span className="text-slate-400 block text-[7.5px] uppercase tracking-wider">Detected Position</span>
                 <span className="text-amber-400 font-bold text-xs">{(sat.longitude + internalDriftOffset).toFixed(3)}°</span>
               </div>
-              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60">
+              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60 transition-colors duration-300 hover:border-red-500/80">
                 <span className="text-slate-400 block text-[7.5px] uppercase tracking-wider">Pointing Offset Skew</span>
                 <span className="text-red-400 font-black text-xs">+{currentDriftValue.toFixed(4)} u</span>
               </div>
-              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60">
+              <div className="bg-black/60 p-2 sm:p-2.5 rounded-xl border border-red-900/60 transition-colors duration-300 hover:border-red-500/80">
                 <span className="text-slate-400 block text-[7.5px] uppercase tracking-wider">Attenuation</span>
                 <span className="text-red-400 font-black text-xs">-{ (currentDriftValue * 36).toFixed(1) } dB</span>
               </div>
@@ -788,9 +959,11 @@ export const TacticalHUD: React.FC<Props> = ({
 
           {/* 30-Second Heat Signature Spoof Active Mode Telemetry Banner */}
           {activeThermalDecoy && (
-            <div className="pt-2 animate-in slide-in-from-top-3 duration-500 relative z-10 space-y-3">
-              <div className="bg-gradient-to-r from-amber-950/70 to-orange-950/70 border-2 border-amber-500/60 p-5 rounded-[2rem] space-y-3.5 shadow-[0_0_35px_rgba(245,158,11,0.3)]">
-                <div className="flex items-center justify-between">
+            <div className="pt-2 animate-in fade-in slide-in-from-top-3 zoom-in-[0.98] duration-500 ease-out relative z-10 space-y-3 hud-panel">
+              <div className="bg-gradient-to-r from-amber-950/70 to-orange-950/70 border-2 border-amber-500/60 p-5 rounded-[2rem] space-y-3.5 shadow-[0_0_35px_rgba(245,158,11,0.3)] relative overflow-hidden">
+                {/* Top animated amber hazard stripes */}
+                <div className="absolute top-0 left-0 right-0 h-1.5 hazard-stripes-amber" />
+                <div className="flex items-center justify-between pt-1">
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 rounded-full bg-amber-400 animate-ping" />
                     <div>

@@ -13,7 +13,7 @@ import {
   saveUserSettingsToCloud, 
   fetchEventsFromCloud 
 } from '../services/firebaseService';
-import firebaseConfig from '../firebase-applet-config.json';
+import { firebaseConfig, maskSecretKey } from '../services/firebaseConfig';
 import { TacticalEvent } from '../types';
 
 interface CloudSyncPortalProps {
@@ -201,6 +201,12 @@ export const CloudSyncPortal: React.FC<CloudSyncPortalProps> = ({
                 <span className="text-slate-500">LATENCY:</span>
                 <span className={latency !== null && latency < 150 ? 'text-green-400' : 'text-amber-500'}>
                   {latency !== null ? `${latency.toFixed(0)} ms` : 'STALE_LINK'}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-slate-900 pb-2">
+                <span className="text-slate-500">API KEY SHIELD:</span>
+                <span className="text-cyan-400 font-mono text-[11px] font-bold">
+                  {maskSecretKey(firebaseConfig.apiKey)}
                 </span>
               </div>
               <div className="flex justify-between pb-1">

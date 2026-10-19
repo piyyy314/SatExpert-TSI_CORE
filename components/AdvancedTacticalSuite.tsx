@@ -460,9 +460,9 @@ STIA_CMD: QUARANTINE_REQUESTED
                     </div>
                  </div>
               </div>
-              <div className="h-[200px] w-full min-w-0">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                  <AreaChart data={fluxData}>
+              <div className="h-[200px] w-full min-w-0 relative" style={{ minHeight: 200, height: 200, width: '100%', minWidth: 0 }}>
+                <ResponsiveContainer width="100%" height={200} minWidth={0} minHeight={200}>
+                  <AreaChart data={fluxData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorFlux" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
