@@ -4,7 +4,7 @@
 
 ```
    ███████╗ █████╗ ████████╗███████╗██╗  ██╗██████╗ ███████╗██████╗ ████████╗
-   ██╔════╝██╔══██╗╚══██╔══╝██╔════╝╚██╗██╔╝██╔══██╗██╔════╝██╔══██╗╚══██╔══╝
+   ██╔════╝██╔══██╗╚══██╔══╝██╔════╝╚██╗██╔╝██╔══██╗██╔════╝██╔══██╗╚██╔══╝
    ███████╗███████║   ██║   █████╗   ╚███╔╝ ██████╔╝█████╗  ██████╔╝   ██║   
    ╚════██║██╔══██║   ██║   ██╔══╝   ██╔██╗ ██╔═══╝ ██╔══╝  ██╔══██╗   ██║   
    ███████║██║  ██║   ██║   ███████╗██╔╝ ██╗██║     ███████╗██║  ██║   ██║   
@@ -38,16 +38,17 @@
 ## 📑 Table of Contents
 
 - [Overview](#-overview)
-- [The 84 Advanced Tactical Modules Index](#-the-84-advanced-tactical-modules-index)
-  - [Pillar I: Sentinel AI & Autonomous Command (12 Modules)](#pillar-i-sentinel-ai--autonomous-command-12-modules)
-  - [Pillar II: Quantum Intelligence & QKD Suite (12 Modules)](#pillar-ii-quantum-intelligence--qkd-suite-12-modules)
-  - [Pillar III: Tactical HUD & Thermal Decoy Subsystem (12 Modules)](#pillar-iii-tactical-hud--thermal-decoy-subsystem-12-modules)
-  - [Pillar IV: Constellation Tracking & Look Angles Engine (12 Modules)](#pillar-iv-constellation-tracking--look-angles-engine-12-modules)
-  - [Pillar V: Electronic Warfare & Jamming Countermeasures (12 Modules)](#pillar-v-electronic-warfare--jamming-countermeasures-12-modules)
-  - [Pillar VI: Post-Quantum Cryptography & Zero-Day Forge (12 Modules)](#pillar-vi-post-quantum-cryptography--zero-day-forge-12-modules)
-  - [Pillar VII: Global SAR Radar & Telemetry Grid (12 Modules)](#pillar-vii-global-sar-radar--telemetry-grid-12-modules)
+- [Module Architecture & Tool Inventory (84 Total Modules)](#-module-architecture--tool-inventory-84-total-modules)
+  - [1. Sentinel AI Control (12 Modules)](#1-sentinel-ai-control-12-modules)
+  - [2. Tactical Base Operations (12 Modules)](#2-tactical-base-operations-12-modules)
+  - [3. SIGINT Suite & Intercept (14 Modules)](#3-sigint-suite--intercept-14-modules)
+  - [4. Active Operations & Strike (12 Modules)](#4-active-operations--strike-12-modules)
+  - [5. Cyber Command & Defense (15 Modules)](#5-cyber-command--defense-15-modules)
+  - [6. Auxiliary Data & Intelligence (11 Modules)](#6-auxiliary-data--intelligence-11-modules)
+  - [7. Advanced Quantum & Forge Suites (8 Modules)](#7-advanced-quantum--forge-suites-8-modules)
 - [Architecture & Tech Stack](#-architecture--tech-stack)
 - [Node.js & Environment Requirements](#-nodejs--environment-requirements)
+- [Firebase Environment Configuration](#-firebase-environment-configuration)
 - [Quick Start Guide](#-quick-start-guide)
 - [PyPI Automatic Publishing & Distribution](#-pypi-automatic-publishing--distribution)
 - [Security Policy & Secret Hardening](#-security-policy--secret-hardening)
@@ -57,123 +58,139 @@
 
 ## 🧭 Overview
 
-**SatExpert Tactical SatCom Intelligence (TSI) v6** is an enterprise-grade operational console built for VSAT engineers, SIGINT field operators, and aerospace defense teams. It unifies high-precision orbital telemetry calculation, electronic warfare countermeasures, post-quantum cryptographic security, and autonomous AI defense into a high-performance, real-time command interface comprising **84 advanced custom modules and tools**.
+**SatExpert Tactical SatCom Intelligence (TSI) v6** is an enterprise-grade operational console built for VSAT engineers, SIGINT field operators, and aerospace defense teams. It unifies high-precision orbital telemetry calculation, electronic warfare countermeasures, post-quantum cryptographic security, and autonomous AI defense into a high-performance, real-time command interface comprising **84 specialized tactical modules** organized across functional operational suites.
 
 ---
 
-## 🛠️ The 84 Advanced Tactical Modules Index
+## 🏗️ Module Architecture & Tool Inventory (84 Total Modules)
 
-The system is organized into 7 core operational pillars, each housing 12 specialized tactical modules:
+### 1. Sentinel AI Control (12 Modules)
+1. **Telemetry Trend Derivative Engine** ($\Delta T / \Delta t$ rolling variance)
+2. **Hostile ISR Dwell Window Predictor** (MWIR/LWIR orbit passes)
+3. **Optimal Thermal Spoofing Duration Recommender**
+4. **AI Decision Matrix Override Console**
+5. **Neural Anomaly Detector & Variance Mapping**
+6. **Automated Threat Classification Matrix** (MITRE Space Attack)
+7. **Predictive Amplifier Maintenance AI**
+8. **Tactical Chat Copilot** (STIA operational agent)
+9. **Automated Cryptographic Audit Logger**
+10. **DEFCON State Orchestrator & Ambient Signaling**
+11. **Cross-Node Frequency Hopping Coordinator**
+12. **Autonomous Defensive Handover Controller**
 
-### Pillar I: Sentinel AI & Autonomous Command (12 Modules)
-1. **AI-01: Telemetry Trend Derivative Engine** ($\Delta T / \Delta t$ rolling analysis)
-2. **AI-02: Hostile ISR Dwell Window Predictor** (MWIR/LWIR orbit passes)
-3. **AI-03: Optimal Duration Recommender** (Thermal spoofing duration calculator)
-4. **AI-04: Automated Threat Classification Matrix** (MITRE Space Attack taxonomy)
-5. **AI-05: Autonomous Defensive Handover** (Cross-node frequency hopping)
-6. **AI-06: Neural Anomaly Detector** (Unsupervised signal variance mapping)
-7. **AI-07: Mission Intent Predictor** (Adversary satellite intent correlation)
-8. **AI-08: Predictive Maintenance AI** (Amplifier degradation forecasting)
-9. **AI-09: Tactical Chat Sentinel** (Natural language command copilot)
-10. **AI-10: Automated Incident Logger** (Real-time cryptographic audit trail)
-11. **AI-11: DEFCON State Orchestrator** (Dynamic threat level signaling)
-12. **AI-12: AI Decision Override Console** (Operator manual veto interface)
+### 2. Tactical Base Operations (12 Modules)
+1. **Orbital Telemetry HUD** (Azimuth, Elevation, Slant Range)
+2. **BUC Temperature Thermal Sensor** (Junction monitoring)
+3. **Thermal Decoy Spoof Controller** (190°C+ thermal bloom generator)
+4. **30-Second Countdown Timer Overlay** (Visual & audio sync)
+5. **Polarization Skew Auto-Re-Sync Module**
+6. **Signal-to-Noise Ratio (SNR) Broadband Carrier Lock**
+7. **Receive Power Flux Density Indicator** ($\text{dBm/m}^2$)
+8. **Mission Report PDF Exporter** (Government-format audit document)
+9. **Live Event Stream & Critical Alert Ticker**
+10. **Glassmorphism Panel Micro-Animation Engine**
+11. **Audio Warning Synthesizer & Chime Generator**
+12. **Emergency Abort & Terminal Normalization Override**
 
-### Pillar II: Quantum Intelligence & QKD Suite (12 Modules)
-1. **QKD-01: Rotating Quantum Key Visualizer** ($\vert \Phi^+ \rangle$ entanglement canvas)
-2. **QKD-02: Polarization Angle Basis Analyzer** ($0^\circ, 45^\circ, 90^\circ, 135^\circ$ verification)
-3. **QKD-03: Quantum Bit Error Rate (QBER) Monitor** (Real-time error thresholding)
-4. **QKD-04: Bell Inequality ($S \le 2\sqrt{2}$) Auditor** (Entanglement validation)
-5. **QKD-05: Active Eavesdropper (Eve) Injector** (Intercept-resend simulation)
-6. **QKD-06: BB84 Protocol Handshake Simulator** (Key distribution exchange)
-7. **QKD-07: E91 Entanglement Protocol Engine** (Ekert protocol validation)
-8. **QKD-08: Quantum Key Certificate Exporter** (Government PDF/PEM cert export)
-9. **QKD-09: Optical Downlink Atmospheric Scintillation Model** (Cloud attenuation)
-10. **QKD-10: Quantum Random Number Generator (QRNG) Seed** (Entropy verification)
-11. **QKD-11: Photon Counting & Detector Dead-time Simulator** (SPAD metrics)
-12. **QKD-12: Quantum Channel Re-keying Scheduler** (Automatic epoch rotation)
+### 3. SIGINT Suite & Intercept (14 Modules)
+1. **Synthetic Aperture Radar (SAR) Stripmap Beamformer**
+2. **Interactive Multi-Sector Topographical Terrain Scanner**
+3. **Ground Penetrating Radar (GPR) Sub-Surface Anomaly Detector**
+4. **Radar Cross Section (RCS) Target Profiler**
+5. **X/Ku/Ka Band Weather & Rain Fade Compensator**
+6. **Moving Target Indication (MTI) Velocity Vector Tracker**
+7. **Polarimetric SAR (PolSAR) Surface Scattering Decomposition**
+8. **Digital Elevation Model (DEM) 3D Relief Renderer**
+9. **Real-Time Radar Telemetry Packet Stream Acquisition**
+10. **GeoTIFF and PNG Tactical Image Export Module**
+11. **Sector Grid Expansion & Dynamic Scaling Tool**
+12. **Autonomous Target Recognition (ATR) Neural Classifier**
+13. **Radio Frequency Spectrum Waterfall Analyzer**
+14. **Direction-Finding Spoofer Localization Triangulator**
 
-### Pillar III: Tactical HUD & Thermal Decoy Subsystem (12 Modules)
-1. **HUD-01: Orbital Telemetry Dashboard** (Azimuth, Elevation, Slant Range)
-2. **HUD-02: BUC Temperature Thermal Sensor** (Real-time junction monitoring)
-3. **HUD-03: Thermal Decoy Spoof Controller** (190°C+ thermal bloom generator)
-4. **HUD-04: 30-Second Countdown Timer Overlay** (Visual & audio flare sync)
-5. **HUD-05: Polarization Skew Corrector** (1-click auto-re-sync module)
-6. **HUD-06: Signal-to-Noise Ratio (SNR) Meter** (Broadband carrier lock status)
-7. **HUD-07: Receive Power Flux Density Indicator** (dBm/m² telemetry)
-8. **HUD-08: Mission Report PDF Exporter** (Government-format document generator)
-9. **HUD-09: Live Event Stream & Alert Ticker** (Critical warning feed)
-10. **HUD-10: Panel Micro-Animation & State Transition Engine** (CSS glassmorphism)
-11. **HUD-11: Audio Chirp & Warning Synthesizer** (Operator auditory feedback)
-12. **HUD-12: Emergency Abort & Normalization Override** (Instant safety reset)
+### 4. Active Operations & Strike (12 Modules)
+1. **SGP4 High-Precision Orbital Ephemeris Propagator**
+2. **Multi-Constellation Tracker** (Starlink, OneWeb, GPS, GEO)
+3. **Doppler Shift Frequency Offset Compensator**
+4. **Earth-Centered Inertial Slant Range Matrix**
+5. **Ground Station Horizon Obstruction & Terrain Masker**
+6. **Eclipse & Solar Conjunction Outage Predictor**
+7. **Satellite Footprint Contour Coverage Beam Mapper**
+8. **Orbital Drift Correction Engine** ($\Delta > 0.05^\circ$ auto-sync)
+9. **24-Hour Pass Schedule & Overpass Calculator**
+10. **Motorized Antenna Az-El Gimbal Tracking Driver**
+11. **Two-Line Element (TLE) Ephemeris String Parser**
+12. **Atmospheric Drag & Orbital Decay Simulator**
 
-### Pillar IV: Constellation Tracking & Look Angles Engine (12 Modules)
-1. **SAT-01: SGP4 Orbital Propagator** (Sub-millimeter ephemeris calculation)
-2. **SAT-02: Multi-Constellation Selector** (Starlink, OneWeb, GPS, GEO, custom)
-3. **SAT-03: Doppler Shift Compensator** (Frequency offset calculator)
-4. **SAT-04: Slant Range Vector Matrix** (Earth-centered inertial tracking)
-5. **SAT-05: Ground Station Horizon Masking Analyzer** (Terrain obstruction mapping)
-6. **SAT-06: Eclipse & Solar Conjunction Predictor** (Outage window forecasting)
-7. **SAT-07: Satellite Footprint Contour Renderer** (Coverage beam maps)
-8. **SAT-08: Orbital Drift Correction Engine** ($\Delta > 0.05^\circ$ auto-sync)
-9. **SAT-09: Pass Schedule Calculator** (Next 24-hour overpass list)
-10. **SAT-10: Antenna Az-El Tracking Driver** (Motorized gimbal controller interface)
-11. **SAT-11: Ephemeris TLE Parser** (Two-Line Element string ingestor)
-12. **SAT-12: Orbital Decay & Drag Simulator** (Atmospheric density modeler)
+### 5. Cyber Command & Defense (15 Modules)
+1. **Carrier-to-Noise Uplink Jamming Detector**
+2. **Frequency Hopping Spread Spectrum (FHSS) Anti-Jam Engine**
+3. **Adaptive Nulling Phased Array Spatial Beamformer**
+4. **Transponder Power Limiter & Gain Compression Protector**
+5. **Chirp Radar Agile Waveform Generator**
+6. **EMP Hardening Resilience Monitor**
+7. **Radar Warning Receiver (RWR) Threat Sector Display**
+8. **Electronic Counter-Countermeasures (ECCM) Playbook**
+9. **False Target Ghost Deception Signal Generator**
+10. **Spectrum Denial Area Coverage Assessment**
+11. **APT Lateral Movement Tracker & Network Mapper**
+12. **YARA Signature Scanner & Malware Intelligence**
+13. **Nmap Reconnaissance & Network Node Scanner**
+14. **Ransomware Simulation & Sandbox Analyzer**
+15. **Phishing Campaign & Threat Dossier Manager**
 
-### Pillar V: Electronic Warfare & Jamming Countermeasures (12 Modules)
-1. **EW-01: Uplink Jamming Detector** (Carrier-to-noise degradation analyzer)
-2. **EW-02: Frequency Hopping Spread Spectrum (FHSS)** (Anti-jam hop sequence)
-3. **EW-03: Adaptive Nulling Beamformer** (Phased array spatial filtering)
-4. **EW-04: Spoofer Localization Triangulation** (Direction-finding vector mapper)
-5. **EW-05: Transponder Power Limiter** (Gain compression protector)
-6. **EW-06: Electromagnetic Spectrum Analyzer** (Waterfall spectrogram display)
-7. **EW-07: Chirp Radar Counter-Measure** (Frequency agile waveform generator)
-8. **EW-08: EMP Hardening Status Monitor** (Subsystem resilience meter)
-9. **EW-09: Radar Warning Receiver (RWR) Display** (Threat sector alerting)
-10. **EW-10: Electronic Counter-Countermeasures (ECCM) Matrix** (Defensive playbook)
-11. **EW-11: Deception Signal Generator** (False target ghost emitter)
-12. **EW-12: Spectrum Denial Assessment** (Area coverage degradation report)
+### 6. Auxiliary Data & Intelligence (11 Modules)
+1. **RSS Live Space News & Intelligence Feed**
+2. **IP Geolocator & Network Routing Visualizer**
+3. **Weather & Solar Flux Telemetry Dashboard**
+4. **Wi-Fi Countermeasures & RF Sniffing Suite**
+5. **SCADA Industrial Control System Exploit Analyzer**
+6. **USB Device Manager & Hardware Security Audit**
+7. **Tactical Script Environment & Command Shell**
+8. **Biometric Operator Authentication Scanner**
+9. **Neo4j Graph Network Topology Visualizer**
+10. **Cloud Synchronization & Portal Status Manager**
+11. **Connectivity Mesh Health Monitor**
 
-### Pillar VI: Post-Quantum Cryptography & Zero-Day Forge (12 Modules)
-1. **PQC-01: CRYSTALS-Kyber-1024 Encapsulation** (NIST standard KEM)
-2. **PQC-02: CRYSTALS-Dilithium-5 Digital Signatures** (Post-quantum auth)
-3. **PQC-03: Zero-Day Vulnerability Forge** (Simulated exploit harness)
-4. **PQC-04: Bug Bounty & Audit Report Generator** (Professional PDF security export)
-5. **PQC-05: Hybrid Classical-Quantum Cipher Suite** (AES-256 + Kyber encapsulation)
-6. **PQC-06: Quantum Key Exchange Ledger** (Immutable transaction log)
-7. **PQC-07: Cryptographic Agility Benchmark** (Throughput & latency testing)
-8. **PQC-08: Side-Channel Attack Mitigation** (Timing attack protection)
-9. **PQC-09: Firmware Integrity Verifier** (SHA-3 secure boot checker)
-10. **PQC-10: Vulnerability Patch Deployer** (Automated CVE remediation)
-11. **PQC-11: Security Hardening Scorecard** (A+ rating compliance engine)
-12. **PQC-12: Cryptographic Key Lifecycle Manager** (Generation to revocation)
-
-### Pillar VII: Global SAR Radar & Telemetry Grid (12 Modules)
-1. **SAR-01: Synthetic Aperture Radar (SAR) Beamformer** (High-res stripmap imaging)
-2. **SAR-02: Interactive Terrain Scanning Engine** (Multi-sector topographical mapping)
-3. **SAR-03: Ground Penetrating Radar (GPR) Simulation** (Sub-surface anomaly detection)
-4. **SAR-04: Radar Cross Section (RCS) Profiler** (Target signature analysis)
-5. **SAR-05: Weather & Rain Fade Compensator** (X/Ku/Ka band attenuation filter)
-6. **SAR-06: Moving Target Indication (MTI)** (Velocity vector tracking)
-7. **SAR-07: Polarimetric SAR (PolSAR) Decomposition** (Surface scattering matrix)
-8. **SAR-08: Digital Elevation Model (DEM) Integrator** (3D relief rendering)
-9. **SAR-09: Real-Time Radar Telemetry Stream** (Live packet acquisition feed)
-10. **SAR-10: SAR Image Export Module** (GeoTIFF and PNG image renderer)
-11. **SAR-11: Sector Grid Expansion Tool** (Dynamic sector grid scaling)
-12. **SAR-12: Autonomous Target Recognition (ATR)** (Neural object classification)
+### 7. Advanced Quantum & Forge Suites (8 Modules)
+1. **Rotating Quantum Key Visualizer** ($\vert \Phi^+ \rangle$ entanglement canvas)
+2. **Polarization Angle Basis Analyzer** ($0^\circ, 45^\circ, 90^\circ, 135^\circ$)
+3. **Quantum Bit Error Rate (QBER) & Bell Inequality Auditor**
+4. **Active Eavesdropper (Eve) Intercept-Resend Injector**
+5. **CRYSTALS-Kyber-1024 KEM & Dilithium-5 Signatures**
+6. **Zero-Day Vulnerability Exploit Forge & Harness**
+7. **Bug Bounty & Security Audit PDF Report Generator**
+8. **Hybrid Classical-Quantum Cryptographic Suite** (AES + Kyber)
 
 ---
 
 ## ⚙️ Node.js & Environment Requirements
 
-SatExpert TSI v6 requires **Node.js >= 22.12.0** to satisfy modern build dependencies (including Mermaid 12+ and high-performance bundling tools).
+SatExpert TSI v6 requires **Node.js >= 22.12.0** to satisfy modern build dependencies and bundling tools.
 
 ```json
 "engines": {
   "node": ">=22.12.0"
 }
 ```
+
+---
+
+## 🔑 Firebase Environment Configuration
+
+Find your Firebase credentials in the **Firebase Console** ([console.firebase.google.com](https://console.firebase.google.com)):
+1. Open your project.
+2. Click the **Gear icon (Project Settings)** in the top left.
+3. Under the **General** tab, scroll down to **Your apps** and select your Web App (`</>`).
+4. Copy the `firebaseConfig` keys into your `.env` file:
+   - `VITE_FIREBASE_API_KEY` (`apiKey`)
+   - `VITE_FIREBASE_AUTH_DOMAIN` (`authDomain`)
+   - `VITE_FIREBASE_PROJECT_ID` (`projectId`)
+   - `VITE_FIREBASE_DATABASE_ID` (Firestore database ID)
+   - `VITE_FIREBASE_STORAGE_BUCKET` (`storageBucket`)
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID` (`messagingSenderId`)
+   - `VITE_FIREBASE_APP_ID` (`appId`)
+   - `VITE_FIREBASE_MEASUREMENT_ID` (`measurementId`)
 
 ---
 
