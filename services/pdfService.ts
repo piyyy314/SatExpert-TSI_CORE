@@ -354,3 +354,121 @@ export const generateBugReportPDF = (events: BugReportEvent[], systemInfo: any) 
   doc.save(`STIA_BUG_REPORT_${Date.now()}.pdf`);
 };
 
+export const generateMissionReportPDF = (events: TacticalEvent[], meta?: EventLogExportMeta) => {
+  const doc = new jsPDF();
+  const timestamp = new Date().toISOString();
+  const satName = meta?.satName || 'STIA_ORBITAL_ASSET';
+  const defcon = meta?.defcon || 4;
+  const operator = meta?.operator || 'COMMAND_OPERATOR_ROOT';
+  const checksum = computeLogChecksum(JSON.stringify(events) + timestamp);
+
+  // Background
+  doc.setFillColor(3, 7, 18);
+  doc.rect(0, 0, 210, 297, 'F');
+
+  // Top Classification Banner
+  doc.setFillColor(185, 28, 28);
+  doc.rect(12, 10, 186, 8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('TOP SECRET // SCI // NOFORN // ORBITAL INTELLIGENCE BRIEFING', 105, 15.2, { align: 'center' });
+
+  // Document Title
+  doc.setTextColor(239, 68, 68);
+  doc.setFontSize(18);
+  doc.text('OFFICIAL TACTICAL MISSION REPORT', 15, 32);
+
+  doc.setDrawColor(239, 68, 68);
+  doc.setLineWidth(1);
+  doc.line(15, 36, 195, 36);
+
+  // Metadata block
+  doc.setTextColor(148, 163, 184);
+  doc.setFontSize(8.5);
+  doc.setFont('courier', 'normal');
+  doc.text(`BRIEFING ID : STIA-MR-${Date.now().toString().slice(-8)}`, 15, 43);
+  doc.text(`GENERATED   : ${timestamp}`, 15, 48);
+  doc.text(`COMMAND_OP  : ${operator}`, 15, 53);
+  doc.text(`TARGET ASSET: ${satName} ${meta?.orbitalSlot ? `(${meta.orbitalSlot})` : ''}`, 110, 43);
+  doc.text(`DEFCON STATE: LEVEL ${defcon} (${defcon <= 2 ? 'MAXIMUM ALERT' : 'SURVEILLANCE'})`, 110, 48);
+  doc.text(`INTEGRITY   : ${checksum}`, 110, 53);
+
+  // Section 1: Executive Summary & Telemetry Matrix
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(11);
+  doc.text('1. EXECUTIVE SUMMARY & LIVE SYSTEM TELEMETRY', 15, 63);
+
+  const snrVal = meta?.telemetry?.snr ? `${meta.telemetry.snr} dB` : '14.2 dB';
+  const rxVal = meta?.telemetry?.rxPower ? `${meta.telemetry.rxPower} dBm` : '-56.8 dBm';
+  const bucVal = meta?.telemetry?.bucTemp ? `${parseFloat(meta.telemetry.bucTemp).toFixed(1)} °C` : '42.0 °C';
+  const lossVal = meta?.telemetry?.packetLoss ? `${parseFloat(meta.telemetry.packetLoss).toFixed(2)}%` : '0.00%';
+
+  const execTable = [
+    ['METRIC PARAMETER', 'TELEMETRY READING', 'OPERATIONAL ASSESSMENT'],
+    ['CARRIER / SNR MARGIN', snrVal, parseFloat(snrVal) < 8 ? 'WARNING_MARGIN' : 'SECURE_LOCK'],
+    ['RECEIVER POWER (Rx)', rxVal, 'NOMINAL_STRENGTH'],
+    ['BUC THERMAL CORE', bucVal, parseFloat(bucVal) > 60 ? 'THERMAL_SPIKE' : 'STABLE_OPERATIONAL'],
+    ['PACKET ERROR RATE', lossVal, parseFloat(lossVal) > 5 ? 'DEGRADED_CHANNEL' : 'ERROR_FREE'],
+    ['STEALTH POSTURE', meta?.stealthMode ? 'ENGAGED (GHOST PROTOCOL)' : 'STANDARD_PATROL', 'ACTIVE_SHIELDING']
+  ];
+
+  (doc as any).autoTable({
+    startY: 67,
+    head: [execTable[0]],
+    body: execTable.slice(1),
+    theme: 'grid',
+    headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], font: 'courier', fontSize: 8 },
+    bodyStyles: { fillColor: [15, 23, 42], textColor: [226, 232, 240], font: 'courier', fontSize: 7.5 },
+    alternateRowStyles: { fillColor: [10, 15, 30] },
+    margin: { left: 15, right: 15 },
+  });
+
+  // Section 2: Critical Alerts & Active Audit Trail
+  const eventsY = (doc as any).lastAutoTable.finalY + 12;
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(11);
+  doc.text(`2. MISSION AUDIT TRAIL & CRITICAL EVENTS (${events.length} LOGS)`, 15, eventsY);
+
+  const rows = events.length > 0 ? events.slice(0, 25).map(e => [e.timestamp, e.satName, e.status.toUpperCase(), e.detail]) : [
+    [new Date().toLocaleTimeString(), satName, 'ACTIVE', 'System link nominal. All quantum and RF subsystems reporting zero anomalies.']
+  ];
+
+  (doc as any).autoTable({
+    startY: eventsY + 4,
+    head: [['TIMESTAMP', 'ASSET', 'SEVERITY', 'MISSION EVENT DETAIL']],
+    body: rows,
+    theme: 'grid',
+    headStyles: { fillColor: [185, 28, 28], textColor: [255, 255, 255], font: 'courier', fontSize: 8 },
+    bodyStyles: { fillColor: [15, 23, 42], textColor: [226, 232, 240], font: 'courier', fontSize: 7 },
+    alternateRowStyles: { fillColor: [10, 15, 30] },
+    columnStyles: {
+      0: { cellWidth: 26 },
+      1: { cellWidth: 34 },
+      2: { cellWidth: 22 },
+      3: { cellWidth: 'auto' }
+    },
+    margin: { left: 15, right: 15 },
+  });
+
+  // Footer / Cryptographic Seal on all pages
+  const pageCount = (doc as any).internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(51, 65, 85);
+    doc.setLineWidth(0.5);
+    doc.line(15, 284, 195, 284);
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(7.5);
+    doc.text(`AUTHENTICATION HASH: ${checksum} // CLASSIFIED DOD RECORD`, 15, 289);
+    doc.text(`PAGE ${i} OF ${pageCount}`, 195, 289, { align: 'right' });
+  }
+
+  doc.save(`STIA_MISSION_REPORT_${satName.replace(/\s+/g, '_')}_${Date.now()}.pdf`);
+};
+
+

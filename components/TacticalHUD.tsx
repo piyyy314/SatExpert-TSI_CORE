@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { Coordinates, Satellite, SatelliteStatus, WeatherCondition, TacticalEvent, BugReportEvent } from '../types';
 import { fetchSatelliteStatusUpdates } from '../services/satelliteService';
 import { audioController } from '../services/audioService';
-import { generateBugReportPDF, generateSecureEventLogPDF, exportEventLogsAsText } from '../services/pdfService';
+import { generateBugReportPDF, generateSecureEventLogPDF, exportEventLogsAsText, generateMissionReportPDF } from '../services/pdfService';
 import { Flame, AlertTriangle, RefreshCw, Compass, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 interface Props {
@@ -513,6 +513,27 @@ export const TacticalHUD: React.FC<Props> = ({
 
     generateBugReportPDF(mappedEvents, systemInfo);
     
+    setTimeout(() => setIsExporting(false), 1500);
+  };
+
+  const handleGenerateMissionReport = () => {
+    setIsExporting(true);
+    try {
+      audioController.playChirp();
+    } catch (e) {}
+
+    const meta = {
+      satName: sat.name,
+      satId: sat.id,
+      orbitalSlot: sat.orbitalSlot,
+      defcon: defcon,
+      loc: loc,
+      operator: 'COMMAND_OPERATOR_ROOT',
+      telemetry: telemetry,
+      stealthMode: isStealthMode
+    };
+
+    generateMissionReportPDF(eventLogs, meta);
     setTimeout(() => setIsExporting(false), 1500);
   };
 
@@ -1044,7 +1065,7 @@ export const TacticalHUD: React.FC<Props> = ({
           )}
         </div>
         
-        <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="pt-2 grid grid-cols-2 sm:grid-cols-5 gap-3">
           <button 
             onClick={handleExportSecurePDF}
             disabled={isExporting}
@@ -1055,6 +1076,18 @@ export const TacticalHUD: React.FC<Props> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
             <span className="text-[9px] font-black uppercase tracking-wider italic truncate">Secure_PDF</span>
+          </button>
+
+          <button 
+            onClick={handleGenerateMissionReport}
+            disabled={isExporting}
+            title="Generate Official Mission Report (Government Format)"
+            className={`w-full flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 py-4 px-3 rounded-2xl border-2 transition-all duration-300 active:scale-95 shadow-xl relative overflow-hidden group/mr cursor-pointer ${isExporting ? 'bg-indigo-950/30 border-indigo-800 text-indigo-400' : 'bg-indigo-600/90 border-indigo-500 text-white hover:bg-white hover:text-indigo-600 hover:shadow-[0_0_25px_rgba(99,102,241,0.4)]'}`}
+          >
+            <svg className="w-4 h-4 shrink-0 group-hover/mr:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span className="text-[9px] font-black uppercase tracking-wider italic truncate">Mission_Report</span>
           </button>
 
           <button 
