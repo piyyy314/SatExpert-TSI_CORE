@@ -29,6 +29,21 @@ const getAiInstance = () => {
     return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 };
 
+async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 3, delay = 2000): Promise<T> {
+    try {
+        return await fn();
+    } catch (error: any) {
+        const errStr = String(error?.message || error || "");
+        const isRateLimit = error?.status === 429 || errStr.includes('429') || errStr.includes('RESOURCE_EXHAUSTED') || errStr.includes('Rate exceeded');
+        if (retries > 0 && isRateLimit) {
+            console.warn(`API Rate limit exceeded (429). Retrying in ${delay}ms... (${retries} retries left)`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return retryWithBackoff(fn, retries - 1, delay * 2);
+        }
+        throw error;
+    }
+}
+
 const terminalSensorTool = {
   name: "read_terminal_sensors",
   description: "Reads live sensor telemetry from the local VSAT terminal hardware. Returns SNR, power levels, temperature, and packet stats.",
@@ -107,11 +122,19 @@ app.post("/api/gemini/action", async (req, res) => {
 
             let response;
             try {
-              response = await ai.models.generateContent({ model: modelId, contents, config });
+              response = await retryWithBackoff(() => ai.models.generateContent({ model: modelId, contents, config }));
             } catch (toolError: any) {
+              const errStr = String(toolError?.message || toolError || "");
+              if (errStr.includes('429') || errStr.includes('Rate exceeded') || errStr.includes('RESOURCE_EXHAUSTED')) {
+                return res.status(429).json({
+                  text: "STIA RATE LIMIT NOTICE: API quota limit reached (429). Telemetry operating on local fallback heuristic. Please wait 10 seconds before re-engaging AI copilot.",
+                  grounding: [],
+                  rateLimited: true
+                });
+              }
               try {
                 const fallbackConfig = { systemInstruction };
-                response = await ai.models.generateContent({ model: 'gemini-3.7-flash', contents: [{ role: 'user', parts: [{ text: issue }] }], config: fallbackConfig });
+                response = await retryWithBackoff(() => ai.models.generateContent({ model: 'gemini-3.7-flash', contents: [{ role: 'user', parts: [{ text: issue }] }], config: fallbackConfig }));
               } catch (finalErr: any) {
                 return res.json({
                   text: `STIA TACTICAL INTELLIGENCE: Operational telemetry for ${context?.satName || 'ORBITAL_ASSET'} processed under DEFCON ${context?.defcon || 5}. Analysis indicates nominal RF link margin with standard atmospheric path losses. Recommended mitigation: verify BUC/LNB LO stability, inspect Eb/N0 lock thresholds, and maintain active tracking telemetry.`,
@@ -135,7 +158,7 @@ app.post("/api/gemini/action", async (req, res) => {
                         }]
                     });
                     
-                    response = await ai.models.generateContent({ model: modelId, contents, config });
+                    response = await retryWithBackoff(() => ai.models.generateContent({ model: modelId, contents, config }));
                 }
             }
 
@@ -145,15 +168,15 @@ app.post("/api/gemini/action", async (req, res) => {
         else if (action === "generateTacticalImage") {
             const { prompt, aspectRatio, size } = payload;
             try {
-              const response = await ai.models.generateContent({
+              const response = await retryWithBackoff(() => ai.models.generateContent({
                 model: 'gemini-3.1-flash-lite-image',
                 contents: { parts: [{ text: `High-fidelity tactical satellite visualization: ${prompt}. Professional technical military style.` }] },
                 config: { imageConfig: { aspectRatio: aspectRatio as any } }
-              });
+              }));
               for (const part of response.candidates![0].content.parts) {
                 if (part.inlineData) return res.json({ result: `data:image/png;base64,${part.inlineData.data}` });
               }
-            } catch (imgErr) {
+            } catch (imgErr: any) {
               console.warn("Image generation fallback", imgErr);
             }
             return res.json({ result: null });
@@ -162,7 +185,7 @@ app.post("/api/gemini/action", async (req, res) => {
         else if (action === "editTacticalImage") {
             const { base64Image, prompt } = payload;
             try {
-              const response = await ai.models.generateContent({
+              const response = await retryWithBackoff(() => ai.models.generateContent({
                 model: 'gemini-3.1-flash-lite-image',
                 contents: {
                   parts: [
@@ -170,11 +193,11 @@ app.post("/api/gemini/action", async (req, res) => {
                     { text: `Apply tactical overlay: ${prompt}. Maintain technical accuracy.` }
                   ]
                 }
-              });
+              }));
               for (const part of response.candidates![0].content.parts) {
                 if (part.inlineData) return res.json({ result: `data:image/png;base64,${part.inlineData.data}` });
               }
-            } catch (editErr) {
+            } catch (editErr: any) {
               console.warn("Image edit fallback", editErr);
             }
             return res.json({ result: null });
@@ -182,18 +205,23 @@ app.post("/api/gemini/action", async (req, res) => {
 
         else if (action === "generateTacticalVideo") {
             const { prompt, orientation, startImage } = payload;
-            let operation = await ai.models.generateVideos({
-              model: 'veo-3.1-lite-generate-preview',
-              prompt: `Cinematic tactical satellite mission sequence: ${prompt}`,
-              image: startImage ? { imageBytes: startImage.split(',')[1], mimeType: 'image/png' } : undefined,
-              config: { numberOfVideos: 1, resolution: '1080p', aspectRatio: orientation }
-            });
-            while (!operation.done) {
-              await new Promise(resolve => setTimeout(resolve, 5000));
-              operation = await ai.operations.getVideosOperation({ operation: operation });
+            try {
+              let operation = await retryWithBackoff(() => ai.models.generateVideos({
+                model: 'veo-3.1-lite-generate-preview',
+                prompt: `Cinematic tactical satellite mission sequence: ${prompt}`,
+                image: startImage ? { imageBytes: startImage.split(',')[1], mimeType: 'image/png' } : undefined,
+                config: { numberOfVideos: 1, resolution: '1080p', aspectRatio: orientation }
+              }));
+              while (!operation.done) {
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                operation = await ai.operations.getVideosOperation({ operation: operation });
+              }
+              const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+              return res.json({ result: downloadLink });
+            } catch (vidErr: any) {
+              console.warn("Video generation error", vidErr);
+              return res.status(429).json({ error: "RATE_LIMITED_OR_FAILED", result: null });
             }
-            const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-            return res.json({ result: downloadLink });
         }
 
         else if (action === "transcribeAudio") {

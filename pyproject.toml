@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "satexpert-tsi"
+version = "3.0.0"
+description = "SatExpert Tactical SatCom Intelligence (TSI) v6 - Comprehensive VSAT, SIGINT, Quantum Crypto & Tactical Telemetry Suite"
+readme = "README.md"
+authors = [
+    { name = "SatExpert Engineering", email = "support@satexpert.io" }
+]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Communications"
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/piyyy314/satexpert-tsi"
