@@ -28,7 +28,7 @@
 [![MITRE ATT&CK](https://img.shields.io/badge/MITRE_ATT%26CK-Space_Defense_Matrix-orange.svg?style=for-the-badge&logo=target)](https://attack.mitre.org/)
 [![PyPI - Version](https://img.shields.io/badge/PyPI-v6.0.0--stable-blue.svg?style=for-the-badge&logo=pypi)](https://pypi.org/project/satexpert-tsi/)
 [![PyPI - Status](https://img.shields.io/badge/PyPI-Automated_Release-success.svg?style=for-the-badge&logo=pypi)](https://pypi.org/)
-[![License](https://img.shields.io/badge/License-MIT-orange.svg?style=for-the-badge](./LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-orange.svg?style=for-the-badge)](./LICENSE)
 [![Security Grade](https://img.shields.io/badge/Security-Hardened%20A%2B-success.svg?style=for-the-badge&logo=security)](./SECURITY.md)
 
 </div>
@@ -38,7 +38,7 @@
 ## 📑 Table of Contents
 
 - [Overview](#-overview)
-- [The 84 Tactical Modules Index](#-the-84-tactical-modules-index)
+- [The 84 Advanced Tactical Modules Index](#-the-84-advanced-tactical-modules-index)
   - [Pillar I: Sentinel AI & Autonomous Command (12 Modules)](#pillar-i-sentinel-ai--autonomous-command-12-modules)
   - [Pillar II: Quantum Intelligence & QKD Suite (12 Modules)](#pillar-ii-quantum-intelligence--qkd-suite-12-modules)
   - [Pillar III: Tactical HUD & Thermal Decoy Subsystem (12 Modules)](#pillar-iii-tactical-hud--thermal-decoy-subsystem-12-modules)
@@ -50,7 +50,6 @@
 - [Node.js & Environment Requirements](#-nodejs--environment-requirements)
 - [Quick Start Guide](#-quick-start-guide)
 - [PyPI Automatic Publishing & Distribution](#-pypi-automatic-publishing--distribution)
-- [Branch Protection Setup (`main`)](#-branch-protection-setup-main)
 - [Security Policy & Secret Hardening](#-security-policy--secret-hardening)
 - [License](#-license)
 
@@ -58,13 +57,13 @@
 
 ## 🧭 Overview
 
-**SatExpert Tactical SatCom Intelligence (TSI) v6** is an enterprise-grade operational console for VSAT engineers, SIGINT field operators, and aerospace defense teams. It unifies high-precision orbital telemetry calculation, electronic warfare countermeasures, post-quantum cryptographic security, and autonomous AI defense into a high-performance, real-time command interface comprising **84 specialized tactical modules**.
+**SatExpert Tactical SatCom Intelligence (TSI) v6** is an enterprise-grade operational console built for VSAT engineers, SIGINT field operators, and aerospace defense teams. It unifies high-precision orbital telemetry calculation, electronic warfare countermeasures, post-quantum cryptographic security, and autonomous AI defense into a high-performance, real-time command interface comprising **84 advanced custom modules and tools**.
 
 ---
 
-## 🛠️ The 84 Tactical Modules Index
+## 🛠️ The 84 Advanced Tactical Modules Index
 
-The system is organized into 7 core operational pillars, each containing 12 specialized modules (totaling 84 modules):
+The system is organized into 7 core operational pillars, each housing 12 specialized tactical modules:
 
 ### Pillar I: Sentinel AI & Autonomous Command (12 Modules)
 1. **AI-01: Telemetry Trend Derivative Engine** ($\Delta T / \Delta t$ rolling analysis)
@@ -206,26 +205,6 @@ npm run build
 ## 📦 PyPI Automatic Publishing & Distribution
 
 This project includes a dedicated GitHub Actions workflow (`.github/workflows/publish-pypi.yml`) and `pyproject.toml` configuration to automatically build and publish distribution archives (`.whl` and `.tar.gz`) to **PyPI (pypi.org)** upon creating a GitHub Release.
-
-To trigger an automated release:
-1. Push your code to the `main` branch (validated by `ci.yml`).
-2. Create a new GitHub Release (e.g. `v6.0.0`).
-3. The GitHub Action will automatically run `python -m build` and publish to PyPI using your repository's `PYPI_API_TOKEN` secret.
-
----
-
-## 🛡️ Branch Protection Setup (`main`)
-
-To ensure enterprise-grade security and prevent accidental force pushes or direct unreviewed commits to the primary production branch, configure the following protection rules on GitHub:
-
-1. Navigate to your GitHub Repository **Settings** > **Branches**.
-2. Click **Add branch protection rule** for branch pattern `main`.
-3. Enable the following settings:
-   - ✅ **Require a pull request before merging** (Require approvals: 1)
-   - ✅ **Require status checks to pass before merging** (Select `SatExpert TSI CI / build-and-verify`)
-   - ✅ **Require linear history**
-   - ✅ **Do not allow bypassing the above settings** (Enforce for administrators)
-   - ✅ **Restrict who can push to matching branches**
 
 ---
 
