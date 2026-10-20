@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { FileText, Download, Shield, Zap, Target, CheckCircle2, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import { safeAutoTable } from '../utils/pdfHelper';
 
 interface ActionRecord {
   timestamp: string;
@@ -95,7 +95,7 @@ export const AfterActionReport: React.FC = () => {
       action.status
     ]);
 
-    doc.autoTable({
+    safeAutoTable(doc, {
       startY: 75,
       head: [['Timestamp', 'Category', 'Description', 'Severity']],
       body: tableData,

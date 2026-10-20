@@ -52,19 +52,29 @@ export const IPGeolocator: React.FC = () => {
     setIntel(null);
     setScanStatus('Initializing multi-hop trace...');
     
-    // Run some technical stages
-    setTimeout(() => setScanStatus('Bypassing proxy layers...'), 1000);
-    setTimeout(() => setScanStatus('Consolidating BGP routing data...'), 2000);
-    setTimeout(() => setScanStatus('querying STIA Intelligence DB...'), 3000);
+    const t1 = setTimeout(() => setScanStatus('Bypassing proxy layers...'), 600);
+    const t2 = setTimeout(() => setScanStatus('Consolidating BGP routing data...'), 1200);
+    const t3 = setTimeout(() => setScanStatus('Querying STIA Intelligence DB...'), 1800);
 
-    const result = await analyzeIPRecon(targetIp);
-    if (result) {
+    try {
+      const result = await analyzeIPRecon(targetIp);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      if (result) {
         setIntel(result);
         setScanStatus('SUCCESS: Target localized.');
-    } else {
+      } else {
         setScanStatus('ERROR: INTEL_LINK_FAILED.');
+      }
+    } catch {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      setScanStatus('ERROR: INTEL_LINK_FAILED.');
+    } finally {
+      setIsScanning(false);
     }
-    setIsScanning(false);
   };
 
   const exportIntel = () => {

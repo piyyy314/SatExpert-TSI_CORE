@@ -1,6 +1,6 @@
 
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import { safeAutoTable } from '../utils/pdfHelper';
 import { BugReportEvent, TacticalEvent, Coordinates } from '../types.ts';
 
 export const computeLogChecksum = (content: string): string => {
@@ -148,7 +148,7 @@ export const generateSecureEventLogPDF = (events: TacticalEvent[], meta?: EventL
     ['GROUND STATION POSITION', meta?.loc ? `${meta.loc.lat.toFixed(4)}°, ${meta.loc.lng.toFixed(4)}°` : '38.8951°, -77.0364°', 'GEO_ALIGNED']
   ];
 
-  (doc as any).autoTable({
+  safeAutoTable(doc, {
     startY: 61,
     head: [telemetryTable[0]],
     body: telemetryTable.slice(1),
@@ -177,7 +177,7 @@ export const generateSecureEventLogPDF = (events: TacticalEvent[], meta?: EventL
     e.detail
   ]);
 
-  (doc as any).autoTable({
+  safeAutoTable(doc, {
     startY: eventsY + 4,
     head: [['TIMESTAMP', 'ASSET', 'LEVEL', 'AUDIT & EVENT DESCRIPTION']],
     body: logRows,
@@ -253,7 +253,7 @@ export const generateBugReportPDF = (events: BugReportEvent[], systemInfo: any) 
     ['SIGNAL_NOISE_RATIO', `${parseFloat(systemInfo.snr)?.toFixed(1)}dB` || 'N/A', parseFloat(systemInfo.snr) < 10 ? 'LOW' : 'HIGH'],
   ];
 
-  (doc as any).autoTable({
+  safeAutoTable(doc, {
     startY: 75,
     head: [systemData[0]],
     body: systemData.slice(1),
@@ -280,7 +280,7 @@ export const generateBugReportPDF = (events: BugReportEvent[], systemInfo: any) 
     ['OVERALL_SECURITY_POSTURE', systemHealth, systemHealth === 'STABLE' ? 'N/A' : 'CRITICAL']
   ];
 
-  (doc as any).autoTable({
+  safeAutoTable(doc, {
     startY: analysisY + 5,
     head: [analysisData[0]],
     body: analysisData.slice(1),
@@ -306,7 +306,7 @@ export const generateBugReportPDF = (events: BugReportEvent[], systemInfo: any) 
     ['BUG_005', 'STEALTH_SIGNATURE_LEAK', 'V0.9', 'REDACTED_BY_CMD'],
   ];
 
-  (doc as any).autoTable({
+  safeAutoTable(doc, {
     startY: historicY + 5,
     head: [historicBugs[0]],
     body: historicBugs.slice(1),
@@ -330,7 +330,7 @@ export const generateBugReportPDF = (events: BugReportEvent[], systemInfo: any) 
     e.team === 'RED' ? 'MALICIOUS' : e.team === 'SYSTEM' ? 'DIAGNOSTIC' : 'NEUTRAL'
   ]);
 
-  (doc as any).autoTable({
+  safeAutoTable(doc, {
     startY: finalY + 5,
     head: [['TIMESTAMP', 'ORIGIN', 'ANOMALY_DESCRIPTION', 'CLASSIFICATION']],
     body: logData,
@@ -414,7 +414,7 @@ export const generateMissionReportPDF = (events: TacticalEvent[], meta?: EventLo
     ['STEALTH POSTURE', meta?.stealthMode ? 'ENGAGED (GHOST PROTOCOL)' : 'STANDARD_PATROL', 'ACTIVE_SHIELDING']
   ];
 
-  (doc as any).autoTable({
+  safeAutoTable(doc, {
     startY: 67,
     head: [execTable[0]],
     body: execTable.slice(1),
@@ -436,7 +436,7 @@ export const generateMissionReportPDF = (events: TacticalEvent[], meta?: EventLo
     [new Date().toLocaleTimeString(), satName, 'ACTIVE', 'System link nominal. All quantum and RF subsystems reporting zero anomalies.']
   ];
 
-  (doc as any).autoTable({
+  safeAutoTable(doc, {
     startY: eventsY + 4,
     head: [['TIMESTAMP', 'ASSET', 'SEVERITY', 'MISSION EVENT DETAIL']],
     body: rows,

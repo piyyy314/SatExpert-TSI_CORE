@@ -105,8 +105,8 @@ export const WeatherDashboard: React.FC<Props> = ({ weather, loc, satName }) => 
          </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+         <div className="xl:col-span-2 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40 space-y-6">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -153,26 +153,28 @@ export const WeatherDashboard: React.FC<Props> = ({ weather, loc, satName }) => 
                   </div>
                </div>
 
-               <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40">
+               <div className="glass p-6 rounded-3xl border-slate-800 bg-slate-950/40 overflow-hidden">
                   <div className="flex items-center justify-between mb-4">
                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Atmospheric Loss Matrix</span>
                      <span className="text-[8px] text-slate-600 font-black uppercase tracking-widest">Loss In dB</span>
                   </div>
-                  <div className="space-y-2">
-                     <div className="grid grid-cols-4 gap-2 px-2 py-1 text-[7px] font-black text-slate-600 uppercase tracking-tighter">
-                        <div className="col-span-1">Band_Freq</div>
-                        <div className="text-center">Light</div>
-                        <div className="text-center">Heavy</div>
-                        <div className="text-center text-red-500/80">Peak</div>
-                     </div>
-                     {Object.entries(RAIN_FADE_MATRIX).map(([key, data]) => (
-                        <div key={key} className={`grid grid-cols-4 gap-2 p-2 rounded-lg border transition-all ${weather !== 'CLEAR' && weather !== 'OVERCAST' ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-900/20 border-slate-900 opacity-60'}`}>
-                           <div className="text-[9px] font-black text-slate-300 uppercase tracking-tight">{data.name.split(' ')[0]}</div>
-                           <div className={`text-[10px] font-black mono text-center ${weather === 'LIGHT_RAIN' ? 'text-amber-400' : 'text-slate-500'}`}>{data.light}</div>
-                           <div className={`text-[10px] font-black mono text-center ${weather === 'HEAVY_STORM' ? 'text-red-500' : 'text-slate-500'}`}>{data.heavy}</div>
-                           <div className="text-[10px] font-black mono text-center text-slate-500/50">{data.peak}</div>
+                  <div className="overflow-x-auto">
+                     <div className="min-w-[260px] space-y-2">
+                        <div className="grid grid-cols-4 gap-2 px-2 py-1 text-[7px] font-black text-slate-600 uppercase tracking-tighter">
+                           <div className="col-span-1">Band_Freq</div>
+                           <div className="text-center">Light</div>
+                           <div className="text-center">Heavy</div>
+                           <div className="text-center text-red-500/80">Peak</div>
                         </div>
-                     ))}
+                        {Object.entries(RAIN_FADE_MATRIX).map(([key, data]) => (
+                           <div key={key} className={`grid grid-cols-4 gap-2 p-2 rounded-lg border transition-all ${weather !== 'CLEAR' && weather !== 'OVERCAST' ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-900/20 border-slate-900 opacity-60'}`}>
+                              <div className="text-[9px] font-black text-slate-300 uppercase tracking-tight">{data.name.split(' ')[0]}</div>
+                              <div className={`text-[10px] font-black mono text-center ${weather === 'LIGHT_RAIN' ? 'text-amber-400' : 'text-slate-500'}`}>{data.light}</div>
+                              <div className={`text-[10px] font-black mono text-center ${weather === 'HEAVY_STORM' ? 'text-red-500' : 'text-slate-500'}`}>{data.heavy}</div>
+                              <div className="text-[10px] font-black mono text-center text-slate-500/50">{data.peak}</div>
+                           </div>
+                        ))}
+                     </div>
                   </div>
                </div>
             </div>

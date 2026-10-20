@@ -7,7 +7,7 @@ import {
   FileText, X, Settings, Database, Cpu, Radio, Thermometer 
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import { safeAutoTable } from '../utils/pdfHelper';
 import { auth } from '../services/firebaseService';
 import { exportEventLogsAsText, generateSecureEventLogPDF } from '../services/pdfService';
 
@@ -153,7 +153,7 @@ export const SitrepBoard: React.FC<Props> = ({ selectedSatellite, defcon, eventL
       ['SLOT CLASSIFICATION', (selectedSatellite.status || 'Active').toUpperCase(), 'STABLE_ORBIT'],
     ];
 
-    (doc as any).autoTable({
+    safeAutoTable(doc, {
       startY: 80,
       head: [satMeta[0]],
       body: satMeta.slice(1),
@@ -208,7 +208,7 @@ export const SitrepBoard: React.FC<Props> = ({ selectedSatellite, defcon, eventL
       ])
     ];
 
-    (doc as any).autoTable({
+    safeAutoTable(doc, {
       startY: logY + 5,
       head: [logsTable[0]],
       body: logsTable.slice(1),
