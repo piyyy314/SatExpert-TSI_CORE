@@ -42,6 +42,7 @@
     "typescript": "~5.7.0"
   },
   "overrides": {
+    "@grpc/grpc-js": "^1.13.6",
     "@babel/core": "^7.29.7",
     "baseline-browser-mapping": "^2.11.29",
     "body-parser": "^2.3.0",
