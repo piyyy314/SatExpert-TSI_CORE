@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { firebaseConfig as directConfig } from './firebaseService';
 
 export interface FirebaseAppConfig {
   apiKey: string;
@@ -14,26 +15,11 @@ export interface FirebaseAppConfig {
 /**
  * Hardened Firebase Configuration Loader
  * 
- * Safely resolves configuration prioritizing environment variables (VITE_FIREBASE_*),
- * falling back to local firebase-applet-config.json via Vite's static compile-time glob
- * (which prevents TS2307 on clean CI runners where the file is omitted by .gitignore),
- * and defaulting to the configured project properties.
+ * Re-exports the environment-driven Firebase configuration directly sourced
+ * from import.meta.env matching .env.example, eliminating any reliance on
+ * non-existent json files on clean checkouts.
  */
-const localConfigs = import.meta.glob<Record<string, any>>('../firebase-applet-config.json', { eager: true });
-const rawConfig: Record<string, any> = localConfigs['../firebase-applet-config.json']?.default 
-  || localConfigs['../firebase-applet-config.json'] 
-  || {};
-
-export const firebaseConfig: FirebaseAppConfig = {
-  apiKey: (import.meta.env.VITE_FIREBASE_API_KEY as string) || rawConfig.apiKey || 'AIzaSyDGlpyrSMIYSZNrNdW3A2kiHx230TGjuQ4',
-  authDomain: (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string) || rawConfig.authDomain || 'project-a799448d-2c60-4e34-a3f.firebaseapp.com',
-  projectId: (import.meta.env.VITE_FIREBASE_PROJECT_ID as string) || rawConfig.projectId || 'project-a799448d-2c60-4e34-a3f',
-  storageBucket: (import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string) || rawConfig.storageBucket || 'project-a799448d-2c60-4e34-a3f.firebasestorage.app',
-  messagingSenderId: (import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string) || rawConfig.messagingSenderId || '1074516085500',
-  appId: (import.meta.env.VITE_FIREBASE_APP_ID as string) || rawConfig.appId || '1:1074516085500:web:4692fb95cb82aa1d27a579',
-  measurementId: (import.meta.env.VITE_FIREBASE_MEASUREMENT_ID as string) || rawConfig.measurementId || '',
-  firestoreDatabaseId: (import.meta.env.VITE_FIREBASE_DATABASE_ID as string) || rawConfig.firestoreDatabaseId || 'ai-studio-f55368ed-a497-4968-b73a-50421b2c02b7',
-};
+export const firebaseConfig: FirebaseAppConfig = directConfig;
 
 /**
  * Safely masks a sensitive API key for logging or diagnostic display,

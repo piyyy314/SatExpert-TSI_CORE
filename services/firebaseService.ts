@@ -16,8 +16,19 @@ import {
   enableNetwork,
   disableNetwork
 } from 'firebase/firestore';
-import { firebaseConfig } from './firebaseConfig';
+/// <reference types="vite/client" />
 import { TacticalEvent, Coordinates, JammingSession } from '../types';
+
+export const firebaseConfig = {
+  apiKey: (import.meta.env.VITE_FIREBASE_API_KEY as string) || 'AIzaSyDGlpyrSMIYSZNrNdW3A2kiHx230TGjuQ4',
+  authDomain: (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string) || 'project-a799448d-2c60-4e34-a3f.firebaseapp.com',
+  projectId: (import.meta.env.VITE_FIREBASE_PROJECT_ID as string) || 'project-a799448d-2c60-4e34-a3f',
+  storageBucket: (import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string) || 'project-a799448d-2c60-4e34-a3f.firebasestorage.app',
+  messagingSenderId: (import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string) || '1074516085500',
+  appId: (import.meta.env.VITE_FIREBASE_APP_ID as string) || '1:1074516085500:web:4692fb95cb82aa1d27a579',
+  measurementId: (import.meta.env.VITE_FIREBASE_MEASUREMENT_ID as string) || '',
+  firestoreDatabaseId: (import.meta.env.VITE_FIREBASE_DATABASE_ID as string) || 'ai-studio-f55368ed-a497-4968-b73a-50421b2c02b7',
+};
 
 // Initialize the Firebase core application
 const app = initializeApp(firebaseConfig);
