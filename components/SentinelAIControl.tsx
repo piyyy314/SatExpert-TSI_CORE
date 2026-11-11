@@ -201,8 +201,10 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
   const [internalDecoyActive, setInternalDecoyActive] = useState(false);
   const [internalCountdown, setInternalCountdown] = useState(0);
 
+  const [totalDeployedDuration, setTotalDeployedDuration] = useState<number>(30);
   const activeDecoy = onDeployThermalDecoy ? isThermalDecoyActive : internalDecoyActive;
   const activeCountdown = onDeployThermalDecoy ? thermalDecoySecondsRemaining : internalCountdown;
+  const effectiveTotalDuration = Math.max(totalDeployedDuration, activeCountdown, 30);
 
   // Real-time ticking interval for system metrics and telemetry recording
   useEffect(() => {
@@ -447,6 +449,7 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
       audioController.playAlert();
     } catch (e) {}
 
+    setTotalDeployedDuration(durationToDeploy || 30);
     if (onDeployThermalDecoy) {
       onDeployThermalDecoy(durationToDeploy);
     } else {
@@ -852,6 +855,67 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
                       >
                         Reset to AI Optimal ({matrixAnalysis.calculatedDuration}s)
                       </button>
+                    </div>
+                  </div>
+
+                  {/* Visual Progress Bar: Exact Countdown of the 30s Heat Signature Spoof */}
+                  <div className="p-3.5 bg-slate-950/90 rounded-2xl border border-amber-500/40 relative overflow-hidden space-y-2.5 my-3 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+                    <div className="flex items-center justify-between text-[9px] font-mono">
+                      <div className="flex items-center space-x-2">
+                        <span className={`w-2 h-2 rounded-full ${activeDecoy ? 'bg-amber-400 animate-ping' : 'bg-slate-700'}`} />
+                        <span className="font-black text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                          <Flame className={`w-3 h-3 ${activeDecoy ? 'text-amber-400 animate-bounce' : 'text-slate-500'}`} />
+                          Thermal Decoy Progress
+                        </span>
+                      </div>
+                      <span className="font-black text-white font-mono text-[10px]">
+                        {activeDecoy 
+                          ? `${activeCountdown}s / ${effectiveTotalDuration}s [${Math.max(0, Math.min(100, Math.round(((effectiveTotalDuration - activeCountdown) / effectiveTotalDuration) * 100)))}%]` 
+                          : `${selectedDuration}s READY`}
+                      </span>
+                    </div>
+
+                    {/* Progress Bar Track and Animated Gradient Fill */}
+                    <div className="relative w-full h-4 bg-slate-900 rounded-full border border-slate-800 p-0.5 overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-300 relative ${
+                          activeDecoy 
+                            ? 'bg-gradient-to-r from-amber-600 via-amber-400 to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.8)]' 
+                            : 'bg-slate-800/60'
+                        }`}
+                        style={{ 
+                          width: activeDecoy 
+                            ? `${Math.max(2, Math.min(100, ((effectiveTotalDuration - activeCountdown) / effectiveTotalDuration) * 100))}%` 
+                            : '0%' 
+                        }}
+                      >
+                        {/* Dynamic Scan Head */}
+                        {activeDecoy && (
+                          <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-white rounded-full shadow-[0_0_8px_#ffffff] animate-pulse" />
+                        )}
+                      </div>
+
+                      {/* 5-second tick markers */}
+                      <div className="absolute inset-0 flex justify-between px-2 pointer-events-none items-center">
+                        {[0, 5, 10, 15, 20, 25, 30].map(s => (
+                          <div key={s} className="w-[1px] h-2.5 bg-slate-700/60" />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Timeline Metrics & Phase Indicator */}
+                    <div className="flex items-center justify-between text-[7.5px] font-mono">
+                      <span className="text-amber-400 font-bold">
+                        {activeDecoy ? `T+${effectiveTotalDuration - activeCountdown}s ELAPSED` : 'T+0s [STANDBY]'}
+                      </span>
+                      <span className="text-slate-400 uppercase font-bold">
+                        {activeDecoy 
+                          ? (activeCountdown > 20 ? '🔥 PHASE 1: FLARE INJECTION' : activeCountdown > 10 ? '⚡ PHASE 2: SEEKER BLOOM' : '💨 PHASE 3: THERMAL REVERT') 
+                          : '30s HEAT SPOOF ENVELOPE ARMED'}
+                      </span>
+                      <span className="text-amber-400 font-bold">
+                        {activeDecoy ? `-${activeCountdown}s LEFT` : '100% READY'}
+                      </span>
                     </div>
                   </div>
 

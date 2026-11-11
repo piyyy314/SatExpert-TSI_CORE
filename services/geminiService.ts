@@ -205,3 +205,24 @@ export const analyzeSpoofingURL = async (url: string, content?: string) => {
         return null;
     }
 };
+
+export const runBountyResearch = async (params: { target: string, focusArea?: string, command?: string, targetPlatform?: string }) => {
+    try {
+        const data = await callBackend('runBountyResearch', params);
+        return data.result;
+    } catch (err) {
+        console.warn("Client fallback for runBountyResearch", err);
+        return null;
+    }
+};
+
+export const runZeroDayDiagnosis = async (params: { targetOS: string, vulnClass: string, evasion: string, payload: string, testTargetIp?: string, testTargetPort?: number }) => {
+    try {
+        const data = await callBackend('runZeroDayDiagnosis', params);
+        return data.result;
+    } catch (err) {
+        console.warn("Client fallback for runZeroDayDiagnosis", err);
+        return null;
+    }
+};
+
