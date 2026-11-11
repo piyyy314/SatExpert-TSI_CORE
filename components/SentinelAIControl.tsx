@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { Coordinates, Satellite, WeatherCondition, TacticalEvent } from '../types';
 import { audioController } from '../services/audioService';
+import { QuantumSignalAnalysis } from './QuantumSignalAnalysis';
 
 export interface SentinelAIControlProps {
   telemetry?: {
@@ -59,6 +60,8 @@ export interface SentinelAIControlProps {
   isDriftAlert?: boolean;
   onResyncTracking?: () => void;
   onSimulateDrift?: (delta?: number) => void;
+  defcon?: number;
+  isStealthMode?: boolean;
   calibratedLongitude?: number;
   onNavigateToTacticalHUD?: () => void;
 }
@@ -94,11 +97,13 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
   isDriftAlert,
   onResyncTracking,
   onSimulateDrift,
+  defcon = 5,
+  isStealthMode = false,
   calibratedLongitude,
   onNavigateToTacticalHUD
 }) => {
   // Navigation sub-tab within Sentinel AI Control
-  const [activeTab, setActiveTab] = useState<'decision_matrix' | 'overwatch' | 'syslog'>('decision_matrix');
+  const [activeTab, setActiveTab] = useState<'decision_matrix' | 'overwatch' | 'quantum_signal' | 'syslog'>('decision_matrix');
 
   // Internal drift state fallback if not supplied externally
   const [internalDriftOffset, setInternalDriftOffset] = useState(0);
@@ -684,6 +689,21 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
           >
             <Network className="w-3 h-3" />
             <span>Autonomous Overwatch</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('quantum_signal')}
+            className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center space-x-1.5 cursor-pointer ${
+              activeTab === 'quantum_signal'
+                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+            }`}
+          >
+            <Radio className="w-3 h-3" />
+            <span>Quantum Signal Analysis</span>
+            <span className="text-[7.5px] px-1 py-0.2 bg-cyan-950/70 border border-cyan-500/30 text-cyan-300 rounded ml-1 font-mono">
+              D3 LIVE
+            </span>
           </button>
 
           <button
@@ -1329,6 +1349,19 @@ export const SentinelAIControl: React.FC<SentinelAIControlProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* VIEW: QUANTUM SIGNAL ANALYSIS (D3 WAVEFORM ENTROPY & DECRYPT) */}
+      {/* ============================================================ */}
+      {activeTab === 'quantum_signal' && (
+        <QuantumSignalAnalysis
+          selectedSat={selectedSat}
+          defcon={defcon}
+          isJamming={isJamming}
+          isStealthMode={isStealthMode}
+          addMissionLog={addMissionLog}
+        />
       )}
 
       {/* ============================================================ */}

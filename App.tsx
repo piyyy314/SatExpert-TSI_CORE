@@ -1007,6 +1007,8 @@ export const App: React.FC = () => {
                 isJamming={isJamming}
                 jammingPower={jammingPower}
                 weather={weather}
+                defcon={defcon}
+                isStealthMode={isStealthMode}
                 addMissionLog={addMissionLog}
                 orbitalDrift={orbitalDrift}
                 isDriftAlert={isOrbitalDriftAlert}
